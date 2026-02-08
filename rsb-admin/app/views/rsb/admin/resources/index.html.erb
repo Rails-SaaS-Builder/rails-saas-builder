@@ -1,0 +1,49 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= @registration.label %></h1>
+  <div class="flex gap-2">
+    <% if @registration.action?(:new) %>
+      <% if rsb_admin_can?(@registration.route_key, "new") %>
+        <a href="<%= rsb_admin_resource_new_path(@registration.route_key) %>"
+           class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+          <%= rsb_admin_icon("plus", size: 16) %>
+          <%= rsb_admin_t("shared.new", resource: @registration.label.singularize) %>
+        </a>
+      <% else %>
+        <span class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary/50 text-rsb-primary-text/50 rounded-rsb text-sm font-medium pointer-events-none cursor-not-allowed"
+              title="<%= rsb_admin_t("shared.no_access") %>">
+          <%= rsb_admin_icon("plus", size: 16) %>
+          <%= rsb_admin_t("shared.new", resource: @registration.label.singularize) %>
+        </span>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<% if @registration.filters&.any? %>
+  <%= render rsb_admin_partial("resources/filters"),
+    filters: @registration.filters,
+    values: @filter_values,
+    resource_key: @registration.route_key %>
+<% end %>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @records.any? %>
+    <%= render rsb_admin_partial("resources/table"),
+      columns: @registration.index_columns,
+      records: @records,
+      registration: @registration %>
+  <% else %>
+    <%= render rsb_admin_partial("shared/empty_state"),
+      title: rsb_admin_t("shared.no_results", resource: @registration.label),
+      message: rsb_admin_t("shared.no_results_message", resource: @registration.label) %>
+  <% end %>
+</div>
+
+<% if @total_pages > 1 %>
+  <%= render rsb_admin_partial("resources/pagination"),
+    current_page: @current_page,
+    total_pages: @total_pages,
+    total_count: @total_count,
+    per_page: @registration.per_page || RSB::Admin.configuration.per_page,
+    base_path: rsb_admin_resource_path(@registration.route_key) %>
+<% end %>

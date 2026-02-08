@@ -1,0 +1,9 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= @page.label %></h1>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <p class="text-rsb-muted text-sm">
+    <%= rsb_admin_t("resources.page_placeholder", controller: @page.controller) %>
+  </p>
+</div>

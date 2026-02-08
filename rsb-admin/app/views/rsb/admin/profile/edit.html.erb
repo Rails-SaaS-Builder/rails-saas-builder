@@ -1,0 +1,67 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= rsb_admin_t("profile.edit_title") %></h1>
+  <a href="<%= rsb_admin.profile_path %>"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+    <%= rsb_admin_t("shared.back") %>
+  </a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <%= form_with model: @admin_user, url: rsb_admin.profile_path, method: :patch, local: true, scope: :admin_user do |f| %>
+    <% if @admin_user.errors.any? %>
+      <div class="bg-rsb-danger-bg text-rsb-danger-text border border-red-200 px-4 py-3 rounded-rsb mb-4 text-sm">
+        <strong><%= rsb_admin_t("errors.prohibited", count: @admin_user.errors.count) %></strong>
+        <ul class="mt-2 pl-6 list-disc">
+          <% @admin_user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("profile.current_email") %></label>
+      <%= f.email_field :email, autofocus: true, class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+      <% if @admin_user.email_verification_pending? %>
+        <p class="text-xs text-rsb-warning mt-1">
+          <%= rsb_admin_t("profile.pending_email_hint", email: @admin_user.pending_email) %>
+        </p>
+      <% end %>
+    </div>
+
+    <div class="border-t border-rsb-border mt-6 pt-6">
+      <h3 class="text-sm font-semibold mb-4"><%= rsb_admin_t("profile.new_password") %></h3>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("profile.new_password") %></label>
+        <%= f.password_field :password, class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+        <p class="text-xs text-rsb-muted mt-1"><%= rsb_admin_t("profile.new_password_hint") %></p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("profile.confirm_password") %></label>
+        <%= f.password_field :password_confirmation, class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+      </div>
+    </div>
+
+    <div class="border-t border-rsb-border mt-6 pt-6">
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("profile.current_password") %></label>
+        <input type="password" name="current_password" required
+               class="w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10">
+        <p class="text-xs text-rsb-muted mt-1"><%= rsb_admin_t("profile.current_password_hint") %></p>
+      </div>
+    </div>
+
+    <div class="flex gap-3 mt-6">
+      <button type="submit"
+              class="px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+        <%= rsb_admin_t("shared.save") %>
+      </button>
+      <a href="<%= rsb_admin.profile_path %>"
+         class="px-4 py-2 border border-rsb-border text-rsb-text rounded-rsb text-sm hover:bg-rsb-bg">
+        <%= rsb_admin_t("shared.cancel") %>
+      </a>
+    </div>
+  <% end %>
+</div>

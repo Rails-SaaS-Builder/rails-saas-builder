@@ -1,0 +1,76 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Identities</h1>
+  <% if rsb_admin_can?("identities", "new") %>
+    <a href="/admin/identities/new"
+       class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+      New Identity
+    </a>
+  <% end %>
+</div>
+
+<% if @filters.any? %>
+  <%= render rsb_admin_partial("resources/filters"),
+    filters: @filters,
+    values: @filter_values,
+    resource_key: "identities" %>
+<% end %>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @identities.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Primary Identifier</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Credentials</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Created</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @identities.each do |identity| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm">
+                <% if identity.active? %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-success-bg text-rsb-success-text text-xs font-medium">Active</span>
+                <% elsif identity.suspended? %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-warning-bg text-rsb-warning-text text-xs font-medium">Suspended</span>
+                <% else %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-danger-bg text-rsb-danger-text text-xs font-medium">Deactivated</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= identity.primary_identifier || "-" %></td>
+              <td class="px-4 py-3 text-sm"><%= identity.credentials.size %></td>
+              <td class="px-4 py-3 text-sm"><%= identity.created_at.strftime("%b %d, %Y") %></td>
+              <td class="px-4 py-3 text-sm text-right">
+                <a href="/admin/identities/<%= identity.id %>"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">View</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# Pagination %>
+    <% query = @filter_values.any? ? @filter_values.map { |k,v| "q[#{k}]=#{ERB::Util.url_encode(v)}" }.join("&") : nil %>
+    <div class="flex justify-between items-center px-4 py-3 border-t border-rsb-border">
+      <span class="text-sm text-rsb-muted">Page <%= @current_page + 1 %></span>
+      <div class="flex gap-2">
+        <% if @current_page > 0 %>
+          <a href="/admin/identities?page=<%= @current_page - 1 %><%= "&#{query}" if query %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Previous</a>
+        <% end %>
+        <% if @identities.size == @per_page %>
+          <a href="/admin/identities?page=<%= @current_page + 1 %><%= "&#{query}" if query %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Next</a>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-rsb-muted text-sm">No identities found. User registrations will appear here.</p>
+    </div>
+  <% end %>
+</div>

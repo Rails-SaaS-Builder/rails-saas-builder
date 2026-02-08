@@ -1,0 +1,1 @@
+require "rsb/entitlements/stripe"

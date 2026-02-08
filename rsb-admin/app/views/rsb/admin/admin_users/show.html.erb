@@ -1,0 +1,85 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= @admin_user.email %></h1>
+  <div class="flex gap-2">
+    <% if rsb_admin_can?("admin_users", "edit") %>
+      <a href="<%= rsb_admin.edit_admin_user_path(@admin_user) %>"
+         class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+        <%= rsb_admin_icon("edit", size: 16) %>
+        <%= rsb_admin_t("shared.edit") %>
+      </a>
+    <% else %>
+      <span class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border/50 rounded-rsb text-sm text-rsb-muted pointer-events-none cursor-not-allowed"
+            title="<%= rsb_admin_t("shared.no_access") %>">
+        <%= rsb_admin_icon("edit", size: 16) %>
+        <%= rsb_admin_t("shared.edit") %>
+      </span>
+    <% end %>
+    <a href="<%= rsb_admin.admin_users_path %>"
+       class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+      <%= rsb_admin_t("shared.back") %>
+    </a>
+  </div>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("columns.email") %></strong>
+    <div><%= @admin_user.email %></div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("roles.title") %></strong>
+    <div>
+      <% if @admin_user.role %>
+        <a href="<%= rsb_admin.role_path(@admin_user.role) %>" class="text-rsb-primary hover:underline"><%= @admin_user.role.name %></a>
+        <% if @admin_user.role.superadmin? %>
+          <%= rsb_admin_badge(rsb_admin_t("roles.superadmin"), variant: :success) %>
+        <% end %>
+      <% else %>
+        <%= rsb_admin_badge(rsb_admin_t("admin_users.no_role"), variant: :warning) %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("admin_users.last_sign_in") %></strong>
+    <div>
+      <% if @admin_user.last_sign_in_at %>
+        <%= @admin_user.last_sign_in_at.strftime("%B %d, %Y at %I:%M %p") %>
+      <% else %>
+        <span class="text-rsb-muted"><%= rsb_admin_t("admin_users.never_signed_in") %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("admin_users.last_ip") %></strong>
+    <div><%= @admin_user.last_sign_in_ip || "-" %></div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("columns.created_at") %></strong>
+    <div><%= @admin_user.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+  </div>
+</div>
+
+<% unless @admin_user == current_admin_user %>
+  <% if rsb_admin_can?("admin_users", "destroy") %>
+    <div class="mt-6 bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+      <h3 class="text-base font-semibold text-rsb-danger mb-4"><%= rsb_admin_t("shared.danger_zone") %></h3>
+      <%= button_to rsb_admin_t("shared.delete") + " " + rsb_admin_t("admin_users.title").singularize,
+            rsb_admin.admin_user_path(@admin_user),
+            method: :delete,
+            data: { turbo_confirm: rsb_admin_t("admin_users.confirm_delete") },
+            class: "px-4 py-2 bg-rsb-danger text-white rounded-rsb text-sm font-medium hover:bg-red-700" %>
+    </div>
+  <% else %>
+    <div class="mt-6 bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+      <h3 class="text-base font-semibold text-rsb-danger mb-4"><%= rsb_admin_t("shared.danger_zone") %></h3>
+      <span class="inline-flex px-4 py-2 bg-rsb-danger/50 text-white/50 rounded-rsb text-sm font-medium pointer-events-none cursor-not-allowed"
+            title="<%= rsb_admin_t("shared.no_access") %>">
+        <%= rsb_admin_t("shared.delete") %> <%= rsb_admin_t("admin_users.title").singularize %>
+      </span>
+    </div>
+  <% end %>
+<% end %>

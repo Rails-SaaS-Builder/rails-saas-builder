@@ -1,0 +1,7 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= rsb_admin_t("shared.edit") %> <%= rsb_admin_t("roles.title").singularize %>: <%= @role.name %></h1>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <%= render rsb_admin_partial("roles/form"), role: @role, url: rsb_admin.role_path(@role), method: :patch %>
+</div>

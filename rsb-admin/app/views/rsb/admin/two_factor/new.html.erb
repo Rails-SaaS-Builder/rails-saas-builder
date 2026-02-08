@@ -1,0 +1,53 @@
+<div class="max-w-lg mx-auto">
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+    <h2 class="text-xl font-bold mb-4">Set Up Two-Factor Authentication</h2>
+
+    <p class="mb-4 text-rsb-muted text-sm">
+      Scan the QR code below with your authenticator app (Google Authenticator, Authy, 1Password, etc.),
+      then enter the 6-digit code to confirm.
+    </p>
+
+    <% if flash[:alert] %>
+      <div class="mb-4 p-3 rounded-rsb bg-rsb-danger-bg border border-rsb-danger text-rsb-danger-text text-sm">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <!-- QR Code -->
+    <div class="flex justify-center mb-4">
+      <div class="bg-white p-4 rounded">
+        <%= @qr_svg.html_safe %>
+      </div>
+    </div>
+
+    <!-- Manual entry key -->
+    <div class="mb-6">
+      <p class="text-sm font-medium mb-1">Can't scan? Enter this key manually:</p>
+      <code class="block p-2 bg-rsb-bg border border-rsb-border rounded-rsb text-sm font-mono break-all select-all">
+        <%= @otp_secret %>
+      </code>
+    </div>
+
+    <!-- Confirmation form -->
+    <%= form_tag(rsb_admin.profile_two_factor_path, method: :post) do %>
+      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+      <div class="mb-4">
+        <label for="otp_code" class="block text-sm font-medium mb-1">Verification Code</label>
+        <input type="text" id="otp_code" name="otp_code"
+               class="w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10"
+               placeholder="Enter 6-digit code"
+               autocomplete="one-time-code" inputmode="numeric" autofocus required />
+      </div>
+
+      <button type="submit"
+              class="w-full px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+        Confirm & Enable 2FA
+      </button>
+    <% end %>
+
+    <div class="mt-4 text-center">
+      <a href="<%= rsb_admin.profile_path %>" class="text-sm text-rsb-muted hover:underline">Cancel</a>
+    </div>
+  </div>
+</div>

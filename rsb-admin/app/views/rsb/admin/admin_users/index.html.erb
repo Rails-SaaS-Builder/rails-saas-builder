@@ -1,0 +1,77 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= rsb_admin_t("admin_users.title") %></h1>
+  <% if rsb_admin_can?("admin_users", "new") %>
+    <a href="<%= rsb_admin.new_admin_user_path %>"
+       class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+      <%= rsb_admin_icon("plus", size: 16) %>
+      <%= rsb_admin_t("shared.new", resource: rsb_admin_t("admin_users.title").singularize) %>
+    </a>
+  <% else %>
+    <span class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary/50 text-rsb-primary-text/50 rounded-rsb text-sm font-medium pointer-events-none cursor-not-allowed"
+          title="<%= rsb_admin_t("shared.no_access") %>">
+      <%= rsb_admin_icon("plus", size: 16) %>
+      <%= rsb_admin_t("shared.new", resource: rsb_admin_t("admin_users.title").singularize) %>
+    </span>
+  <% end %>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @admin_users.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= rsb_admin_t("columns.email") %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= rsb_admin_t("roles.title") %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= rsb_admin_t("admin_users.last_sign_in") %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= rsb_admin_t("admin_users.last_ip") %></th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @admin_users.each do |admin_user| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm">
+                <a href="<%= rsb_admin.admin_user_path(admin_user) %>" class="text-rsb-primary hover:underline"><%= admin_user.email %></a>
+                <% if admin_user == current_admin_user %>
+                  <%= rsb_admin_badge(rsb_admin_t("admin_users.you"), variant: :success) %>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm">
+                <% if admin_user.role %>
+                  <a href="<%= rsb_admin.role_path(admin_user.role) %>" class="text-rsb-primary hover:underline"><%= admin_user.role.name %></a>
+                <% else %>
+                  <%= rsb_admin_badge(rsb_admin_t("admin_users.no_role"), variant: :warning) %>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm">
+                <% if admin_user.last_sign_in_at %>
+                  <%= admin_user.last_sign_in_at.strftime("%b %d, %Y %H:%M") %>
+                <% else %>
+                  <span class="text-rsb-muted"><%= rsb_admin_t("admin_users.never") %></span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= admin_user.last_sign_in_ip || "-" %></td>
+              <td class="px-4 py-3 text-sm text-right">
+                <% if rsb_admin_can?("admin_users", "edit") %>
+                  <a href="<%= rsb_admin.edit_admin_user_path(admin_user) %>"
+                     class="text-rsb-muted hover:text-rsb-text" title="<%= rsb_admin_t("shared.edit") %>">
+                    <%= rsb_admin_icon("edit", size: 16) %>
+                  </a>
+                <% else %>
+                  <span class="text-rsb-muted/40 cursor-not-allowed" title="<%= rsb_admin_t("shared.no_access") %>">
+                    <%= rsb_admin_icon("edit", size: 16) %>
+                  </span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= render rsb_admin_partial("shared/empty_state"),
+      title: rsb_admin_t("shared.no_results", resource: rsb_admin_t("admin_users.title")),
+      message: rsb_admin_t("shared.no_results_message", resource: rsb_admin_t("admin_users.title")) %>
+  <% end %>
+</div>

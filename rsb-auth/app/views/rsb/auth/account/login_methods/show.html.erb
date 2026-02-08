@@ -1,0 +1,92 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="text-3xl font-extrabold text-gray-900"><%= @credential.type.demodulize.titleize %></h2>
+      <p class="mt-2 text-sm text-gray-600"><%= @credential.identifier %></p>
+      <% if @credential.recovery_email.present? %>
+        <p class="mt-1 text-sm text-gray-600">
+          <strong>Recovery email:</strong>
+          <%= @credential.recovery_email %>
+        </p>
+      <% end %>
+    </div>
+
+    <%# Verification status %>
+    <div class="p-4 bg-white border border-gray-200 rounded-md">
+      <h3 class="text-sm font-medium text-gray-900"><%= t("rsb.auth.account.verification_status") %></h3>
+      <div class="mt-2">
+        <% if @credential.verified? %>
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><%= t("rsb.auth.account.verified") %></span>
+            <span class="text-xs text-gray-500">
+              <%= l(@credential.verified_at, format: :long) %>
+            </span>
+          </div>
+        <% else %>
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><%= t("rsb.auth.account.unverified") %></span>
+            <%= button_to t("rsb.auth.account.resend_verification"), resend_verification_account_login_method_path(@credential), method: :post, class: "text-sm text-indigo-600 hover:text-indigo-500" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Change password form %>
+    <div class="border-t border-gray-200 pt-8">
+      <h3 class="text-lg font-medium text-gray-900"><%= t("rsb.auth.account.change_password_title") %></h3>
+
+      <% if @password_errors.present? %>
+        <div class="mt-4 rounded-md bg-red-50 p-4">
+          <div class="ml-3">
+            <div class="text-sm text-red-700">
+              <ul class="list-disc pl-5 space-y-1">
+                <% @password_errors.each do |error| %>
+                  <li><%= error %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= form_with url: password_account_login_method_path(@credential), method: :patch, class: "mt-4 space-y-4" do |f| %>
+        <div>
+          <label for="current_password" class="block text-sm font-medium text-gray-700"><%= t("rsb.auth.account.current_password") %></label>
+          <input id="current_password" name="current_password" type="password" autocomplete="current-password" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
+        <div>
+          <label for="new_password" class="block text-sm font-medium text-gray-700"><%= t("rsb.auth.account.new_password") %></label>
+          <input id="new_password" name="new_password" type="password" autocomplete="new-password" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
+        <div>
+          <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700"><%= t("rsb.auth.account.confirm_new_password") %></label>
+          <input id="new_password_confirmation" name="new_password_confirmation" type="password" autocomplete="new-password" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
+        <div>
+          <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <%= t("rsb.auth.account.change_password_title") %>
+          </button>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Remove login method %>
+    <% if @can_remove %>
+      <div class="border-t border-red-200 pt-8">
+        <h3 class="text-lg font-medium text-red-600"><%= t("rsb.auth.account.remove_login_method") %></h3>
+        <p class="mt-2 text-sm text-gray-600"><%= t("rsb.auth.account.remove_login_method_warning") %></p>
+        <div class="mt-4">
+          <%= button_to t("rsb.auth.account.remove_login_method"), account_login_method_path(@credential), method: :delete, data: { turbo_confirm: t("rsb.auth.account.remove_confirm") }, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Back link %>
+    <div class="pt-4">
+      <%= link_to t("rsb.auth.account.back_to_account"), account_path, class: "text-sm text-indigo-600 hover:text-indigo-500" %>
+    </div>
+  </div>
+</div>

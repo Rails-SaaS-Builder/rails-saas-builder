@@ -1,0 +1,21 @@
+en:
+  rsb:
+    admin:
+      sessions:
+        new:
+          page_title: "Admin Sign In"
+      dashboard:
+        page_title: "Dashboard"
+      settings:
+        page_title: "Settings"
+      profile:
+        show:
+          page_title: "Profile"
+        edit:
+          page_title: "Edit Profile"
+      roles:
+        index:
+          page_title: "Roles"
+      admin_users:
+        index:
+          page_title: "Admin Users"

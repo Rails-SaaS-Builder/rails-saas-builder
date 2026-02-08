@@ -1,0 +1,110 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Usage Monitoring</h1>
+  <a href="/admin/usage_counters/trend" class="rsb-btn rsb-btn-secondary text-sm">
+    Trend Charts
+  </a>
+</div>
+
+<%# Filters %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-4 mb-4">
+  <form method="get" action="/admin/usage_counters" class="flex flex-wrap gap-4 items-end">
+    <div>
+      <label class="block text-xs font-semibold text-rsb-muted mb-1">Metric</label>
+      <select name="metric" class="rsb-input text-sm">
+        <option value="">All</option>
+        <% @available_metrics.each do |m| %>
+          <option value="<%= m %>" <%= "selected" if params[:metric] == m %>><%= m %></option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-rsb-muted mb-1">Period Key</label>
+      <input type="text" name="period_key" value="<%= params[:period_key] %>" placeholder="e.g., 2026-02" class="rsb-input text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-rsb-muted mb-1">Countable Type</label>
+      <select name="countable_type" class="rsb-input text-sm">
+        <option value="">All</option>
+        <% @available_types.each do |t| %>
+          <option value="<%= t %>" <%= "selected" if params[:countable_type] == t %>><%= t %></option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <button type="submit" class="rsb-btn rsb-btn-primary text-sm">Filter</button>
+      <a href="/admin/usage_counters" class="rsb-btn rsb-btn-ghost text-sm ml-2">Clear</a>
+    </div>
+  </form>
+</div>
+
+<%# Table %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @usage_counters.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">
+              <a href="/admin/usage_counters?<%= { metric: params[:metric], period_key: params[:period_key], countable_type: params[:countable_type], sort: "period_key", direction: params[:sort] == "period_key" && params[:direction] != "asc" ? "asc" : "desc" }.compact.to_query %>">Period</a>
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Countable</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Metric</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">
+              <a href="/admin/usage_counters?<%= { metric: params[:metric], period_key: params[:period_key], countable_type: params[:countable_type], sort: "current_value", direction: params[:sort] == "current_value" && params[:direction] != "asc" ? "asc" : "desc" }.compact.to_query %>">Value</a>
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Limit</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">% Used</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">
+              <a href="/admin/usage_counters?<%= { metric: params[:metric], period_key: params[:period_key], countable_type: params[:countable_type], sort: "created_at", direction: params[:sort] == "created_at" && params[:direction] != "asc" ? "asc" : "desc" }.compact.to_query %>">Created</a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @usage_counters.each do |counter| %>
+            <% pct = counter.limit && counter.limit > 0 ? (counter.current_value * 100.0 / counter.limit).round(1) : nil %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm font-mono"><%= counter.period_key == "__cumulative__" ? "Cumulative" : counter.period_key %></td>
+              <td class="px-4 py-3 text-sm"><%= counter.countable_type %>#<%= counter.countable_id %></td>
+              <td class="px-4 py-3 text-sm"><span class="rsb-badge"><%= counter.metric %></span></td>
+              <td class="px-4 py-3 text-sm font-mono"><%= counter.current_value %></td>
+              <td class="px-4 py-3 text-sm font-mono"><%= counter.limit || "&#8734;" %></td>
+              <td class="px-4 py-3 text-sm">
+                <% if pct %>
+                  <div class="flex items-center gap-2">
+                    <div class="w-16 h-2 bg-rsb-bg rounded-full overflow-hidden">
+                      <div class="h-full rounded-full <%= pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-yellow-500' : 'bg-green-500' %>" style="width: <%= [pct, 100].min %>%"></div>
+                    </div>
+                    <span class="text-xs text-rsb-muted"><%= pct %>%</span>
+                  </div>
+                <% else %>
+                  <span class="text-rsb-muted">&mdash;</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm text-rsb-muted"><%= counter.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# Pagination %>
+    <% total_pages = (@total_count.to_f / @per_page).ceil %>
+    <% if total_pages > 1 %>
+      <div class="px-4 py-3 border-t border-rsb-border flex justify-between items-center text-sm text-rsb-muted">
+        <span>Showing <%= (@page - 1) * @per_page + 1 %>–<%= [@page * @per_page, @total_count].min %> of <%= @total_count %></span>
+        <div class="flex gap-2">
+          <% if @page > 1 %>
+            <a href="/admin/usage_counters?<%= { metric: params[:metric], period_key: params[:period_key], countable_type: params[:countable_type], sort: params[:sort], direction: params[:direction], page: @page - 1 }.compact.to_query %>" class="rsb-btn rsb-btn-ghost text-xs">Prev</a>
+          <% end %>
+          <% if @page < total_pages %>
+            <a href="/admin/usage_counters?<%= { metric: params[:metric], period_key: params[:period_key], countable_type: params[:countable_type], sort: params[:sort], direction: params[:direction], page: @page + 1 }.compact.to_query %>" class="rsb-btn rsb-btn-ghost text-xs">Next</a>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-rsb-muted text-sm">No usage counters found.</p>
+    </div>
+  <% end %>
+</div>

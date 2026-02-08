@@ -1,0 +1,99 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= @role.name %></h1>
+  <div class="flex gap-2">
+    <% unless @role.built_in? %>
+      <% if rsb_admin_can?("roles", "edit") %>
+        <a href="<%= rsb_admin.edit_role_path(@role) %>"
+           class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+          <%= rsb_admin_icon("edit", size: 16) %>
+          <%= rsb_admin_t("shared.edit") %>
+        </a>
+      <% else %>
+        <span class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border/50 rounded-rsb text-sm text-rsb-muted pointer-events-none cursor-not-allowed"
+              title="<%= rsb_admin_t("shared.no_access") %>">
+          <%= rsb_admin_icon("edit", size: 16) %>
+          <%= rsb_admin_t("shared.edit") %>
+        </span>
+      <% end %>
+    <% end %>
+    <a href="<%= rsb_admin.roles_path %>"
+       class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+      <%= rsb_admin_t("shared.back") %>
+    </a>
+  </div>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("columns.name") %></strong>
+    <div><%= @role.name %></div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Type</strong>
+    <div>
+      <% if @role.superadmin? %>
+        <%= rsb_admin_badge(rsb_admin_t("roles.superadmin"), variant: :success) %>
+      <% elsif @role.built_in? %>
+        <%= rsb_admin_badge(rsb_admin_t("roles.built_in"), variant: :warning) %>
+      <% else %>
+        <%= rsb_admin_badge(rsb_admin_t("roles.custom"), variant: :success) %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("roles.admin_users_count") %></strong>
+    <div><%= @role.admin_users.count %></div>
+  </div>
+</div>
+
+<div class="mt-6 bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <h3 class="text-base font-semibold mb-4"><%= rsb_admin_t("roles.permissions") %></h3>
+
+  <% if @role.superadmin? %>
+    <p class="text-sm"><%= rsb_admin_t("roles.full_access") %></p>
+  <% elsif @role.permissions.empty? %>
+    <p class="text-rsb-muted text-sm"><%= rsb_admin_t("roles.no_permissions") %></p>
+  <% else %>
+    <div class="border border-rsb-border rounded-rsb overflow-hidden">
+      <% @role.permissions.each_with_index do |(resource_key, actions), idx| %>
+        <% next if resource_key == "*" %>
+        <% reg = @registry.find_resource_by_route_key(resource_key) %>
+        <% resource_label = reg ? reg.label : resource_key.titleize %>
+        <div class="px-4 py-3 flex items-center gap-4 flex-wrap <%= 'border-t border-rsb-border' if idx > 0 %>">
+          <strong class="min-w-[150px] text-sm"><%= resource_label %></strong>
+          <div class="flex gap-2 flex-wrap">
+            <% actions.each do |action| %>
+              <%= rsb_admin_badge(action, variant: :success) %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<% unless @role.built_in? %>
+  <% if rsb_admin_can?("roles", "destroy") %>
+    <div class="mt-6 bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+      <h3 class="text-base font-semibold text-rsb-danger mb-4"><%= rsb_admin_t("shared.danger_zone") %></h3>
+      <% if @role.admin_users.any? %>
+        <p class="text-sm text-rsb-muted mb-4"><%= rsb_admin_t("roles.reassign_warning", count: @role.admin_users.count) %></p>
+      <% end %>
+      <%= button_to rsb_admin_t("shared.delete") + " " + rsb_admin_t("roles.title").singularize,
+            rsb_admin.role_path(@role),
+            method: :delete,
+            data: { turbo_confirm: rsb_admin_t("roles.confirm_delete") },
+            class: "px-4 py-2 bg-rsb-danger text-white rounded-rsb text-sm font-medium hover:bg-red-700" %>
+    </div>
+  <% else %>
+    <div class="mt-6 bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+      <h3 class="text-base font-semibold text-rsb-danger mb-4"><%= rsb_admin_t("shared.danger_zone") %></h3>
+      <span class="inline-flex px-4 py-2 bg-rsb-danger/50 text-white/50 rounded-rsb text-sm font-medium pointer-events-none cursor-not-allowed"
+            title="<%= rsb_admin_t("shared.no_access") %>">
+        <%= rsb_admin_t("shared.delete") %> <%= rsb_admin_t("roles.title").singularize %>
+      </span>
+    </div>
+  <% end %>
+<% end %>

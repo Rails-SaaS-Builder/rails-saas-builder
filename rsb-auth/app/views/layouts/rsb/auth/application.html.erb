@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%= rsb_seo_meta_tags %>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= rsb_seo_head_tags %>
+  <%= yield :rsb_head %>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <% if flash.any? %>
+    <div class="fixed top-0 left-0 right-0 z-50 px-4 py-4">
+      <% if flash[:notice] %>
+        <div id="flash-notice" class="max-w-md mx-auto bg-green-50 border-l-4 border-green-400 p-4 rounded-md shadow-lg">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <svg class="h-5 w-5 text-green-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <p class="text-sm text-green-700"><%= flash[:notice] %></p>
+            </div>
+            <button onclick="document.getElementById('flash-notice').remove()" class="text-green-400 hover:text-green-600">
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      <% end %>
+
+      <% if flash[:alert] %>
+        <div id="flash-alert" class="max-w-md mx-auto bg-red-50 border-l-4 border-red-400 p-4 rounded-md shadow-lg">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <svg class="h-5 w-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              <p class="text-sm text-red-700"><%= flash[:alert] %></p>
+            </div>
+            <button onclick="document.getElementById('flash-alert').remove()" class="text-red-400 hover:text-red-600">
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= yield %>
+
+<% if rsb_available_locales.size > 1 %>
+  <div class="rsb-locale-footer fixed bottom-0 left-0 right-0 py-3 text-center text-sm text-gray-500 bg-gray-50">
+    <% rsb_available_locales.each_with_index do |loc, i| %>
+      <% if i > 0 %><span class="mx-1">&middot;</span><% end %>
+      <% if loc == rsb_current_locale %>
+        <span class="rsb-locale-current font-medium text-gray-700"><%= rsb_locale_display_name(loc) %></span>
+      <% else %>
+        <form action="/rsb/locale" method="post" style="display:inline">
+          <input type="hidden" name="locale" value="<%= loc %>">
+          <input type="hidden" name="redirect_to" value="<%= request.fullpath %>">
+          <button type="submit" class="text-indigo-600 hover:text-indigo-500 hover:underline">
+            <%= rsb_locale_display_name(loc) %>
+          </button>
+        </form>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+  <%= rsb_seo_body_tags %>
+  <%= yield :rsb_body %>
+</body>
+</html>

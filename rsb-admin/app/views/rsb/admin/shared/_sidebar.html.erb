@@ -1,0 +1,99 @@
+<div class="px-4 pb-4 text-lg font-bold text-white border-b border-white/10 mb-2">
+  <% if rsb_admin_logo_url.present? %>
+    <img src="<%= rsb_admin_logo_url %>" alt="<%= rsb_admin_app_name %>" class="h-8">
+  <% else %>
+    <%= rsb_admin_app_name %>
+  <% end %>
+</div>
+<nav>
+  <% if rsb_admin_can?("dashboard", "index") %>
+    <a href="<%= rsb_admin.dashboard_path %>"
+       class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] <%= request.path == rsb_admin.dashboard_path ? 'border-rsb-sidebar-active text-white bg-white/[0.08]' : 'border-transparent text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+      <%= rsb_admin_icon("layout-dashboard", size: 16) %>
+      <%= rsb_admin_t("shared.dashboard") %>
+    </a>
+  <% else %>
+    <span class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] border-transparent text-white/30 cursor-not-allowed"
+          title="<%= rsb_admin_t("shared.no_access") %>">
+      <%= rsb_admin_icon("layout-dashboard", size: 16) %>
+      <%= rsb_admin_t("shared.dashboard") %>
+    </span>
+  <% end %>
+
+  <% RSB::Admin.registry.categories.each do |name, category| %>
+    <%
+      cat_has_permitted = category.resources.any? { |r| rsb_admin_can?(r.route_key, "index") } ||
+                          category.pages.any? { |p| rsb_admin_can?(p.key.to_s, "index") }
+    %>
+    <% if cat_has_permitted %>
+      <div class="px-4 pt-3 pb-1 text-[0.7rem] uppercase tracking-wider text-white/40 mt-2"><%= name %></div>
+    <% end %>
+    <% category.resources.each do |resource| %>
+      <% path = rsb_admin_resource_path(resource.route_key) %>
+      <% if rsb_admin_can?(resource.route_key, "index") %>
+        <a href="<%= path %>"
+           class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] <%= request.path.start_with?(path) ? 'border-rsb-sidebar-active text-white bg-white/[0.08]' : 'border-transparent text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+          <% if resource.icon %>
+            <%= rsb_admin_icon(resource.icon, size: 16) %>
+          <% end %>
+          <%= resource.label %>
+        </a>
+      <% elsif cat_has_permitted %>
+        <span class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] border-transparent text-white/30 cursor-not-allowed"
+              title="<%= rsb_admin_t("shared.no_access") %>">
+          <% if resource.icon %>
+            <%= rsb_admin_icon(resource.icon, size: 16) %>
+          <% end %>
+          <%= resource.label %>
+        </span>
+      <% end %>
+    <% end %>
+    <% category.pages.each do |page| %>
+      <% path = rsb_admin_page_path(page.key) %>
+      <% if rsb_admin_can?(page.key.to_s, "index") %>
+        <a href="<%= path %>"
+           class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] <%= request.path.start_with?(path) ? 'border-rsb-sidebar-active text-white bg-white/[0.08]' : 'border-transparent text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+          <% if page.icon %>
+            <%= rsb_admin_icon(page.icon, size: 16) %>
+          <% end %>
+          <%= page.label %>
+        </a>
+      <% elsif cat_has_permitted %>
+        <span class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] border-transparent text-white/30 cursor-not-allowed"
+              title="<%= rsb_admin_t("shared.no_access") %>">
+          <% if page.icon %>
+            <%= rsb_admin_icon(page.icon, size: 16) %>
+          <% end %>
+          <%= page.label %>
+        </span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%
+    system_items = {
+      "admin_users" => { path: rsb_admin.admin_users_path, icon: "users-cog", label: rsb_admin_t("admin_users.title") },
+      "roles" => { path: rsb_admin.roles_path, icon: "key", label: rsb_admin_t("roles.title") },
+      "settings" => { path: rsb_admin.settings_path, icon: "settings", label: rsb_admin_t("settings.title") }
+    }
+    system_has_permitted = system_items.any? { |key, _| rsb_admin_can?(key, "index") }
+  %>
+  <% if system_has_permitted %>
+    <div class="px-4 pt-3 pb-1 text-[0.7rem] uppercase tracking-wider text-white/40 mt-2"><%= rsb_admin_t("shared.system") %></div>
+  <% end %>
+  <% system_items.each do |key, item| %>
+    <% if rsb_admin_can?(key, "index") %>
+      <a href="<%= item[:path] %>"
+         class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] <%= request.path.start_with?(item[:path]) ? 'border-rsb-sidebar-active text-white bg-white/[0.08]' : 'border-transparent text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+        <%= rsb_admin_icon(item[:icon], size: 16) %>
+        <%= item[:label] %>
+      </a>
+    <% elsif system_has_permitted %>
+      <span class="flex items-center gap-2 px-4 py-2 text-sm border-l-[3px] border-transparent text-white/30 cursor-not-allowed"
+            title="<%= rsb_admin_t("shared.no_access") %>">
+        <%= rsb_admin_icon(item[:icon], size: 16) %>
+        <%= item[:label] %>
+      </span>
+    <% end %>
+  <% end %>
+</nav>

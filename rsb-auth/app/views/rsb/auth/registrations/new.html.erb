@@ -1,0 +1,55 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Create your account
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Already have an account?
+        <%= link_to "Sign in", new_session_path, class: "font-medium text-indigo-600 hover:text-indigo-500" %>
+      </p>
+    </div>
+
+    <% if @errors.present? %>
+      <div class="rounded-md bg-red-50 p-4">
+        <div class="flex">
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">There were errors with your submission:</h3>
+            <div class="mt-2 text-sm text-red-700">
+              <ul class="list-disc pl-5 space-y-1">
+                <% @errors.each do |error| %>
+                  <li><%= error %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @credential_types.empty? %>
+      <div class="rounded-md bg-yellow-50 p-4">
+        <p class="text-sm text-yellow-800">No registration methods are currently available. Please contact an administrator.</p>
+      </div>
+    <% elsif @selected_method %>
+      <% if @credential_types.size > 1 %>
+        <div>
+          <%= link_to new_registration_path, class: "inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500" do %>
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Other registration methods
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= render "rsb/auth/credentials/#{@selected_method.key}_signup",
+            errors: @errors,
+            identifier: @identifier %>
+    <% else %>
+      <%= render "rsb/auth/credentials/selector",
+            credential_types: @credential_types,
+            mode: "signup" %>
+    <% end %>
+  </div>
+</div>

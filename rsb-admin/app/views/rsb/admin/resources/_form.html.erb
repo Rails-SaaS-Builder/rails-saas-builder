@@ -1,0 +1,20 @@
+<% fields = action_name.in?(%w[new create]) ? @registration.new_form_fields : @registration.edit_form_fields %>
+<% form_url = action_name.in?(%w[new create]) ? rsb_admin_resource_path(@registration.route_key) : rsb_admin_resource_show_path(@registration.route_key, @record.id) %>
+<% form_method = action_name.in?(%w[new create]) ? :post : :patch %>
+<%= form_with(model: @record, url: form_url, method: form_method, local: true) do |f| %>
+  <% fields.each do |field| %>
+    <%= render rsb_admin_partial("shared/fields/#{field.type}"),
+      field: field, form: f, resource_key: @registration.route_key %>
+  <% end %>
+
+  <div class="flex gap-3 mt-6">
+    <button type="submit"
+            class="px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+      <%= rsb_admin_t("shared.save") %>
+    </button>
+    <a href="<%= rsb_admin_resource_path(@registration.route_key) %>"
+       class="px-4 py-2 border border-rsb-border text-rsb-text rounded-rsb text-sm hover:bg-rsb-bg">
+      <%= rsb_admin_t("shared.cancel") %>
+    </a>
+  </div>
+<% end %>

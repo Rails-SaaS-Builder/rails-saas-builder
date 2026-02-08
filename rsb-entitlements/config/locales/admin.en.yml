@@ -1,0 +1,25 @@
+en:
+  rsb:
+    admin:
+      resources:
+        plans:
+          label: "Plans"
+          columns:
+            price_cents: "Price"
+        entitlements:
+          label: "Entitlements"
+          columns:
+            entitleable_type: "Type"
+            entitleable_id: "Owner ID"
+        payment_requests:
+          label: "Payment Requests"
+          columns:
+            requestable_type: "Type"
+            requestable_id: "Owner ID"
+            provider_key: "Provider"
+            amount_cents: "Amount"
+            resolved_by: "Resolved By"
+            resolved_at: "Resolved At"
+            admin_note: "Admin Note"
+            expires_at: "Expires At"
+            provider_ref: "Provider Ref"

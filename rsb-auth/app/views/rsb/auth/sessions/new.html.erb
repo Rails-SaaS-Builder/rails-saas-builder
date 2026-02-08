@@ -1,0 +1,47 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Sign in to your account
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Don't have an account?
+        <%= link_to "Create one", new_registration_path, class: "font-medium text-indigo-600 hover:text-indigo-500" %>
+      </p>
+    </div>
+
+    <% if @error.present? && !@selected_method %>
+      <div class="rounded-md bg-red-50 p-4">
+        <p class="text-sm font-medium text-red-800"><%= @error %></p>
+      </div>
+    <% end %>
+
+    <% if @credential_types.empty? %>
+      <div class="rounded-md bg-yellow-50 p-4">
+        <p class="text-sm text-yellow-800">No sign-in methods are currently available. Please contact an administrator.</p>
+      </div>
+    <% elsif @selected_method %>
+      <%# "Other methods" back link — only shown when multiple types exist %>
+      <% if @credential_types.size > 1 %>
+        <div>
+          <%= link_to new_session_path, class: "inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500" do %>
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Other sign-in methods
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Render the selected credential type's login form partial %>
+      <%= render "rsb/auth/credentials/#{@selected_method.key}_login",
+            error: @error,
+            identifier: @identifier %>
+    <% else %>
+      <%# Show the credential selector %>
+      <%= render "rsb/auth/credentials/selector",
+            credential_types: @credential_types,
+            mode: "login" %>
+    <% end %>
+  </div>
+</div>

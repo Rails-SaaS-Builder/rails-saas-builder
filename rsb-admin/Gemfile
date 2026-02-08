@@ -1,0 +1,7 @@
+source "https://rubygems.org"
+
+gemspec
+
+gem "rsb-settings", path: "../rsb-settings"
+gem "sqlite3"
+gem "tailwindcss-rails", "~> 4.0", require: false

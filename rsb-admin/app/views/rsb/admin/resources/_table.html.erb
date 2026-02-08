@@ -1,0 +1,70 @@
+<div class="overflow-x-auto">
+  <table class="w-full">
+    <thead>
+      <tr>
+        <% columns.each do |col| %>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">
+            <% if col.sortable %>
+              <a href="<%= sort_link(col) %>" class="flex items-center gap-1 hover:text-rsb-text">
+                <%= rsb_admin_column_label(col, resource_key: registration.route_key) %>
+                <% if params[:sort] == col.key.to_s %>
+                  <%= rsb_admin_icon(params[:dir] == "desc" ? "arrow-down" : "arrow-up", size: 14) %>
+                <% end %>
+              </a>
+            <% else %>
+              <%= rsb_admin_column_label(col, resource_key: registration.route_key) %>
+            <% end %>
+          </th>
+        <% end %>
+        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <% records.each do |record| %>
+        <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+          <% columns.each do |col| %>
+            <td class="px-4 py-3 text-sm">
+              <% value = record.respond_to?(col.key) ? record.send(col.key) : nil %>
+              <% if col.link && registration.action?(:show) %>
+                <a href="<%= rsb_admin_resource_show_path(registration.route_key, record.id) %>" class="text-rsb-primary hover:underline">
+                  <%= rsb_admin_format_value(value, col.formatter, record) %>
+                </a>
+              <% else %>
+                <%= rsb_admin_format_value(value, col.formatter, record) %>
+              <% end %>
+            </td>
+          <% end %>
+          <td class="px-4 py-3 text-sm text-right">
+            <div class="flex items-center gap-2 justify-end">
+              <% if registration.action?(:show) %>
+                <% if rsb_admin_can?(registration.route_key, "show") %>
+                  <a href="<%= rsb_admin_resource_show_path(registration.route_key, record.id) %>"
+                     class="text-rsb-muted hover:text-rsb-text" title="<%= rsb_admin_t("shared.view") %>">
+                    <%= rsb_admin_icon("eye", size: 16) %>
+                  </a>
+                <% else %>
+                  <span class="text-rsb-muted/40 cursor-not-allowed" title="<%= rsb_admin_t("shared.no_access") %>">
+                    <%= rsb_admin_icon("eye", size: 16) %>
+                  </span>
+                <% end %>
+              <% end %>
+              <% if registration.action?(:edit) %>
+                <% if rsb_admin_can?(registration.route_key, "edit") %>
+                  <a href="<%= rsb_admin_resource_edit_path(registration.route_key, record.id) %>"
+                     class="text-rsb-muted hover:text-rsb-text" title="<%= rsb_admin_t("shared.edit") %>">
+                    <%= rsb_admin_icon("edit", size: 16) %>
+                  </a>
+                <% else %>
+                  <span class="text-rsb-muted/40 cursor-not-allowed" title="<%= rsb_admin_t("shared.no_access") %>">
+                    <%= rsb_admin_icon("edit", size: 16) %>
+                  </span>
+                <% end %>
+              <% end %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

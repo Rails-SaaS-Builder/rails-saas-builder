@@ -1,0 +1,36 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= rsb_admin_t("dashboard.title") %></h1>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <h2 class="text-base font-semibold mb-2"><%= rsb_admin_t("dashboard.guide_title") %></h2>
+  <p class="text-sm text-rsb-muted mb-4"><%= rsb_admin_t("dashboard.guide_description") %></p>
+
+  <div class="bg-rsb-bg border border-rsb-border rounded-rsb p-4 mb-4">
+    <p class="text-xs text-rsb-muted mb-2"><%= rsb_admin_t("dashboard.guide_step1") %></p>
+    <pre class="text-sm overflow-x-auto"><code># config/initializers/rsb_admin.rb
+
+RSB::Admin.registry.register_dashboard(
+  controller: "admin/dashboard",
+  actions: [
+    { key: :index, label: "Overview" },
+    { key: :metrics, label: "Metrics" }
+  ]
+)</code></pre>
+  </div>
+
+  <div class="bg-rsb-bg border border-rsb-border rounded-rsb p-4">
+    <p class="text-xs text-rsb-muted mb-2"><%= rsb_admin_t("dashboard.guide_step2") %></p>
+    <pre class="text-sm overflow-x-auto"><code># app/controllers/admin/dashboard_controller.rb
+
+class Admin::DashboardController < RSB::Admin::AdminController
+  def index
+    @stats = { users: User.count, revenue: Order.sum(:total) }
+  end
+
+  def metrics
+    @metrics = Metric.recent
+  end
+end</code></pre>
+  </div>
+</div>

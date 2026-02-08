@@ -1,0 +1,61 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= rsb_admin_t("settings.title") %></h1>
+</div>
+
+<%# === Tab Bar === %>
+<% if @categories.size > 1 %>
+  <div class="flex border-b border-rsb-border mb-6" role="tablist">
+    <% @categories.each do |cat| %>
+      <% active = cat == @active_tab %>
+      <a href="<%= rsb_admin.settings_path(tab: cat) %>"
+         role="tab"
+         aria-selected="<%= active %>"
+         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+                <%= if active
+                      'border-rsb-primary text-rsb-primary'
+                    else
+                      'border-transparent text-rsb-muted hover:text-rsb-text hover:border-rsb-border'
+                    end %>">
+        <%= cat.titleize %>
+      </a>
+    <% end %>
+  </div>
+<% end %>
+
+<%# === Settings Form for Active Tab === %>
+<% if @active_tab && @groups.any? %>
+  <%= form_with url: rsb_admin.settings_path, method: :patch, local: true do |f| %>
+    <%= hidden_field_tag "settings[category]", @active_tab %>
+    <%= hidden_field_tag "settings[tab]", @active_tab %>
+
+    <% @groups.each do |group_name, definitions| %>
+      <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+        <h2 class="text-base font-semibold text-rsb-text mb-4 pb-2 border-b border-rsb-border">
+          <%= group_name %>
+        </h2>
+
+        <div class="space-y-5">
+          <% definitions.each do |defn| %>
+            <%= render partial: rsb_admin_partial("settings/field"), locals: {
+              defn: defn,
+              category: @active_tab,
+              value: @current_values[defn.key],
+              state: @field_states[defn.key],
+              f: f
+            } %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex justify-end mt-4">
+      <%= f.submit rsb_admin_t("settings.save", default: "Save Settings"),
+        class: "px-5 py-2.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover cursor-pointer transition-colors" %>
+    </div>
+  <% end %>
+
+<% elsif @categories.empty? %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+    <p class="text-rsb-muted"><%= rsb_admin_t("dashboard.no_sections") %></p>
+  </div>
+<% end %>
