@@ -1,4 +1,5 @@
 require "test_helper"
+require "ostruct"
 require "action_view"
 require "action_view/test_case"
 
