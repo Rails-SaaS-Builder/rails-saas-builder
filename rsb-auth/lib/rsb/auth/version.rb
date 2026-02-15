@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require_relative '../../../../lib/rsb/version' unless defined?(RSB::VERSION)
+
 module RSB
   module Auth
-    VERSION = '0.1.0'
+    VERSION = RSB::VERSION
   end
 end
