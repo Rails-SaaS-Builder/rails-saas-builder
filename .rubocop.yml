@@ -4,3 +4,4 @@ AllCops:
   Exclude:
     - '**/db/schema.rb'
     - '**/tmp/**/*'
+    - 'vendor/**/*'
