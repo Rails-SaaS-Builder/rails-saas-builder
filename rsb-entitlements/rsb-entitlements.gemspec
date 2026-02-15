@@ -12,6 +12,12 @@ Gem::Specification.new do |spec|
   spec.description = 'Flexible plan-based feature gating, entitlements, and metered usage tracking. Drop-in Entitleable concern for any model. Extensible provider registry for payment integrations.'
   spec.license     = 'LGPL-3.0'
 
+  spec.metadata = {
+    'source_code_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder',
+    'bug_tracker_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder/issues',
+    'changelog_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder/blob/master/CHANGELOG.md'
+  }
+
   spec.required_ruby_version = '>= 3.2'
 
   spec.add_dependency 'rails', '>= 8.0'

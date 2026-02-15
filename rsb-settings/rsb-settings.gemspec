@@ -12,6 +12,12 @@ Gem::Specification.new do |spec|
   spec.description = 'Foundation gem for RSB. Provides a dynamic settings system with a schema registry that other gems register with. Settings resolve via DB → initializer → ENV → default.'
   spec.license     = 'LGPL-3.0'
 
+  spec.metadata = {
+    'source_code_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder',
+    'bug_tracker_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder/issues',
+    'changelog_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder/blob/master/CHANGELOG.md'
+  }
+
   spec.required_ruby_version = '>= 3.2'
 
   spec.add_dependency 'rails', '>= 8.0'

@@ -12,6 +12,12 @@ Gem::Specification.new do |spec|
   spec.description = 'Wrapper gem that includes all RSB sub-gems: settings, auth, entitlements, admin. Like how the rails gem wraps activerecord, actionpack, etc.'
   spec.license     = 'LGPL-3.0'
 
+  spec.metadata = {
+    'source_code_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder',
+    'bug_tracker_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder/issues',
+    'changelog_uri' => 'https://github.com/Rails-SaaS-Builder/rails-saas-builder/blob/master/CHANGELOG.md'
+  }
+
   spec.required_ruby_version = '>= 3.2'
 
   spec.files = Dir['lib/**/*', 'LICENSE', 'Rakefile', 'README.md']

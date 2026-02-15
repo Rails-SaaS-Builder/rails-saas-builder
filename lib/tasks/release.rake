@@ -2,19 +2,14 @@
 
 require 'English'
 PUBLISH_ORDER = [
-  { name: 'rsb-settings',        dir: 'rsb-settings',        gemspec: 'rsb-settings.gemspec',
-    version_file: 'rsb-settings/lib/rsb/settings/version.rb' },
-  { name: 'rsb-auth',            dir: 'rsb-auth',            gemspec: 'rsb-auth.gemspec',
-    version_file: 'rsb-auth/lib/rsb/auth/version.rb' },
-  { name: 'rsb-entitlements',    dir: 'rsb-entitlements',    gemspec: 'rsb-entitlements.gemspec',
-    version_file: 'rsb-entitlements/lib/rsb/entitlements/version.rb' },
-  { name: 'rsb-admin',           dir: 'rsb-admin',           gemspec: 'rsb-admin.gemspec',
-    version_file: 'rsb-admin/lib/rsb/admin/version.rb' },
-  { name: 'rails-saas-builder',  dir: '.',                   gemspec: 'rails-saas-builder.gemspec',
-    version_file: 'lib/rsb/version.rb' }
+  { name: 'rsb-settings',        dir: 'rsb-settings',        gemspec: 'rsb-settings.gemspec' },
+  { name: 'rsb-auth',            dir: 'rsb-auth',            gemspec: 'rsb-auth.gemspec' },
+  { name: 'rsb-entitlements',    dir: 'rsb-entitlements',    gemspec: 'rsb-entitlements.gemspec' },
+  { name: 'rsb-admin',           dir: 'rsb-admin',           gemspec: 'rsb-admin.gemspec' },
+  { name: 'rails-saas-builder',  dir: '.',                   gemspec: 'rails-saas-builder.gemspec' }
 ].freeze
 
-VERSION_FILES = PUBLISH_ORDER.map { |g| g[:version_file] }.freeze
+VERSION_FILE = 'lib/rsb/version.rb'
 
 PKG_DIR = File.expand_path('pkg', __dir__.then { File.expand_path('../..', _1) })
 
@@ -26,8 +21,8 @@ module ReleaseHelper
   end
 
   def current_version
-    content = File.read(File.join(root, 'lib/rsb/version.rb'))
-    content.match(/VERSION\s*=\s*"([^"]+)"/)[1]
+    content = File.read(File.join(root, VERSION_FILE))
+    content.match(/VERSION\s*=\s*['"]([^'"]+)['"]/)[1]
   end
 
   def next_version(current, bump)
@@ -40,12 +35,12 @@ module ReleaseHelper
     end
   end
 
-  def update_version_file(path, new_version)
-    full_path = File.join(root, path)
+  def update_version_file(new_version)
+    full_path = File.join(root, VERSION_FILE)
     content = File.read(full_path)
-    updated = content.gsub(/VERSION\s*=\s*"[^"]+"/, "VERSION = \"#{new_version}\"")
+    updated = content.gsub(/VERSION\s*=\s*['"][^'"]+['"]/, "VERSION = '#{new_version}'")
     File.write(full_path, updated)
-    puts "  Updated #{path} → #{new_version}"
+    puts "  Updated #{VERSION_FILE} → #{new_version}"
   end
 
   def ensure_clean_git!
@@ -125,14 +120,14 @@ task :release, [:bump] do |_t, args|
   ReleaseHelper.ensure_on_master!
   ReleaseHelper.ensure_tests_pass!
 
-  # Bump all version files
-  puts "\nBumping version files..."
-  VERSION_FILES.each { |path| ReleaseHelper.update_version_file(path, new_version) }
+  # Bump the single version file
+  puts "\nBumping version..."
+  ReleaseHelper.update_version_file(new_version)
 
   # Git commit and tag
   root = ReleaseHelper.root
   puts "\nCommitting version bump..."
-  system("git -C #{root} add #{VERSION_FILES.join(' ')}")
+  system("git -C #{root} add #{VERSION_FILE}")
   system("git -C #{root} commit -m 'Release v#{new_version}'")
   system("git -C #{root} tag -a v#{new_version} -m 'Release v#{new_version}'")
 
