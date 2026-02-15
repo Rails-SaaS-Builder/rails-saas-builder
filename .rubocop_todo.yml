@@ -7,6 +7,18 @@
 # versions of RuboCop, may require this file to be generated again.
 
 # Offense count: 1
+# parent_truthy? receives any type; value.zero? raises NoMethodError on booleans
+Style/NumericPredicate:
+  Exclude:
+    - 'rsb-admin/app/controllers/rsb/admin/settings_controller.rb'
+
+# Offense count: 1
+# Credential is a class (not a module), so nested style causes TypeError
+Style/ClassAndModuleChildren:
+  Exclude:
+    - 'rsb-auth/test/models/email_password_test.rb'
+
+# Offense count: 1
 Lint/FloatComparison:
   Exclude:
     - 'rsb-admin/app/controllers/rsb/admin/settings_controller.rb'

@@ -69,7 +69,7 @@ module RSB
 
       def account_params
         permitted = RSB::Auth.configuration.permitted_account_params
-        permitted = permitted.flat_map { |p| p == :metadata ? [metadata: {}] : [p] }
+        permitted = permitted.flat_map { |p| p == :metadata ? [{ metadata: {} }] : [p] }
         params.require(:identity).permit(*permitted)
       rescue ActionController::ParameterMissing
         {}
