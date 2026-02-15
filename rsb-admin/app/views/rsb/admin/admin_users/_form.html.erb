@@ -1,0 +1,52 @@
+<%= form_with model: admin_user, url: url, method: method, local: true, scope: :admin_user do |f| %>
+  <% if admin_user.errors.any? %>
+    <div class="bg-rsb-danger-bg text-rsb-danger-text border border-red-200 px-4 py-3 rounded-rsb mb-4 text-sm">
+      <strong><%= rsb_admin_t("errors.prohibited", count: admin_user.errors.count) %></strong>
+      <ul class="mt-2 pl-6 list-disc">
+        <% admin_user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("columns.email") %></label>
+    <%= f.email_field :email, autofocus: true, class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+  </div>
+
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("sessions.password") %></label>
+    <%= f.password_field :password, class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+    <% if admin_user.persisted? %>
+      <p class="text-xs text-rsb-muted mt-1"><%= rsb_admin_t("admin_users.leave_blank") %></p>
+    <% else %>
+      <p class="text-xs text-rsb-muted mt-1"><%= rsb_admin_t("admin_users.min_password") %></p>
+    <% end %>
+  </div>
+
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("admin_users.confirm_password") %></label>
+    <%= f.password_field :password_confirmation, class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+  </div>
+
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("admin_users.role") %></label>
+    <%= f.select :role_id,
+          RSB::Admin::Role.order(:name).map { |r| [r.name, r.id] },
+          { include_blank: rsb_admin_t("admin_users.no_role") },
+          class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+    <p class="text-xs text-rsb-muted mt-1"><%= rsb_admin_t("admin_users.no_role_hint") %></p>
+  </div>
+
+  <div class="flex gap-3 mt-6">
+    <button type="submit"
+            class="px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+      <%= rsb_admin_t("shared.save") %>
+    </button>
+    <a href="<%= rsb_admin.admin_users_path %>"
+       class="px-4 py-2 border border-rsb-border text-rsb-text rounded-rsb text-sm hover:bg-rsb-bg">
+      <%= rsb_admin_t("shared.cancel") %>
+    </a>
+  </div>
+<% end %>

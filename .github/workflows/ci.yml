@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - run: bundle exec rubocop
+
+  test-rsb-settings:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rsb-settings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: rsb-settings
+      - run: bundle exec rake test
+
+  test-rsb-auth:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rsb-auth
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: rsb-auth
+      - run: bundle exec rake test
+
+  test-rsb-entitlements:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rsb-entitlements
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: rsb-entitlements
+      - run: bundle exec rake test
+
+  test-rsb-entitlements-stripe:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rsb-entitlements-stripe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: rsb-entitlements-stripe
+      - run: bundle exec rake test
+
+  test-rsb-admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rsb-admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: rsb-admin
+      - run: bundle exec rake test
+
+  test-integration:
+    runs-on: ubuntu-latest
+    needs: [test-rsb-settings, test-rsb-auth, test-rsb-entitlements, test-rsb-entitlements-stripe, test-rsb-admin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - run: bundle exec rake test_integration

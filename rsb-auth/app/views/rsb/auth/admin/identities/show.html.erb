@@ -1,0 +1,180 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Identity #<%= @identity.id %></h1>
+  <div class="flex gap-2">
+    <a href="/admin/identities"
+       class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+  </div>
+</div>
+
+<%# Identity Details %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+  <h3 class="text-base font-semibold mb-4">Identity Information</h3>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4">
+    <strong class="text-sm text-rsb-muted">Status</strong>
+    <div>
+      <% if @identity.active? %>
+        <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-success-bg text-rsb-success-text text-xs font-medium">Active</span>
+      <% elsif @identity.suspended? %>
+        <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-warning-bg text-rsb-warning-text text-xs font-medium">Suspended</span>
+      <% elsif @identity.deleted? %>
+        <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-danger-bg text-rsb-danger-text text-xs font-medium">Deleted</span>
+      <% else %>
+        <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-danger-bg text-rsb-danger-text text-xs font-medium">Deactivated</span>
+      <% end %>
+    </div>
+
+    <strong class="text-sm text-rsb-muted">Primary Identifier</strong>
+    <div><%= @identity.primary_identifier || "-" %></div>
+
+    <strong class="text-sm text-rsb-muted">Created</strong>
+    <div><%= @identity.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+
+    <strong class="text-sm text-rsb-muted">Updated</strong>
+    <div><%= @identity.updated_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+
+    <% if @identity.deleted? && @identity.deleted_at.present? %>
+      <strong class="text-sm text-rsb-muted">Deleted At</strong>
+      <div><%= @identity.deleted_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+    <% end %>
+  </div>
+</div>
+
+<%# Action Buttons %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+  <h3 class="text-base font-semibold mb-4">Actions</h3>
+  <div class="flex gap-2">
+    <% unless @identity.suspended? %>
+      <%= button_to "Suspend",
+            "/admin/identities/#{@identity.id}/suspend",
+            method: :patch,
+            data: { turbo_confirm: "Are you sure you want to suspend this identity? The user will lose access." },
+            class: "px-3 py-1.5 bg-rsb-danger text-white rounded-rsb text-xs font-medium hover:opacity-90 transition-colors" %>
+    <% end %>
+
+    <% unless @identity.active? %>
+      <%= button_to "Activate",
+            "/admin/identities/#{@identity.id}/activate",
+            method: :patch,
+            data: { turbo_confirm: "Are you sure you want to activate this identity?" },
+            class: "px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-xs font-medium hover:bg-rsb-primary-hover transition-colors" %>
+    <% end %>
+
+    <% unless @identity.deactivated? %>
+      <%= button_to "Deactivate",
+            "/admin/identities/#{@identity.id}/deactivate",
+            method: :patch,
+            data: { turbo_confirm: "Are you sure you want to deactivate this identity? This action is typically permanent." },
+            class: "px-3 py-1.5 bg-rsb-danger text-white rounded-rsb text-xs font-medium hover:opacity-90 transition-colors" %>
+    <% end %>
+
+    <% if @identity.deleted? %>
+      <%= button_to "Restore Account",
+            "/admin/identities/#{@identity.id}/restore",
+            method: :patch,
+            data: { turbo_confirm: "Are you sure you want to restore this deleted identity? Credentials will remain revoked." },
+            class: "px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-xs font-medium hover:bg-rsb-primary-hover transition-colors" %>
+    <% end %>
+  </div>
+</div>
+
+<%# Credentials Table %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <div class="p-6 pb-0 flex justify-between items-center mb-4">
+    <h3 class="text-base font-semibold">Credentials</h3>
+    <% if @identity.active? && rsb_admin_can?("identities", "new_credential") %>
+      <a href="/admin/identities/<%= @identity.id %>/new_credential"
+         class="inline-flex items-center gap-1 px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-xs font-medium hover:bg-rsb-primary-hover transition-colors">
+        Add Credential
+      </a>
+    <% end %>
+  </div>
+
+  <% if @credentials.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Type</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Identifier</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Verified</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Locked</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Created</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @credentials.each do |credential| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm"><%= credential.type.demodulize.titleize %></td>
+              <td class="px-4 py-3 text-sm"><%= credential.identifier %></td>
+              <td class="px-4 py-3 text-sm">
+                <% if credential.revoked? %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-danger-bg text-rsb-danger-text text-xs font-medium"><%= I18n.t("rsb.auth.credentials.revoked") %></span>
+                <% else %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-success-bg text-rsb-success-text text-xs font-medium"><%= I18n.t("rsb.auth.credentials.active") %></span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm">
+                <% if credential.verified? %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-success-bg text-rsb-success-text text-xs font-medium">Verified</span>
+                  <span class="text-xs text-rsb-muted ml-1"><%= credential.verified_at.strftime("%b %d, %Y") %></span>
+                <% else %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-warning-bg text-rsb-warning-text text-xs font-medium">Unverified</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm">
+                <% if credential.locked? %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-danger-bg text-rsb-danger-text text-xs font-medium">Locked</span>
+                <% else %>
+                  <span class="text-sm text-rsb-muted">-</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= credential.created_at.strftime("%b %d, %Y") %></td>
+              <td class="px-4 py-3 text-sm">
+                <div class="flex gap-1 flex-wrap">
+                  <%# Verify button: shown for active + unverified credentials %>
+                  <% if !credential.revoked? && !credential.verified? && rsb_admin_can?("identities", "verify_credential") %>
+                    <%= button_to "Verify",
+                          "/admin/identities/#{@identity.id}/verify_credential?credential_id=#{credential.id}",
+                          method: :patch,
+                          data: { turbo_confirm: "Mark this credential as verified?" },
+                          class: "px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-xs font-medium hover:bg-rsb-primary-hover transition-colors" %>
+                  <% end %>
+
+                  <%# Resend Verification button: shown for active + unverified + email-type credentials %>
+                  <% if !credential.revoked? && !credential.verified? && credential.is_a?(RSB::Auth::Credential::EmailPassword) && rsb_admin_can?("identities", "resend_verification") %>
+                    <%= button_to "Resend",
+                          "/admin/identities/#{@identity.id}/resend_verification?credential_id=#{credential.id}",
+                          method: :post,
+                          class: "px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors" %>
+                  <% end %>
+
+                  <%# Revoke/Restore buttons (existing) %>
+                  <% if !credential.revoked? && rsb_admin_can?("identities", "revoke_credential") %>
+                    <%= button_to "Revoke",
+                          "/admin/identities/#{@identity.id}/revoke_credential?credential_id=#{credential.id}",
+                          method: :patch,
+                          data: { turbo_confirm: I18n.t("rsb.auth.credentials.revoke_confirm") },
+                          class: "px-3 py-1.5 bg-rsb-danger text-white rounded-rsb text-xs font-medium hover:opacity-90 transition-colors" %>
+                  <% elsif credential.revoked? && rsb_admin_can?("identities", "restore_credential") %>
+                    <%= button_to "Restore",
+                          "/admin/identities/#{@identity.id}/restore_credential?credential_id=#{credential.id}",
+                          method: :patch,
+                          data: { turbo_confirm: I18n.t("rsb.auth.credentials.restore_confirm") },
+                          class: "px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-xs font-medium hover:bg-rsb-primary-hover transition-colors" %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="px-6 pb-6">
+      <p class="text-rsb-muted text-sm">No credentials found for this identity.</p>
+    </div>
+  <% end %>
+</div>

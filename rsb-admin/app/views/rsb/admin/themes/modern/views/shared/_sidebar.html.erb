@@ -1,0 +1,135 @@
+<div class="px-4 pb-4 text-lg font-bold text-white border-b border-white/10 mb-2 flex items-center gap-2">
+  <% if rsb_admin_logo_url.present? %>
+    <img src="<%= rsb_admin_logo_url %>" alt="<%= rsb_admin_app_name %>" class="h-8">
+  <% else %>
+    <%= rsb_admin_icon("layout-dashboard", size: 20) %>
+    <%= rsb_admin_app_name %>
+  <% end %>
+</div>
+<nav>
+  <% if rsb_admin_can?("dashboard", "index") %>
+    <a href="<%= rsb_admin.dashboard_path %>"
+       class="flex items-center gap-2 px-4 py-2.5 text-sm transition-all duration-[var(--rsb-admin-transition)] <%= request.path == rsb_admin.dashboard_path ? 'text-white bg-white/[0.08]' : 'text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+      <%= rsb_admin_icon("home", size: 16) %>
+      <%= rsb_admin_t("shared.dashboard") %>
+    </a>
+  <% else %>
+    <span class="flex items-center gap-2 px-4 py-2.5 text-sm text-white/30 cursor-not-allowed"
+          title="<%= rsb_admin_t("shared.no_access") %>">
+      <%= rsb_admin_icon("home", size: 16) %>
+      <%= rsb_admin_t("shared.dashboard") %>
+    </span>
+  <% end %>
+
+  <% RSB::Admin.registry.categories.each_with_index do |(name, category), idx| %>
+    <%
+      cat_has_permitted = category.resources.any? { |r| rsb_admin_can?(r.route_key, "index") } ||
+                          category.pages.any? { |p| rsb_admin_can?(p.key.to_s, "index") }
+    %>
+    <% if cat_has_permitted %>
+      <% section_id = "rsb-cat-#{idx}" %>
+      <% cat_paths = category.resources.map { |r| rsb_admin_resource_path(r.route_key) } + category.pages.map { |p| rsb_admin_page_path(p.key) } %>
+      <% is_active = cat_paths.any? { |p| request.path.start_with?(p) } %>
+      <div class="mt-3">
+        <button type="button" onclick="rsbToggleSection('<%= section_id %>')"
+                class="w-full flex items-center justify-between px-4 py-2 text-[0.7rem] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors cursor-pointer">
+          <span class="flex items-center gap-1.5">
+            <span><%= name %></span>
+            <span class="text-[0.6rem] text-white/20"><%= category.resources.size + category.pages.size %></span>
+          </span>
+          <span id="<%= section_id %>-chevron" class="transition-transform duration-200 <%= is_active ? 'rotate-90' : '' %>">
+            <%= rsb_admin_icon("chevron-right", size: 14) %>
+          </span>
+        </button>
+        <div id="<%= section_id %>" class="<%= is_active ? '' : 'hidden' %>">
+          <% category.resources.each do |resource| %>
+            <% path = rsb_admin_resource_path(resource.route_key) %>
+            <% if rsb_admin_can?(resource.route_key, "index") %>
+              <a href="<%= path %>"
+                 class="flex items-center gap-2 pl-6 pr-4 py-2 text-sm transition-all duration-[var(--rsb-admin-transition)] group <%= request.path.start_with?(path) ? 'text-white bg-white/[0.08]' : 'text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+                <% if resource.icon %>
+                  <span class="opacity-60 group-hover:opacity-100 transition-opacity"><%= rsb_admin_icon(resource.icon, size: 16) %></span>
+                <% else %>
+                  <span class="opacity-40 group-hover:opacity-70 transition-opacity"><%= rsb_admin_icon("chevron-right", size: 12) %></span>
+                <% end %>
+                <span><%= resource.label %></span>
+              </a>
+            <% else %>
+              <span class="flex items-center gap-2 pl-6 pr-4 py-2 text-sm text-white/30 cursor-not-allowed"
+                    title="<%= rsb_admin_t("shared.no_access") %>">
+                <% if resource.icon %>
+                  <span class="opacity-30"><%= rsb_admin_icon(resource.icon, size: 16) %></span>
+                <% else %>
+                  <span class="opacity-20"><%= rsb_admin_icon("chevron-right", size: 12) %></span>
+                <% end %>
+                <span><%= resource.label %></span>
+              </span>
+            <% end %>
+          <% end %>
+          <% category.pages.each do |page| %>
+            <% path = rsb_admin_page_path(page.key) %>
+            <% if rsb_admin_can?(page.key.to_s, "index") %>
+              <a href="<%= path %>"
+                 class="flex items-center gap-2 pl-6 pr-4 py-2 text-sm transition-all duration-[var(--rsb-admin-transition)] group <%= request.path.start_with?(path) ? 'text-white bg-white/[0.08]' : 'text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+                <% if page.icon %>
+                  <span class="opacity-60 group-hover:opacity-100 transition-opacity"><%= rsb_admin_icon(page.icon, size: 16) %></span>
+                <% else %>
+                  <span class="opacity-40 group-hover:opacity-70 transition-opacity"><%= rsb_admin_icon("chevron-right", size: 12) %></span>
+                <% end %>
+                <span><%= page.label %></span>
+              </a>
+            <% else %>
+              <span class="flex items-center gap-2 pl-6 pr-4 py-2 text-sm text-white/30 cursor-not-allowed"
+                    title="<%= rsb_admin_t("shared.no_access") %>">
+                <% if page.icon %>
+                  <span class="opacity-30"><%= rsb_admin_icon(page.icon, size: 16) %></span>
+                <% else %>
+                  <span class="opacity-20"><%= rsb_admin_icon("chevron-right", size: 12) %></span>
+                <% end %>
+                <span><%= page.label %></span>
+              </span>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%
+    system_items = {
+      "admin_users" => { path: rsb_admin.admin_users_path, icon: "users-cog", label: rsb_admin_t("admin_users.title") },
+      "roles" => { path: rsb_admin.roles_path, icon: "key", label: rsb_admin_t("roles.title") },
+      "settings" => { path: rsb_admin.settings_path, icon: "settings", label: rsb_admin_t("settings.title") }
+    }
+    system_has_permitted = system_items.any? { |key, _| rsb_admin_can?(key, "index") }
+  %>
+  <% if system_has_permitted %>
+    <% system_active = system_items.any? { |key, item| rsb_admin_can?(key, "index") && request.path.start_with?(item[:path]) } %>
+    <div class="mt-3">
+      <button type="button" onclick="rsbToggleSection('rsb-system')"
+              class="w-full flex items-center justify-between px-4 py-2 text-[0.7rem] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors cursor-pointer">
+        <span><%= rsb_admin_t("shared.system") %></span>
+        <span id="rsb-system-chevron" class="transition-transform duration-200 <%= system_active ? 'rotate-90' : '' %>">
+          <%= rsb_admin_icon("chevron-right", size: 14) %>
+        </span>
+      </button>
+      <div id="rsb-system" class="<%= system_active ? '' : 'hidden' %>">
+        <% system_items.each do |key, item| %>
+          <% if rsb_admin_can?(key, "index") %>
+            <a href="<%= item[:path] %>"
+               class="flex items-center gap-2 pl-6 pr-4 py-2 text-sm transition-all duration-[var(--rsb-admin-transition)] group <%= request.path.start_with?(item[:path]) ? 'text-white bg-white/[0.08]' : 'text-rsb-sidebar-text hover:bg-rsb-sidebar-hover hover:text-white' %>">
+              <span class="opacity-60 group-hover:opacity-100 transition-opacity"><%= rsb_admin_icon(item[:icon], size: 16) %></span>
+              <span><%= item[:label] %></span>
+            </a>
+          <% else %>
+            <span class="flex items-center gap-2 pl-6 pr-4 py-2 text-sm text-white/30 cursor-not-allowed"
+                  title="<%= rsb_admin_t("shared.no_access") %>">
+              <span class="opacity-30"><%= rsb_admin_icon(item[:icon], size: 16) %></span>
+              <span><%= item[:label] %></span>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</nav>

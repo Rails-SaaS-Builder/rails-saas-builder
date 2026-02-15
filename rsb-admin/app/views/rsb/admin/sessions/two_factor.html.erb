@@ -1,0 +1,39 @@
+<div class="flex justify-center items-center min-h-screen bg-rsb-bg">
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-8 w-full max-w-[400px] shadow-rsb">
+    <% if RSB::Admin.configuration.logo_url.present? %>
+      <div class="flex justify-center mb-6">
+        <img src="<%= RSB::Admin.configuration.logo_url %>" alt="Logo" class="h-12" />
+      </div>
+    <% end %>
+
+    <h1 class="text-2xl font-bold text-center mb-6">Two-Factor Authentication</h1>
+    <p class="text-center mb-6 text-rsb-muted text-sm">Enter the 6-digit code from your authenticator app, or use a backup code.</p>
+
+    <% if flash[:alert] %>
+      <div class="mb-4 p-3 rounded-rsb bg-rsb-danger-bg border border-rsb-danger text-rsb-danger-text text-sm">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <%= form_tag(verify_two_factor_login_path, method: :post) do %>
+      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+      <div class="mb-4">
+        <label for="otp_code" class="block text-sm font-medium mb-1">Verification Code</label>
+        <input type="text" id="otp_code" name="otp_code"
+               class="w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10"
+               placeholder="6-digit code or backup code"
+               autocomplete="one-time-code" inputmode="numeric" autofocus required />
+      </div>
+
+      <button type="submit"
+              class="w-full px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+        Verify
+      </button>
+    <% end %>
+
+    <div class="mt-4 text-center">
+      <a href="<%= login_path %>" class="text-sm text-rsb-muted hover:underline">Cancel and sign in again</a>
+    </div>
+  </div>
+</div>

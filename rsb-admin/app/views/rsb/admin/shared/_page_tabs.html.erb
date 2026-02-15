@@ -1,0 +1,21 @@
+<% if page.actions.any? %>
+  <div class="flex gap-1 border-b border-rsb-border mb-6">
+    <% page.actions.each do |action| %>
+      <% action_path = rsb_admin_page_action_path(page.key, action[:key]) %>
+      <% is_active = request.path == action_path || (action[:key] == :index && request.path == rsb_admin_page_path(page.key)) %>
+      <% if action[:method] == :get %>
+        <a href="<%= action[:key] == :index ? rsb_admin_page_path(page.key) : action_path %>"
+           class="px-4 py-2 text-sm font-medium border-b-2 -mb-px <%= is_active ? 'border-rsb-primary text-rsb-primary' : 'border-transparent text-rsb-muted hover:text-rsb-text hover:border-rsb-border' %>">
+          <%= action[:label] %>
+        </a>
+      <% else %>
+        <%# POST/DELETE/PATCH actions render as button_to (rule #8) %>
+        <%= button_to action_path, method: action[:method],
+          data: action[:confirm] ? { turbo_confirm: action[:confirm] } : {},
+          class: "px-4 py-2 text-sm font-medium border-b-2 -mb-px border-transparent text-rsb-muted hover:text-rsb-text" do %>
+          <%= action[:label] %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

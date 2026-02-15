@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Safelist rsb theme color utilities so other gems' custom admin views can use them */
+@source inline("bg-rsb-success text-rsb-success border-rsb-success bg-rsb-success-bg text-rsb-success-text border-rsb-success-bg bg-rsb-danger text-rsb-danger border-rsb-danger bg-rsb-danger-bg text-rsb-danger-text border-rsb-danger-bg bg-rsb-warning text-rsb-warning border-rsb-warning bg-rsb-warning-bg text-rsb-warning-text border-rsb-warning-bg bg-rsb-info text-rsb-info border-rsb-info bg-rsb-info-bg text-rsb-info-text border-rsb-info-bg");
+
+@theme {
+  --color-rsb-bg: var(--rsb-admin-bg);
+  --color-rsb-bg-secondary: var(--rsb-admin-bg-secondary);
+  --color-rsb-card: var(--rsb-admin-card-bg);
+  --color-rsb-text: var(--rsb-admin-text);
+  --color-rsb-muted: var(--rsb-admin-text-muted);
+  --color-rsb-border: var(--rsb-admin-border);
+  --color-rsb-primary: var(--rsb-admin-primary);
+  --color-rsb-primary-hover: var(--rsb-admin-primary-hover);
+  --color-rsb-primary-text: var(--rsb-admin-primary-text);
+  --color-rsb-danger: var(--rsb-admin-danger);
+  --color-rsb-danger-bg: var(--rsb-admin-danger-bg);
+  --color-rsb-danger-text: var(--rsb-admin-danger-text);
+  --color-rsb-success: var(--rsb-admin-success);
+  --color-rsb-success-bg: var(--rsb-admin-success-bg);
+  --color-rsb-success-text: var(--rsb-admin-success-text);
+  --color-rsb-warning: var(--rsb-admin-warning);
+  --color-rsb-warning-bg: var(--rsb-admin-warning-bg);
+  --color-rsb-warning-text: var(--rsb-admin-warning-text);
+  --color-rsb-info: var(--rsb-admin-info);
+  --color-rsb-info-bg: var(--rsb-admin-info-bg);
+  --color-rsb-info-text: var(--rsb-admin-info-text);
+  --color-rsb-sidebar: var(--rsb-admin-sidebar-bg);
+  --color-rsb-sidebar-text: var(--rsb-admin-sidebar-text);
+  --color-rsb-sidebar-active: var(--rsb-admin-sidebar-active);
+  --color-rsb-sidebar-hover: var(--rsb-admin-sidebar-hover-bg);
+  --radius-rsb-sm: var(--rsb-admin-radius-sm);
+  --radius-rsb: var(--rsb-admin-radius);
+  --radius-rsb-lg: var(--rsb-admin-radius-lg);
+  --shadow-rsb-sm: var(--rsb-admin-shadow-sm);
+  --shadow-rsb: var(--rsb-admin-shadow);
+}
+
+/* Default theme CSS variables */
+:root {
+  --rsb-admin-bg: #f9fafb;
+  --rsb-admin-bg-secondary: #f3f4f6;
+  --rsb-admin-card-bg: #ffffff;
+  --rsb-admin-text: #111827;
+  --rsb-admin-text-muted: #6b7280;
+  --rsb-admin-border: #e5e7eb;
+  --rsb-admin-primary: #4f46e5;
+  --rsb-admin-primary-hover: #4338ca;
+  --rsb-admin-primary-text: #ffffff;
+  --rsb-admin-success: #16a34a;
+  --rsb-admin-success-bg: #ecfdf5;
+  --rsb-admin-success-text: #065f46;
+  --rsb-admin-warning: #d97706;
+  --rsb-admin-warning-bg: #fffbeb;
+  --rsb-admin-warning-text: #92400e;
+  --rsb-admin-danger: #dc2626;
+  --rsb-admin-danger-bg: #fef2f2;
+  --rsb-admin-danger-text: #991b1b;
+  --rsb-admin-info: #2563eb;
+  --rsb-admin-info-bg: #eff6ff;
+  --rsb-admin-info-text: #1e40af;
+  --rsb-admin-sidebar-bg: #1f2937;
+  --rsb-admin-sidebar-text: #d1d5db;
+  --rsb-admin-sidebar-active: #4f46e5;
+  --rsb-admin-sidebar-hover-bg: rgba(255,255,255,0.05);
+  --rsb-admin-radius-sm: 0.25rem;
+  --rsb-admin-radius: 0.375rem;
+  --rsb-admin-radius-lg: 0.5rem;
+  --rsb-admin-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --rsb-admin-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --rsb-admin-transition: 0.15s;
+}

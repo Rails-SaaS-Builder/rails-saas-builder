@@ -1,0 +1,55 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= @registration.label.singularize %> #<%= @record.id %></h1>
+  <div class="flex gap-2">
+    <% if @registration.action?(:edit) %>
+      <% if rsb_admin_can?(@registration.route_key, "edit") %>
+        <a href="<%= rsb_admin_resource_edit_path(@registration.route_key, @record.id) %>"
+           class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+          <%= rsb_admin_icon("edit", size: 16) %>
+          <%= rsb_admin_t("shared.edit") %>
+        </a>
+      <% else %>
+        <span class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border/50 rounded-rsb text-sm text-rsb-muted pointer-events-none cursor-not-allowed"
+              title="<%= rsb_admin_t("shared.no_access") %>">
+          <%= rsb_admin_icon("edit", size: 16) %>
+          <%= rsb_admin_t("shared.edit") %>
+        </span>
+      <% end %>
+    <% end %>
+    <a href="<%= rsb_admin_resource_path(@registration.route_key) %>"
+       class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+      <%= rsb_admin_t("shared.back") %>
+    </a>
+  </div>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <% @registration.show_columns.each do |col| %>
+    <% value = @record.respond_to?(col.key) ? @record.send(col.key) : nil %>
+    <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border last:border-b-0">
+      <strong class="text-sm text-rsb-muted"><%= rsb_admin_column_label(col, resource_key: @registration.route_key) %></strong>
+      <div><%= rsb_admin_format_value(value, col.formatter, @record) %></div>
+    </div>
+  <% end %>
+</div>
+
+<% if @registration.action?(:destroy) %>
+  <% if rsb_admin_can?(@registration.route_key, "destroy") %>
+    <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mt-4">
+      <h3 class="text-base font-semibold text-rsb-danger mb-4"><%= rsb_admin_t("shared.danger_zone") %></h3>
+      <%= button_to rsb_admin_t("shared.delete") + " " + @registration.label.singularize,
+            rsb_admin_resource_show_path(@registration.route_key, @record.id),
+            method: :delete,
+            data: { turbo_confirm: rsb_admin_t("shared.confirm_delete", resource: @registration.label.singularize.downcase) },
+            class: "px-4 py-2 bg-rsb-danger text-white rounded-rsb text-sm font-medium hover:bg-red-700" %>
+    </div>
+  <% else %>
+    <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mt-4">
+      <h3 class="text-base font-semibold text-rsb-danger mb-4"><%= rsb_admin_t("shared.danger_zone") %></h3>
+      <span class="inline-flex px-4 py-2 bg-rsb-danger/50 text-white/50 rounded-rsb text-sm font-medium pointer-events-none cursor-not-allowed"
+            title="<%= rsb_admin_t("shared.no_access") %>">
+        <%= rsb_admin_t("shared.delete") %> <%= @registration.label.singularize %>
+      </span>
+    </div>
+  <% end %>
+<% end %>

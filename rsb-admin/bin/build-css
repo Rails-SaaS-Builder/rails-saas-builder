@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GEM_DIR="$(dirname "$SCRIPT_DIR")"
+
+cd "$GEM_DIR"
+
+echo "Building default theme CSS..."
+bundle exec tailwindcss -i tailwind.input.css -o app/assets/stylesheets/rsb/admin/themes/default.css --minify
+
+echo "Building modern theme CSS..."
+bundle exec tailwindcss -i tailwind.modern.input.css -o app/assets/stylesheets/rsb/admin/themes/modern.css --minify
+
+echo "Done!"

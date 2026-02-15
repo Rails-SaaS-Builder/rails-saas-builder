@@ -1,0 +1,77 @@
+<div class="flex items-center gap-3">
+  <div class="text-sm text-rsb-muted">
+    <a href="<%= rsb_admin.profile_path %>" class="font-medium text-rsb-text hover:underline transition-colors"><%= current_admin_user.email %></a>
+    <% if current_admin_user.role %>
+      <span class="ml-1 text-xs">(<%= current_admin_user.role.name %>)</span>
+    <% end %>
+  </div>
+</div>
+<div class="flex items-center gap-3">
+  <% if rsb_available_locales.size > 1 %>
+    <div class="relative" id="rsb-locale-switcher">
+      <button type="button"
+              onclick="var m=document.getElementById('rsb-locale-menu');m.classList.toggle('hidden');event.stopPropagation()"
+              class="flex items-center gap-1 px-2 py-1 text-sm text-rsb-muted hover:text-rsb-text rounded-rsb hover:bg-rsb-bg transition-colors"
+              title="<%= rsb_admin_t('shared.switch_language') %>">
+        <%= rsb_admin_icon("globe", size: 16) %>
+        <span><%= rsb_current_locale.upcase %></span>
+      </button>
+      <div id="rsb-locale-menu" class="hidden absolute right-0 mt-1 w-44 bg-rsb-card border border-rsb-border rounded-rsb shadow-rsb-sm z-50">
+        <% rsb_available_locales.each do |loc| %>
+          <form action="/rsb/locale" method="post">
+            <input type="hidden" name="locale" value="<%= loc %>">
+            <input type="hidden" name="redirect_to" value="<%= request.fullpath %>">
+            <button type="submit"
+                    class="w-full text-left px-3 py-2 text-sm transition-colors
+                           <%= loc == rsb_current_locale ? 'font-medium text-rsb-primary bg-rsb-bg' : 'text-rsb-text hover:bg-rsb-bg' %>">
+              <%= rsb_locale_display_name(loc) %>
+              <% if loc == rsb_current_locale %>
+                <span class="float-right text-rsb-primary">&#10003;</span>
+              <% end %>
+            </button>
+          </form>
+        <% end %>
+      </div>
+    </div>
+    <script>
+      // Close locale dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        var menu = document.getElementById('rsb-locale-menu');
+        var switcher = document.getElementById('rsb-locale-switcher');
+        if (menu && switcher && !switcher.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
+    </script>
+  <% end %>
+
+  <%# Dark/light mode toggle (rule #17) %>
+  <button onclick="rsbToggleMode()" type="button"
+          class="p-2 rounded-rsb text-rsb-muted hover:text-rsb-text hover:bg-rsb-bg transition-colors"
+          title="Toggle dark/light mode">
+    <span class="rsb-light-icon"><%= rsb_admin_icon("moon", size: 18) %></span>
+    <span class="rsb-dark-icon" style="display:none"><%= rsb_admin_icon("sun", size: 18) %></span>
+  </button>
+
+  <%= button_to rsb_admin.logout_path, method: :delete,
+    class: "flex items-center gap-1 text-sm text-rsb-muted hover:text-rsb-text transition-colors" do %>
+    <%= rsb_admin_icon("log-out", size: 16) %>
+    <%= rsb_admin_t("shared.sign_out") %>
+  <% end %>
+</div>
+
+<script>
+  // Toggle icon visibility based on current mode
+  (function() {
+    function updateIcons() {
+      var mode = document.documentElement.getAttribute('data-rsb-mode') || 'light';
+      var lightIcons = document.querySelectorAll('.rsb-light-icon');
+      var darkIcons = document.querySelectorAll('.rsb-dark-icon');
+      lightIcons.forEach(function(el) { el.style.display = mode === 'dark' ? 'none' : 'inline'; });
+      darkIcons.forEach(function(el) { el.style.display = mode === 'dark' ? 'inline' : 'none'; });
+    }
+    updateIcons();
+    var observer = new MutationObserver(updateIcons);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-rsb-mode'] });
+  })();
+</script>

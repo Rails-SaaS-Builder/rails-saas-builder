@@ -1,0 +1,155 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= rsb_admin_t("profile.title") %></h1>
+  <a href="<%= rsb_admin.edit_profile_path %>"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg">
+    <%= rsb_admin_icon("edit", size: 16) %>
+    <%= rsb_admin_t("profile.edit_button") %>
+  </a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("profile.current_email") %></strong>
+    <div><%= @admin_user.email %></div>
+  </div>
+
+  <% if @admin_user.email_verification_pending? %>
+    <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+      <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("profile.pending_email") %></strong>
+      <div class="flex items-center gap-3">
+        <span class="text-rsb-warning"><%= @admin_user.pending_email %></span>
+        <span class="text-xs text-rsb-muted">
+          <%= rsb_admin_t("profile.verification_sent_ago", time: time_ago_in_words(@admin_user.email_verification_sent_at)) %>
+        </span>
+        <%= button_to rsb_admin_t("profile.resend_verification"), rsb_admin.resend_verification_profile_path,
+            method: :post,
+            class: "text-xs text-rsb-primary hover:underline" %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("profile.current_role") %></strong>
+    <div>
+      <% if @admin_user.role %>
+        <%= @admin_user.role.name %>
+        <% if @admin_user.role.superadmin? %>
+          <%= rsb_admin_badge(rsb_admin_t("roles.superadmin"), variant: :success) %>
+        <% end %>
+      <% else %>
+        <span class="text-rsb-muted"><%= rsb_admin_t("admin_users.no_role") %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("profile.last_sign_in") %></strong>
+    <div>
+      <% if @admin_user.last_sign_in_at %>
+        <%= @admin_user.last_sign_in_at.strftime("%B %d, %Y at %I:%M %p") %>
+      <% else %>
+        <span class="text-rsb-muted"><%= rsb_admin_t("admin_users.never_signed_in") %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-[200px_1fr] gap-4 py-3">
+    <strong class="text-sm text-rsb-muted"><%= rsb_admin_t("profile.last_ip") %></strong>
+    <div><%= @admin_user.last_sign_in_ip || "-" %></div>
+  </div>
+</div>
+
+<%# ── Two-Factor Authentication ─────────────────────────────── %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mt-6">
+  <h3 class="text-lg font-semibold mb-4">Two-Factor Authentication</h3>
+
+  <% if @admin_user.otp_enabled? %>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <%= rsb_admin_icon("shield-check", css_class: "text-rsb-success") %>
+        <span class="font-medium">Enabled</span>
+        <span class="text-xs text-rsb-muted">(TOTP)</span>
+      </div>
+      <div>
+        <%= form_tag(rsb_admin.profile_two_factor_path, method: :delete, class: "inline") do %>
+          <div class="flex items-center gap-2">
+            <input type="password" name="current_password" placeholder="Current password"
+                   class="px-2 py-1 text-sm border border-rsb-border rounded-rsb bg-rsb-bg" required />
+            <button type="submit"
+                    class="px-3 py-1 text-sm border border-rsb-danger text-rsb-danger rounded-rsb hover:bg-rsb-danger-bg transition-colors"
+                    onclick="return confirm('Are you sure you want to disable two-factor authentication?')">
+              Disable 2FA
+            </button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <%= rsb_admin_icon("shield-off", css_class: "text-rsb-muted") %>
+        <span class="text-rsb-muted">Not set up</span>
+      </div>
+      <a href="<%= rsb_admin.new_profile_two_factor_path %>"
+         class="px-3 py-1 text-sm bg-rsb-primary text-rsb-primary-text rounded-rsb hover:bg-rsb-primary-hover">
+        Enable 2FA
+      </a>
+    </div>
+  <% end %>
+</div>
+
+<%# ── Active Sessions ─────────────────────────────── %>
+<div class="mt-6">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-lg font-semibold"><%= rsb_admin_t("profile.sessions_title") %></h2>
+    <% if @admin_user.admin_sessions.count > 1 %>
+      <%= button_to rsb_admin_t("profile.revoke_all_sessions"),
+          rsb_admin.profile_sessions_path,
+          method: :delete,
+          data: { turbo_confirm: rsb_admin_t("profile.confirm_revoke_all") },
+          class: "text-sm text-rsb-danger hover:underline" %>
+    <% end %>
+  </div>
+
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm divide-y divide-rsb-border">
+    <% @admin_user.admin_sessions.order(last_active_at: :desc).each do |admin_session| %>
+      <% is_current = admin_session.current?(session[:rsb_admin_session_token]) %>
+      <div class="flex items-center justify-between px-6 py-4">
+        <div class="flex items-center gap-4">
+          <div class="text-rsb-muted">
+            <% icon_name = case admin_session.device_type
+                           when "mobile" then "smartphone"
+                           when "tablet" then "tablet"
+                           else "monitor"
+                           end %>
+            <%= rsb_admin_icon(icon_name, size: 20) %>
+          </div>
+          <div>
+            <div class="text-sm font-medium">
+              <%= admin_session.browser %> <%= rsb_admin_t("profile.on") %> <%= admin_session.os %>
+              <% if is_current %>
+                <%= rsb_admin_badge(rsb_admin_t("profile.current_session"), variant: :success) %>
+              <% end %>
+            </div>
+            <div class="text-xs text-rsb-muted mt-0.5">
+              <%= admin_session.ip_address %> &middot;
+              <% if is_current %>
+                <%= rsb_admin_t("profile.active_now") %>
+              <% else %>
+                <%= rsb_admin_t("profile.last_active", time: time_ago_in_words(admin_session.last_active_at)) %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div>
+          <% unless is_current %>
+            <%= button_to rsb_admin_t("profile.revoke_session"),
+                rsb_admin.profile_session_path(admin_session),
+                method: :delete,
+                class: "text-sm text-rsb-danger hover:underline" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

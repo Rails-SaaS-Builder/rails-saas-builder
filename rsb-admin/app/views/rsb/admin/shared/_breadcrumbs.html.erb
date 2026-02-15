@@ -1,0 +1,12 @@
+<nav class="flex items-center gap-1 text-sm text-rsb-muted mb-4">
+  <% breadcrumbs.each_with_index do |item, i| %>
+    <% if i > 0 %>
+      <span class="mx-1"><%= rsb_admin_icon("chevron-right", size: 14) %></span>
+    <% end %>
+    <% if item.path && i < breadcrumbs.size - 1 %>
+      <a href="<%= item.path %>" class="hover:text-rsb-text transition-colors duration-[var(--rsb-admin-transition)]"><%= item.label %></a>
+    <% else %>
+      <span class="text-rsb-text font-medium"><%= item.label %></span>
+    <% end %>
+  <% end %>
+</nav>

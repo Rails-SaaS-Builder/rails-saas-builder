@@ -1,0 +1,26 @@
+en:
+  rsb:
+    auth:
+      admin:
+        identities:
+          created: "Identity created."
+          credential_added: "Credential added."
+          credential_verified: "Credential verified."
+          verification_sent: "Verification email sent to %{identifier}."
+          already_verified: "Credential is already verified."
+          identity_not_active: "Cannot add credentials to a non-active identity."
+          invalid_credential_type: "Invalid credential type."
+          resend_rate_limited: "Please wait before resending."
+          no_available_types: "No credential types available to add."
+    admin:
+      resources:
+        identities:
+          label: "Identities"
+          columns:
+            primary_identifier: "Email / Username"
+            credentials_count: "Credentials"
+          filters:
+            credential: "Email / Username / Phone"
+            credential_type: "Credential Type"
+        invitations:
+          label: "Invitations"

@@ -1,0 +1,25 @@
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'fileutils'
+require 'rake/testtask'
+
+task :prepare_test_db do
+  ENV['RAILS_ENV'] = 'test'
+  db = File.expand_path('test/dummy/db/test.sqlite3', __dir__)
+  FileUtils.rm_f(db)
+  require_relative 'test/dummy/config/environment'
+  ActiveRecord::Migration.verbose = false
+  ActiveRecord::MigrationContext.new(Rails.application.paths['db/migrate'].to_a).migrate
+  schema = File.expand_path('test/dummy/db/schema.rb', __dir__)
+  File.open(schema, 'w') { |f| ActiveRecord::SchemaDumper.dump(ActiveRecord::Base.connection_pool, f) }
+end
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'test'
+  t.pattern = 'test/**/*_test.rb'
+  t.verbose = false
+end
+
+task test: :prepare_test_db
+task default: :test

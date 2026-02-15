@@ -1,0 +1,65 @@
+en:
+  rsb:
+    auth:
+      account:
+        title: "My Account"
+        subtitle: "Manage your account settings, login methods, and sessions."
+        save: "Save Changes"
+        updated: "Account updated."
+        disabled: "Account management is disabled."
+        complete_profile: "Please complete your profile."
+
+        # Login Methods section (account hub page)
+        login_methods_title: "Login Methods"
+        verified: "Verified"
+        unverified: "Unverified"
+
+        # Sessions section (account hub page)
+        sessions_title: "Active Sessions"
+        current_session: "Current session"
+        revoke_session: "Revoke"
+        session_revoked: "Session revoked."
+        all_sessions_revoked: "All other sessions revoked."
+        revoke_all_sessions: "Revoke all other sessions"
+
+        # Login Method detail page
+        login_method_title: "Login Method"
+        verification_status: "Verification Status"
+        resend_verification: "Resend Verification"
+        change_password_title: "Change Password"
+        current_password: "Current Password"
+        new_password: "New Password"
+        confirm_new_password: "Confirm New Password"
+        password_changed: "Password changed."
+        no_credential: "No credential found."
+        cannot_remove_last: "Cannot remove your only login method."
+        login_method_removed: "Login method removed."
+        remove_login_method: "Remove Login Method"
+        remove_login_method_warning: "Removing this login method is permanent. You will no longer be able to sign in with it."
+        remove_confirm: "Are you sure? This login method will be disabled."
+        already_verified: "This login method is already verified."
+        verification_sent: "Verification email sent."
+        back_to_account: "Back to Account"
+
+        # Account deletion section (account hub page)
+        danger_zone: "Danger Zone"
+        delete_title: "Delete Account"
+        delete_warning: "Deleting your account will permanently disable all login methods and end all sessions. This action cannot be undone by you."
+        delete_account: "Delete Account"
+        delete_button: "Delete Account"
+        delete_confirm: "This will permanently disable your account. You will not be able to recover it yourself. Are you sure?"
+
+        # Confirm destroy page
+        confirm_destroy_title: "Confirm Account Deletion"
+        confirm_destroy_subtitle: "Enter your password to confirm."
+        confirm_delete_title: "Delete Your Account"
+        confirm_delete_subtitle: "This action is permanent and cannot be undone."
+        confirm_delete_warning: "Your account, credentials, and all sessions will be permanently deleted."
+        confirm_delete_button: "Permanently Delete Account"
+        enter_password: "Enter your password to confirm"
+        cancel: "Cancel"
+
+        # Post-deletion
+        deleted: "Your account has been deleted."
+        deletion_disabled: "Account deletion is not available."
+        no_credential_for_delete: "No active login method found. Contact support to delete your account."

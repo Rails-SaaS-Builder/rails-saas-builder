@@ -1,0 +1,98 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Payment Requests</h1>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-4 mb-4">
+  <form method="get" action="/admin/payment_requests" class="flex flex-wrap items-end gap-4">
+    <div>
+      <label class="block text-xs font-medium text-rsb-muted mb-1">Status</label>
+      <%= select_tag :status,
+        options_for_select(
+          [["All", ""]] + RSB::Entitlements::PaymentRequest::STATUSES.map { |s| [s.titleize, s] },
+          params[:status]
+        ),
+        class: "px-3 py-1.5 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-rsb-muted mb-1">Provider</label>
+      <%= select_tag :provider_key,
+        options_for_select(
+          [["All", ""]] + RSB::Entitlements.providers.all.map { |d| [d.label, d.key.to_s] },
+          params[:provider_key]
+        ),
+        class: "px-3 py-1.5 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+    </div>
+    <div class="flex gap-2">
+      <button type="submit"
+              class="px-4 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+        Filter
+      </button>
+      <a href="/admin/payment_requests"
+         class="px-4 py-1.5 border border-rsb-border text-rsb-muted rounded-rsb text-sm hover:bg-rsb-bg">
+        Clear
+      </a>
+    </div>
+  </form>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @payment_requests.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">ID</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Type</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Owner ID</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Plan</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Provider</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Amount</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Currency</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Created</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @payment_requests.each do |request| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm">
+                <a href="/admin/payment_requests/<%= request.id %>" class="text-rsb-primary hover:underline"><%= request.id %></a>
+              </td>
+              <td class="px-4 py-3 text-sm text-rsb-muted"><%= request.requestable_type.demodulize %></td>
+              <td class="px-4 py-3 text-sm"><%= request.requestable_id %></td>
+              <td class="px-4 py-3 text-sm"><%= request.plan&.name %></td>
+              <td class="px-4 py-3 text-sm"><%= rsb_admin_badge(request.provider_key) %></td>
+              <td class="px-4 py-3 text-sm"><%= rsb_admin_badge(request.status) %></td>
+              <td class="px-4 py-3 text-sm"><%= request.amount_cents %></td>
+              <td class="px-4 py-3 text-sm"><%= request.currency.upcase %></td>
+              <td class="px-4 py-3 text-sm text-rsb-muted"><%= request.created_at&.strftime("%Y-%m-%d %H:%M") %></td>
+              <td class="px-4 py-3 text-sm text-right">
+                <a href="/admin/payment_requests/<%= request.id %>"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">View</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-between items-center px-4 py-3 border-t border-rsb-border">
+      <span class="text-sm text-rsb-muted">Page <%= @current_page + 1 %></span>
+      <div class="flex gap-2">
+        <% if @current_page > 0 %>
+          <a href="/admin/payment_requests?page=<%= @current_page - 1 %><%= "&status=#{params[:status]}" if params[:status].present? %><%= "&provider_key=#{params[:provider_key]}" if params[:provider_key].present? %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Previous</a>
+        <% end %>
+        <% if @payment_requests.size == @per_page %>
+          <a href="/admin/payment_requests?page=<%= @current_page + 1 %><%= "&status=#{params[:status]}" if params[:status].present? %><%= "&provider_key=#{params[:provider_key]}" if params[:provider_key].present? %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Next</a>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-rsb-muted text-sm">No payment requests found.</p>
+    </div>
+  <% end %>
+</div>

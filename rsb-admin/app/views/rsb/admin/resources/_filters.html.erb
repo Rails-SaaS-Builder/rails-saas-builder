@@ -1,0 +1,58 @@
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-4 mb-4">
+  <form method="get" action="<%= request.path %>" class="flex flex-wrap items-end gap-4">
+    <% filters.each do |filter| %>
+      <div>
+        <label class="block text-xs font-medium text-rsb-muted mb-1">
+          <%= rsb_admin_filter_label(filter, resource_key: resource_key) %>
+        </label>
+        <% case filter.type %>
+        <% when :text %>
+          <input type="text" name="q[<%= filter.key %>]" value="<%= values[filter.key.to_s] %>"
+                 class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10"
+                 placeholder="<%= rsb_admin_filter_label(filter, resource_key: resource_key) %>...">
+        <% when :select %>
+          <select name="q[<%= filter.key %>]"
+                  class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10">
+            <option value=""><%= rsb_admin_t("shared.all") %></option>
+            <% opts = filter.options.is_a?(Proc) ? filter.options.call : filter.options %>
+            <% opts&.each do |opt| %>
+              <option value="<%= opt %>" <%= "selected" if values[filter.key.to_s] == opt.to_s %>><%= opt.to_s.titleize %></option>
+            <% end %>
+          </select>
+        <% when :boolean %>
+          <select name="q[<%= filter.key %>]"
+                  class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10">
+            <option value=""><%= rsb_admin_t("shared.all") %></option>
+            <option value="true" <%= "selected" if values[filter.key.to_s] == "true" %>>Yes</option>
+            <option value="false" <%= "selected" if values[filter.key.to_s] == "false" %>>No</option>
+          </select>
+        <% when :date_range %>
+          <div class="flex gap-2">
+            <input type="date" name="q[<%= filter.key %>][from]" value="<%= values.dig(filter.key.to_s, "from") %>"
+                   class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm">
+            <input type="date" name="q[<%= filter.key %>][to]" value="<%= values.dig(filter.key.to_s, "to") %>"
+                   class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm">
+          </div>
+        <% when :number_range %>
+          <div class="flex gap-2">
+            <input type="number" name="q[<%= filter.key %>][min]" value="<%= values.dig(filter.key.to_s, "min") %>"
+                   class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm w-24" placeholder="Min">
+            <input type="number" name="q[<%= filter.key %>][max]" value="<%= values.dig(filter.key.to_s, "max") %>"
+                   class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm w-24" placeholder="Max">
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="flex gap-2">
+      <button type="submit"
+              class="inline-flex items-center gap-1 px-4 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+        <%= rsb_admin_icon("filter", size: 14) %>
+        <%= rsb_admin_t("shared.apply_filters") %>
+      </button>
+      <a href="<%= request.path %>"
+         class="px-4 py-1.5 border border-rsb-border text-rsb-muted rounded-rsb text-sm hover:bg-rsb-bg">
+        <%= rsb_admin_t("shared.clear_filters") %>
+      </a>
+    </div>
+  </form>
+</div>

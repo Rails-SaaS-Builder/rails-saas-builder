@@ -1,0 +1,48 @@
+<div class="max-w-lg mx-auto">
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+    <h2 class="text-xl font-bold mb-4">Backup Codes</h2>
+
+    <div class="mb-4 p-3 rounded-rsb bg-rsb-warning-bg border border-rsb-warning text-rsb-warning-text text-sm">
+      <strong>Save these codes!</strong> Each code can only be used once. Store them in a safe place.
+      You will not be able to see these codes again.
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 mb-6" id="backup-codes">
+      <% @backup_codes.each do |code| %>
+        <code class="block p-2 text-center bg-rsb-bg border border-rsb-border rounded-rsb font-mono text-sm select-all">
+          <%= code %>
+        </code>
+      <% end %>
+    </div>
+
+    <div class="flex gap-2 mb-4">
+      <button onclick="copyBackupCodes()" type="button" id="copy-button"
+              class="flex-1 py-2 px-4 border border-rsb-border rounded-rsb hover:bg-rsb-bg transition-colors text-sm">
+        Copy All Codes
+      </button>
+    </div>
+
+    <a href="<%= rsb_admin.profile_path %>"
+       class="block text-center py-2 px-4 bg-rsb-primary text-rsb-primary-text rounded-rsb hover:bg-rsb-primary-hover">
+      Done — Go to Profile
+    </a>
+  </div>
+</div>
+
+<script>
+function copyBackupCodes() {
+  var codes = [];
+  document.querySelectorAll('#backup-codes code').forEach(function(el) {
+    codes.push(el.textContent.trim());
+  });
+  var button = document.getElementById('copy-button');
+  var originalText = button.textContent;
+
+  navigator.clipboard.writeText(codes.join('\n')).then(function() {
+    button.textContent = 'Copied!';
+    setTimeout(function() {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>

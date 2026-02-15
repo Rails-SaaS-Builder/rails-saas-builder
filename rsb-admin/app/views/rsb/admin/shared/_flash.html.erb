@@ -1,0 +1,22 @@
+<% flash.each do |type, message| %>
+  <%
+    type_str = type.to_s
+    config = case type_str
+             when "notice"
+               { bg: "bg-rsb-success-bg", text: "text-rsb-success-text", border: "border-green-200", icon: "check-circle" }
+             when "alert"
+               { bg: "bg-rsb-danger-bg", text: "text-rsb-danger-text", border: "border-red-200", icon: "alert-circle" }
+             when "warning"
+               { bg: "bg-rsb-warning-bg", text: "text-rsb-warning-text", border: "border-amber-200", icon: "alert-triangle" }
+             else
+               { bg: "bg-rsb-info-bg", text: "text-rsb-info-text", border: "border-blue-200", icon: "info" }
+             end
+  %>
+  <div class="<%= config[:bg] %> <%= config[:text] %> border <%= config[:border] %> px-4 py-3 rounded-rsb mb-4 text-sm flex items-center gap-3">
+    <span class="shrink-0"><%= rsb_admin_icon(config[:icon], size: 18) %></span>
+    <span class="flex-1"><%= message %></span>
+    <button type="button" onclick="this.parentElement.remove()" class="shrink-0 opacity-60 hover:opacity-100 cursor-pointer">
+      <%= rsb_admin_icon("x", size: 16) %>
+    </button>
+  </div>
+<% end %>

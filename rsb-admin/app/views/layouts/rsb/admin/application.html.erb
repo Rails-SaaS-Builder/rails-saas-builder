@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%= rsb_seo_meta_tags %>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= rsb_seo_head_tags %>
+  <%= yield :rsb_head %>
+  <% theme = RSB::Admin.current_theme %>
+  <%= stylesheet_link_tag theme.css, media: "all" %>
+  <% if theme.js %>
+    <%= javascript_include_tag theme.js %>
+  <% end %>
+</head>
+<body class="bg-rsb-bg text-rsb-text font-sans">
+  <% admin_user = respond_to?(:current_admin_user) ? current_admin_user : nil %>
+  <% if admin_user %>
+    <div class="flex min-h-screen">
+      <aside class="w-[250px] bg-rsb-sidebar text-rsb-sidebar-text fixed top-0 left-0 bottom-0 overflow-y-auto py-4">
+        <%= render rsb_admin_partial("shared/sidebar") %>
+      </aside>
+      <div class="ml-[250px] flex-1 min-h-screen">
+        <header class="bg-rsb-card border-b border-rsb-border px-6 h-14 flex items-center justify-between">
+          <%= render rsb_admin_partial("shared/header") %>
+        </header>
+        <main class="p-6">
+          <%= render rsb_admin_partial("shared/flash") %>
+          <%= render rsb_admin_partial("shared/breadcrumbs") %>
+          <%= yield %>
+        </main>
+        <% if respond_to?(:rsb_admin_footer_text) && rsb_admin_footer_text.present? %>
+          <footer class="px-6 py-3 text-xs text-rsb-muted border-t border-rsb-border">
+            <%= rsb_admin_footer_text %>
+          </footer>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <%= render rsb_admin_partial("shared/flash") %>
+    <%= yield %>
+  <% end %>
+  <%= rsb_seo_body_tags %>
+  <%= yield :rsb_body %>
+</body>
+</html>

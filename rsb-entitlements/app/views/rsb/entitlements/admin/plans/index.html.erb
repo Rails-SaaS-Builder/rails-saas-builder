@@ -1,0 +1,74 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Plans</h1>
+  <div class="flex gap-2">
+    <a href="/admin/plans/new"
+       class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">New Plan</a>
+  </div>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @plans.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Name</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Slug</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Interval</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Price</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Features</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Limits</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Status</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @plans.each do |plan| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm">
+                <a href="/admin/plans/<%= plan.id %>" class="text-rsb-primary hover:underline"><%= plan.name %></a>
+              </td>
+              <td class="px-4 py-3 text-sm text-rsb-muted"><%= plan.slug %></td>
+              <td class="px-4 py-3 text-sm">
+                <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-info-bg text-rsb-info-text text-xs font-medium"><%= plan.interval.titleize %></span>
+              </td>
+              <td class="px-4 py-3 text-sm">$<%= "%.2f" % (plan.price_cents / 100.0) %> <%= plan.currency.upcase %></td>
+              <td class="px-4 py-3 text-sm"><%= pluralize(plan.features.size, "feature") %></td>
+              <td class="px-4 py-3 text-sm"><%= pluralize(plan.limits.size, "limit") %></td>
+              <td class="px-4 py-3 text-sm">
+                <% if plan.active? %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-success-bg text-rsb-success-text text-xs font-medium">Active</span>
+                <% else %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-rsb bg-rsb-danger-bg text-rsb-danger-text text-xs font-medium">Inactive</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm text-right">
+                <a href="/admin/plans/<%= plan.id %>/edit"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Edit</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# Pagination %>
+    <div class="flex justify-between items-center px-4 py-3 border-t border-rsb-border">
+      <span class="text-sm text-rsb-muted">Page <%= @current_page + 1 %></span>
+      <div class="flex gap-2">
+        <% if @current_page > 0 %>
+          <a href="/admin/plans?page=<%= @current_page - 1 %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Previous</a>
+        <% end %>
+        <% if @plans.size == @per_page %>
+          <a href="/admin/plans?page=<%= @current_page + 1 %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Next</a>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-rsb-muted text-sm">No plans created yet. Create your first subscription plan to get started.</p>
+    </div>
+  <% end %>
+</div>

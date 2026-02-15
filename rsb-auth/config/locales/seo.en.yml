@@ -1,0 +1,28 @@
+en:
+  rsb:
+    auth:
+      sessions:
+        new:
+          page_title: "Sign In"
+          meta_description: "Sign in to your account"
+      registrations:
+        new:
+          page_title: "Create Account"
+          meta_description: "Create a new account to get started"
+      password_resets:
+        new:
+          page_title: "Forgot Password"
+          meta_description: "Reset your password"
+        edit:
+          page_title: "Reset Password"
+      verifications:
+        show:
+          page_title: "Verify Email"
+      account:
+        show:
+          page_title: "Account"
+        confirm_destroy:
+          page_title: "Delete Account"
+      invitations:
+        show:
+          page_title: "Accept Invitation"

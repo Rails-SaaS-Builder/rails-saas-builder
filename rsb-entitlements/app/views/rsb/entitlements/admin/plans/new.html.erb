@@ -1,0 +1,9 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">New Plan</h1>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <%= render "form", plan: @plan,
+    url: "/admin/plans",
+    method: :post %>
+</div>

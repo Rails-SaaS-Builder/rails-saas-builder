@@ -1,0 +1,22 @@
+<div class="flex items-center justify-center min-h-[60vh]">
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-8 max-w-md w-full text-center">
+    <div class="mb-4 text-rsb-muted">
+      <%= rsb_admin_icon("lock", size: 48) %>
+    </div>
+    <h1 class="text-2xl font-bold mb-2"><%= rsb_admin_t("shared.access_denied") %></h1>
+    <p class="text-rsb-muted mb-6"><%= rsb_admin_t("shared.access_denied_message") %></p>
+    <div class="flex flex-col gap-3 items-center">
+      <% if current_admin_user.can?("dashboard", "index") %>
+        <a href="<%= rsb_admin.dashboard_path %>"
+           class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+          <%= rsb_admin_t("shared.go_to_dashboard") %>
+        </a>
+      <% end %>
+      <a href="<%= rsb_admin.logout_path %>"
+         class="text-sm text-rsb-muted hover:text-rsb-text"
+         data-turbo-method="delete">
+        <%= rsb_admin_t("shared.sign_out_and_try") %>
+      </a>
+    </div>
+  </div>
+</div>

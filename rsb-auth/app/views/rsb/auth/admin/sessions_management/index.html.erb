@@ -1,0 +1,69 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Active Sessions</h1>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @sessions.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Identity</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Device / User Agent</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">IP Address</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Last Active</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Expires</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @sessions.each do |session_record| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm">
+                <a href="/admin/identities/<%= session_record.identity_id %>" class="text-rsb-primary hover:underline">
+                  <%= session_record.identity.primary_identifier || "Identity ##{session_record.identity_id}" %>
+                </a>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= session_record.user_agent&.truncate(60) || "Unknown" %></td>
+              <td class="px-4 py-3 text-sm"><%= session_record.ip_address || "Unknown" %></td>
+              <td class="px-4 py-3 text-sm">
+                <% if session_record.last_active_at %>
+                  <%= time_ago_in_words(session_record.last_active_at) %> ago
+                <% else %>
+                  Never
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= session_record.expires_at&.strftime("%Y-%m-%d %H:%M") %></td>
+              <td class="px-4 py-3 text-sm text-right">
+                <%= button_to "Revoke",
+                      "/admin/sessions_management/#{session_record.id}",
+                      method: :delete,
+                      data: { turbo_confirm: "Are you sure you want to revoke this session? The user will be logged out immediately." },
+                      class: "px-3 py-1.5 bg-rsb-danger text-white rounded-rsb text-xs font-medium hover:opacity-90 transition-colors" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# Pagination %>
+    <div class="flex justify-between items-center px-4 py-3 border-t border-rsb-border">
+      <span class="text-sm text-rsb-muted">Page <%= @current_page + 1 %></span>
+      <div class="flex gap-2">
+        <% if @current_page > 0 %>
+          <a href="/admin/sessions_management?page=<%= @current_page - 1 %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Previous</a>
+        <% end %>
+        <% if @sessions.size == @per_page %>
+          <a href="/admin/sessions_management?page=<%= @current_page + 1 %>"
+             class="inline-flex items-center px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">Next</a>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-rsb-muted text-sm">No active sessions found.</p>
+    </div>
+  <% end %>
+</div>

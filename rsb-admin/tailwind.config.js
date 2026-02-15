@@ -1,0 +1,51 @@
+module.exports = {
+  content: [
+    "./app/views/**/*.html.erb",
+    "./app/helpers/**/*.rb",
+    "./lib/rsb/admin/icons.rb",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'rsb-bg': 'var(--rsb-admin-bg)',
+        'rsb-bg-secondary': 'var(--rsb-admin-bg-secondary)',
+        'rsb-card': 'var(--rsb-admin-card-bg)',
+        'rsb-text': 'var(--rsb-admin-text)',
+        'rsb-muted': 'var(--rsb-admin-text-muted)',
+        'rsb-border': 'var(--rsb-admin-border)',
+        'rsb-primary': 'var(--rsb-admin-primary)',
+        'rsb-primary-hover': 'var(--rsb-admin-primary-hover)',
+        'rsb-primary-text': 'var(--rsb-admin-primary-text)',
+        'rsb-danger': 'var(--rsb-admin-danger)',
+        'rsb-danger-bg': 'var(--rsb-admin-danger-bg)',
+        'rsb-danger-text': 'var(--rsb-admin-danger-text)',
+        'rsb-success': 'var(--rsb-admin-success)',
+        'rsb-success-bg': 'var(--rsb-admin-success-bg)',
+        'rsb-success-text': 'var(--rsb-admin-success-text)',
+        'rsb-warning': 'var(--rsb-admin-warning)',
+        'rsb-warning-bg': 'var(--rsb-admin-warning-bg)',
+        'rsb-warning-text': 'var(--rsb-admin-warning-text)',
+        'rsb-info': 'var(--rsb-admin-info)',
+        'rsb-info-bg': 'var(--rsb-admin-info-bg)',
+        'rsb-info-text': 'var(--rsb-admin-info-text)',
+        'rsb-sidebar': 'var(--rsb-admin-sidebar-bg)',
+        'rsb-sidebar-text': 'var(--rsb-admin-sidebar-text)',
+        'rsb-sidebar-active': 'var(--rsb-admin-sidebar-active)',
+        'rsb-sidebar-hover': 'var(--rsb-admin-sidebar-hover-bg)',
+      },
+      borderRadius: {
+        'rsb-sm': 'var(--rsb-admin-radius-sm)',
+        'rsb': 'var(--rsb-admin-radius)',
+        'rsb-lg': 'var(--rsb-admin-radius-lg)',
+      },
+      boxShadow: {
+        'rsb-sm': 'var(--rsb-admin-shadow-sm)',
+        'rsb': 'var(--rsb-admin-shadow)',
+      },
+      transitionDuration: {
+        'rsb': 'var(--rsb-admin-transition)',
+      },
+    },
+  },
+  plugins: [],
+}

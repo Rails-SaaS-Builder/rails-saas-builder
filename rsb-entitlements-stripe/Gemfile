@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gemspec
+
+gem 'rsb-entitlements', path: '../rsb-entitlements'
+gem 'rsb-settings', path: '../rsb-settings'
+gem 'sqlite3'
+
+group :test do
+  gem 'rack-test'
+end

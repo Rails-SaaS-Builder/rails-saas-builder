@@ -1,0 +1,110 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="max-w-2xl w-full space-y-8">
+    <div>
+      <h2 class="text-3xl font-extrabold text-gray-900"><%= t("rsb.auth.account.title") %></h2>
+      <p class="mt-2 text-sm text-gray-600"><%= t("rsb.auth.account.subtitle") %></p>
+    </div>
+
+    <%# Section 1: Login Methods %>
+    <div class="border-t border-gray-200 pt-8">
+      <h3 class="text-lg font-medium text-gray-900"><%= t("rsb.auth.account.login_methods_title") %></h3>
+      <div class="mt-4 space-y-3">
+        <% @login_methods.each do |credential| %>
+          <%= link_to account_login_method_path(credential), class: "block p-4 bg-white border border-gray-200 rounded-md hover:border-indigo-300 hover:shadow-sm transition" do %>
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-900"><%= credential.identifier %></p>
+                <p class="text-xs text-gray-500"><%= credential.type.demodulize.titleize %></p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <% if credential.verified? %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><%= t("rsb.auth.account.verified") %></span>
+                <% else %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><%= t("rsb.auth.account.unverified") %></span>
+                <% end %>
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Section 2: Profile Fields (identity fields partial) %>
+    <% if @errors.present? %>
+      <div class="rounded-md bg-red-50 p-4">
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">There were errors with your submission:</h3>
+          <div class="mt-2 text-sm text-red-700">
+            <ul class="list-disc pl-5 space-y-1">
+              <% @errors.each do |error| %>
+                <li><%= error %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <%= form_with model: @identity, url: account_path, method: :patch, class: "space-y-6" do |f| %>
+      <% identity_fields_html = capture { render "rsb/auth/account/identity_fields", f: f, identity: @identity } %>
+      <%= identity_fields_html %>
+
+      <% if f.object.errors.any? || identity_fields_html.strip.present? %>
+        <div>
+          <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <%= t("rsb.auth.account.save") %>
+          </button>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# Section 3: Active Sessions %>
+    <div class="border-t border-gray-200 pt-8">
+      <h3 class="text-lg font-medium text-gray-900"><%= t("rsb.auth.account.sessions_title") %></h3>
+      <div class="mt-4 space-y-3">
+        <% @sessions.each do |session| %>
+          <% ua = parse_user_agent(session.user_agent) %>
+          <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-md">
+            <div>
+              <p class="text-sm font-medium text-gray-900"><%= ua[:browser] %> / <%= ua[:os] %></p>
+              <p class="text-xs text-gray-500">
+                <%= session.ip_address %> &middot;
+                <% if session.last_active_at %>
+                  <%= time_ago_in_words(session.last_active_at) %> ago
+                <% end %>
+              </p>
+            </div>
+            <div>
+              <% if session == @current_session %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"><%= t("rsb.auth.account.current_session") %></span>
+              <% else %>
+                <%= button_to t("rsb.auth.account.revoke_session"), account_session_path(session), method: :delete, class: "inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <% if @sessions.size > 1 %>
+        <div class="mt-4">
+          <%= button_to t("rsb.auth.account.revoke_all_sessions"), destroy_all_account_sessions_path, method: :delete, class: "text-sm text-indigo-600 hover:text-indigo-500" %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Section 4: Delete Account (danger zone) %>
+    <% if @deletion_enabled %>
+      <div class="border-t border-red-200 pt-8">
+        <h3 class="text-lg font-medium text-red-600"><%= t("rsb.auth.account.danger_zone") %></h3>
+        <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <p class="text-sm text-red-700"><%= t("rsb.auth.account.delete_warning") %></p>
+          <div class="mt-4">
+            <%= link_to t("rsb.auth.account.delete_account"), confirm_destroy_account_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

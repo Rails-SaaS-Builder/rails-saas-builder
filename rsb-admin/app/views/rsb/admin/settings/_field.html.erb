@@ -1,0 +1,115 @@
+<%
+  full_key = "#{category}.#{defn.key}"
+  field_name = "settings[values][#{defn.key}]"
+  disabled = state == :locked || state == :disabled_by_dependency
+  enum_values = defn.enum.respond_to?(:call) ? defn.enum.call : defn.enum
+
+  # CSS classes
+  wrapper_class = disabled ? "opacity-50" : ""
+  input_class = "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm bg-rsb-card text-rsb-text focus:outline-none focus:ring-1 focus:ring-rsb-primary focus:border-rsb-primary"
+  input_class += " cursor-not-allowed bg-rsb-muted-bg" if disabled
+%>
+
+<div class="<%= wrapper_class %>">
+  <%# Setting key in monospace %>
+  <div class="flex items-center gap-2 mb-1">
+    <code class="text-xs text-rsb-muted font-mono"><%= full_key %></code>
+    <% if state == :locked %>
+      <span class="inline-flex items-center gap-1 text-xs text-rsb-muted" title="<%= rsb_admin_t('settings.locked') %>">
+        <%= rsb_admin_icon("lock", size: 12) %>
+        <span><%= rsb_admin_t("settings.locked") %></span>
+      </span>
+    <% end %>
+  </div>
+
+  <%# Label %>
+  <label for="settings_values_<%= defn.key %>" class="block text-sm font-medium text-rsb-text mb-1">
+    <%= defn.label.presence || defn.key.to_s.titleize %>
+  </label>
+
+  <%# Input field by type %>
+  <% if enum_values.present? %>
+    <%# Enum -> select dropdown %>
+    <select name="<%= field_name %>"
+            id="settings_values_<%= defn.key %>"
+            class="<%= input_class %>"
+            <%= "disabled" if disabled %>>
+      <% enum_values.each do |opt| %>
+        <option value="<%= opt %>" <%= "selected" if value.to_s == opt.to_s %>><%= opt.to_s.titleize %></option>
+      <% end %>
+    </select>
+
+  <% elsif defn.type == :boolean %>
+    <%# Boolean -> toggle switch %>
+    <div class="flex items-center">
+      <%# Hidden field sends "false" when checkbox unchecked %>
+      <input type="hidden" name="<%= field_name %>" value="false" <%= "disabled" if disabled %>>
+      <label class="relative inline-flex items-center cursor-pointer <%= 'cursor-not-allowed' if disabled %>">
+        <input type="checkbox"
+               name="<%= field_name %>"
+               id="settings_values_<%= defn.key %>"
+               value="true"
+               class="sr-only peer"
+               <%= "checked" if ActiveModel::Type::Boolean.new.cast(value) %>
+               <%= "disabled" if disabled %>>
+        <div class="w-10 h-5 bg-rsb-border rounded-full peer
+                    peer-checked:bg-rsb-primary peer-checked:after:translate-x-5
+                    after:content-[''] after:absolute after:top-0.5 after:left-0.5
+                    after:bg-white after:rounded-full after:h-4 after:w-4
+                    after:transition-transform after:duration-200
+                    transition-colors duration-200"></div>
+        <span class="ml-2 text-sm text-rsb-text">
+          <%= ActiveModel::Type::Boolean.new.cast(value) ? "Enabled" : "Disabled" %>
+        </span>
+      </label>
+    </div>
+
+  <% elsif defn.type == :integer || defn.type == :duration %>
+    <%# Integer / Duration -> number input %>
+    <div class="flex items-center gap-2">
+      <input type="number"
+             name="<%= field_name %>"
+             id="settings_values_<%= defn.key %>"
+             value="<%= value.is_a?(ActiveSupport::Duration) ? value.to_i : value %>"
+             class="<%= input_class %> max-w-xs"
+             <%= "disabled" if disabled %>>
+      <% if defn.type == :duration %>
+        <span class="text-sm text-rsb-muted">seconds</span>
+      <% end %>
+    </div>
+
+  <% elsif defn.type == :float %>
+    <%# Float -> number input with step %>
+    <input type="number"
+           name="<%= field_name %>"
+           id="settings_values_<%= defn.key %>"
+           value="<%= value %>"
+           step="any"
+           class="<%= input_class %> max-w-xs"
+           <%= "disabled" if disabled %>>
+
+  <% else %>
+    <%# String (default) -> text input %>
+    <input type="text"
+           name="<%= field_name %>"
+           id="settings_values_<%= defn.key %>"
+           value="<%= value %>"
+           class="<%= input_class %>"
+           <%= "disabled" if disabled %>>
+  <% end %>
+
+  <%# Description %>
+  <% if defn.description.present? %>
+    <p class="mt-1 text-xs text-rsb-muted"><%= defn.description %></p>
+  <% end %>
+
+  <%# depends_on disabled hint %>
+  <% if state == :disabled_by_dependency && defn.depends_on.present? %>
+    <%
+      parent_label = defn.depends_on.split(".", 2).last.to_s.titleize
+    %>
+    <p class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+      Disabled because <strong><%= parent_label %></strong> is off.
+    </p>
+  <% end %>
+</div>

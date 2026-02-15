@@ -1,0 +1,137 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Payment Request #<%= @payment_request.id %></h1>
+  <div class="flex gap-2">
+    <a href="/admin/payment_requests"
+       class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+  </div>
+</div>
+
+<%# Request Details %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+  <h3 class="text-base font-semibold mb-4">Request Information</h3>
+  <div class="grid grid-cols-[200px_1fr] gap-4">
+    <strong class="text-sm text-rsb-muted">ID</strong>
+    <div><%= @payment_request.id %></div>
+
+    <strong class="text-sm text-rsb-muted">Requestable</strong>
+    <div><%= @payment_request.requestable_type.demodulize %> #<%= @payment_request.requestable_id %></div>
+
+    <strong class="text-sm text-rsb-muted">Plan</strong>
+    <div><%= @payment_request.plan&.name %></div>
+
+    <strong class="text-sm text-rsb-muted">Provider</strong>
+    <div><%= rsb_admin_badge(@payment_request.provider_key) %></div>
+
+    <strong class="text-sm text-rsb-muted">Status</strong>
+    <div><%= rsb_admin_badge(@payment_request.status) %></div>
+
+    <strong class="text-sm text-rsb-muted">Amount</strong>
+    <div><%= @payment_request.amount_cents %> <%= @payment_request.currency.upcase %></div>
+
+    <% if @payment_request.provider_ref.present? %>
+      <strong class="text-sm text-rsb-muted">Provider Ref</strong>
+      <div><code class="px-1.5 py-0.5 bg-rsb-bg rounded-rsb-sm text-sm"><%= @payment_request.provider_ref %></code></div>
+    <% end %>
+
+    <strong class="text-sm text-rsb-muted">Expires At</strong>
+    <div><%= @payment_request.expires_at&.strftime("%Y-%m-%d %H:%M") || "—" %></div>
+
+    <strong class="text-sm text-rsb-muted">Created At</strong>
+    <div><%= @payment_request.created_at&.strftime("%Y-%m-%d %H:%M") %></div>
+
+    <% if @payment_request.resolved_by.present? %>
+      <strong class="text-sm text-rsb-muted">Resolved By</strong>
+      <div><%= @payment_request.resolved_by %></div>
+
+      <strong class="text-sm text-rsb-muted">Resolved At</strong>
+      <div><%= @payment_request.resolved_at&.strftime("%Y-%m-%d %H:%M") %></div>
+    <% end %>
+
+    <% if @payment_request.admin_note.present? %>
+      <strong class="text-sm text-rsb-muted">Admin Note</strong>
+      <div><%= @payment_request.admin_note %></div>
+    <% end %>
+
+    <% if @payment_request.entitlement_id.present? %>
+      <strong class="text-sm text-rsb-muted">Entitlement</strong>
+      <div>#<%= @payment_request.entitlement_id %></div>
+    <% end %>
+  </div>
+</div>
+
+<%# Provider Details %>
+<% if @provider_details.present? %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+    <h3 class="text-base font-semibold mb-4">Provider Details</h3>
+    <div class="grid grid-cols-[200px_1fr] gap-4">
+      <% @provider_details.each do |label, value| %>
+        <strong class="text-sm text-rsb-muted"><%= label %></strong>
+        <div><%= value %></div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# Provider Data JSON %>
+<% if @payment_request.provider_data.present? && @payment_request.provider_data != {} %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+    <h3 class="text-base font-semibold mb-4">Provider Data</h3>
+    <pre class="p-4 bg-rsb-bg rounded-rsb text-sm overflow-x-auto"><%= JSON.pretty_generate(@payment_request.provider_data) %></pre>
+  </div>
+<% end %>
+
+<%# Metadata JSON %>
+<% if @payment_request.metadata.present? && @payment_request.metadata != {} %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+    <h3 class="text-base font-semibold mb-4">Metadata</h3>
+    <pre class="p-4 bg-rsb-bg rounded-rsb text-sm overflow-x-auto"><%= JSON.pretty_generate(@payment_request.metadata) %></pre>
+  </div>
+<% end %>
+
+<%# Action Buttons — Approve / Reject %>
+<% if @payment_request.actionable? && @provider_definition&.manual_resolution %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+    <h3 class="text-base font-semibold mb-4">Actions</h3>
+    <div class="flex flex-wrap items-end gap-4">
+      <% if @provider_definition.admin_actions.include?(:approve) %>
+        <%= form_tag("/admin/payment_requests/#{@payment_request.id}/approve", method: :patch, class: "inline") do %>
+          <button type="submit"
+                  data-turbo-confirm="Approve this payment request?"
+                  class="px-4 py-2 bg-rsb-success text-white rounded-rsb text-sm font-medium hover:opacity-90 transition-colors">
+            Approve
+          </button>
+        <% end %>
+      <% end %>
+
+      <% if @provider_definition.admin_actions.include?(:reject) %>
+        <%= form_tag("/admin/payment_requests/#{@payment_request.id}/reject", method: :patch, class: "inline-flex items-end gap-2") do %>
+          <div>
+            <label class="block text-xs font-medium text-rsb-muted mb-1">Note</label>
+            <%= text_field_tag :admin_note, "",
+              placeholder: "Optional note",
+              class: "px-3 py-1.5 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+          </div>
+          <button type="submit"
+                  data-turbo-confirm="Reject this payment request?"
+                  class="px-4 py-2 bg-rsb-danger text-white rounded-rsb text-sm font-medium hover:opacity-90 transition-colors">
+            Reject
+          </button>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# Refund Button %>
+<% if @payment_request.approved? && @provider_definition&.refundable %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+    <h3 class="text-base font-semibold text-rsb-danger mb-4">Danger Zone</h3>
+    <%= form_tag("/admin/payment_requests/#{@payment_request.id}/refund", method: :patch) do %>
+      <button type="submit"
+              data-turbo-confirm="Refund this payment request? This will revoke the linked entitlement."
+              class="px-4 py-2 bg-rsb-danger text-white rounded-rsb text-sm font-medium hover:opacity-90 transition-colors">
+        Refund
+      </button>
+    <% end %>
+  </div>
+<% end %>

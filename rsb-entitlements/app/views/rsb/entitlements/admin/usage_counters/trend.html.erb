@@ -1,0 +1,57 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Usage Trend</h1>
+  <a href="/admin/usage_counters" class="rsb-btn rsb-btn-secondary text-sm">
+    Back to Overview
+  </a>
+</div>
+
+<%# Metric selector %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-4 mb-4">
+  <form method="get" action="/admin/usage_counters/trend" class="flex flex-wrap gap-4 items-end">
+    <div>
+      <label class="block text-xs font-semibold text-rsb-muted mb-1">Metric</label>
+      <select name="metric" class="rsb-input text-sm">
+        <option value="">Select a metric</option>
+        <% @available_metrics.each do |m| %>
+          <option value="<%= m %>" <%= "selected" if @metric == m %>><%= m %></option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-rsb-muted mb-1">Countable Type</label>
+      <input type="text" name="countable_type" value="<%= params[:countable_type] %>" placeholder="Optional" class="rsb-input text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-rsb-muted mb-1">Countable ID</label>
+      <input type="text" name="countable_id" value="<%= params[:countable_id] %>" placeholder="Optional" class="rsb-input text-sm">
+    </div>
+    <div>
+      <button type="submit" class="rsb-btn rsb-btn-primary text-sm">View Trend</button>
+    </div>
+  </form>
+</div>
+
+<%# Chart %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <% if @metric.blank? %>
+    <div class="text-center py-8">
+      <p class="text-rsb-muted text-sm">Select a metric to view its usage trend.</p>
+    </div>
+  <% elsif @trend_data.blank? || @trend_data.empty? %>
+    <div class="text-center py-8">
+      <p class="text-rsb-muted text-sm">No data found for metric "<%= @metric %>".</p>
+    </div>
+  <% else %>
+    <h2 class="text-lg font-semibold mb-4"><%= @metric %> — Last <%= @trend_data.size %> periods</h2>
+    <div class="flex items-end gap-1" style="height: 200px;">
+      <% @trend_data.each do |period_key, value| %>
+        <% bar_pct = @max_value > 0 ? (value.to_f / @max_value * 100).round(1) : 0 %>
+        <div class="flex-1 flex flex-col items-center justify-end h-full">
+          <span class="text-xs text-rsb-muted mb-1"><%= value %></span>
+          <div class="w-full bg-blue-500 rounded-t" style="height: <%= bar_pct %>%; min-height: 2px;" title="<%= period_key %>: <%= value %>"></div>
+          <span class="text-xs text-rsb-muted mt-1 truncate w-full text-center" style="font-size: 0.6rem;"><%= period_key == "__cumulative__" ? "Cum." : period_key.gsub("2026-", "") %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

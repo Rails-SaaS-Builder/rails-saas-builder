@@ -1,0 +1,197 @@
+<%= form_with model: role, url: url, method: method, local: true do |f| %>
+  <% if role.errors.any? %>
+    <div class="bg-rsb-danger-bg text-rsb-danger-text border border-red-200 px-4 py-3 rounded-rsb mb-4 text-sm">
+      <strong><%= rsb_admin_t("errors.prohibited", count: role.errors.count) %></strong>
+      <ul class="mt-2 pl-6 list-disc">
+        <% role.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1"><%= rsb_admin_t("columns.name") %></label>
+    <%= f.text_field :name, class: "w-full px-3 py-2 border border-rsb-border rounded-rsb text-sm focus:outline-none focus:border-rsb-primary focus:ring-2 focus:ring-rsb-primary/10" %>
+  </div>
+
+  <div class="mb-4">
+    <label class="flex items-center gap-2 font-semibold text-sm">
+      <input type="checkbox" name="role[superadmin_toggle]" value="1"
+             id="superadmin-toggle"
+             class="rounded border-rsb-border text-rsb-primary focus:ring-rsb-primary"
+             <%= 'checked' if role.superadmin? %>>
+      <span><%= rsb_admin_t("roles.superadmin") %></span>
+    </label>
+    <p class="text-xs text-rsb-muted mt-1"><%= rsb_admin_t("roles.superadmin_toggle") %></p>
+  </div>
+
+  <div id="permissions-grid" style="<%= 'display: none;' if role.superadmin? %>">
+    <label class="block text-sm font-semibold mb-3"><%= rsb_admin_t("roles.permissions") %></label>
+
+    <input type="hidden" name="role[permissions_checkboxes][_dummy][]" value="" />
+
+    <% registry = RSB::Admin.registry %>
+    <% registry.categories.each do |category_name, category| %>
+      <% next if category.resources.empty? && category.pages.empty? %>
+
+      <div class="mb-6">
+        <h4 class="text-xs uppercase tracking-wider text-rsb-muted mb-2"><%= category_name %></h4>
+
+        <div class="border border-rsb-border rounded-rsb overflow-hidden">
+          <% items_index = 0 %>
+          <% category.resources.each do |resource| %>
+            <% resource_key = resource.route_key %>
+            <% allowed_actions = role.permissions[resource_key] || [] %>
+            <div class="px-4 py-3 flex items-center gap-4 flex-wrap <%= 'border-t border-rsb-border' if items_index > 0 %>">
+              <strong class="min-w-[150px] text-sm"><%= resource.label %></strong>
+              <div class="flex gap-3 flex-wrap">
+                <% resource.actions.each do |action| %>
+                  <label class="flex items-center gap-1 text-xs cursor-pointer">
+                    <input type="checkbox"
+                           name="role[permissions_checkboxes][<%= resource_key %>][]"
+                           value="<%= action %>"
+                           class="permission-checkbox rounded border-rsb-border text-rsb-primary focus:ring-rsb-primary"
+                           <%= 'checked' if allowed_actions.include?(action.to_s) || role.superadmin? %>>
+                    <span><%= action.to_s %></span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+            <% items_index += 1 %>
+          <% end %>
+          <% category.pages.each do |page| %>
+            <% page_key = page.key.to_s %>
+            <% page_actions = role.permissions[page_key] || [] %>
+            <% page_action_keys = page.action_keys.map(&:to_s) %>
+            <% page_action_keys = %w[index] if page_action_keys.empty? %>
+            <div class="px-4 py-3 flex items-center gap-4 flex-wrap <%= 'border-t border-rsb-border' if items_index > 0 %>">
+              <strong class="min-w-[150px] text-sm"><%= page.label %></strong>
+              <div class="flex gap-3 flex-wrap">
+                <% page_action_keys.each do |action| %>
+                  <label class="flex items-center gap-1 text-xs cursor-pointer">
+                    <input type="checkbox"
+                           name="role[permissions_checkboxes][<%= page_key %>][]"
+                           value="<%= action %>"
+                           class="permission-checkbox rounded border-rsb-border text-rsb-primary focus:ring-rsb-primary"
+                           <%= 'checked' if page_actions.include?(action) || role.superadmin? %>>
+                    <span><%= action %></span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+            <% items_index += 1 %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="mb-6">
+      <h4 class="text-xs uppercase tracking-wider text-rsb-muted mb-2"><%= rsb_admin_t("shared.system") %></h4>
+
+      <div class="border border-rsb-border rounded-rsb overflow-hidden">
+        <% dashboard_actions = role.permissions["dashboard"] || [] %>
+        <% dashboard_page = RSB::Admin.registry.dashboard_page %>
+        <% dashboard_action_keys = dashboard_page&.action_keys&.map(&:to_s) || [] %>
+        <% dashboard_action_keys = %w[index] if dashboard_action_keys.empty? %>
+        <div class="px-4 py-3 flex items-center gap-4 flex-wrap">
+          <strong class="min-w-[150px] text-sm"><%= rsb_admin_t("roles.dashboard") %></strong>
+          <div class="flex gap-3 flex-wrap">
+            <% dashboard_action_keys.each do |action| %>
+              <label class="flex items-center gap-1 text-xs cursor-pointer">
+                <input type="checkbox"
+                       name="role[permissions_checkboxes][dashboard][]"
+                       value="<%= action %>"
+                       class="permission-checkbox rounded border-rsb-border text-rsb-primary focus:ring-rsb-primary"
+                       <%= 'checked' if dashboard_actions.include?(action) || role.superadmin? %>>
+                <span><%= action %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <% settings_actions = role.permissions["settings"] || [] %>
+        <div class="px-4 py-3 flex items-center gap-4 flex-wrap border-t border-rsb-border">
+          <strong class="min-w-[150px] text-sm"><%= rsb_admin_t("settings.title") %></strong>
+          <div class="flex gap-3 flex-wrap">
+            <% %w[index update].each do |action| %>
+              <label class="flex items-center gap-1 text-xs cursor-pointer">
+                <input type="checkbox"
+                       name="role[permissions_checkboxes][settings][]"
+                       value="<%= action %>"
+                       class="permission-checkbox rounded border-rsb-border text-rsb-primary focus:ring-rsb-primary"
+                       <%= 'checked' if settings_actions.include?(action) || role.superadmin? %>>
+                <span><%= action %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <% admin_users_actions = role.permissions["admin_users"] || [] %>
+        <div class="px-4 py-3 flex items-center gap-4 flex-wrap border-t border-rsb-border">
+          <strong class="min-w-[150px] text-sm"><%= rsb_admin_t("admin_users.title") %></strong>
+          <div class="flex gap-3 flex-wrap">
+            <% %w[index show new create edit update destroy].each do |action| %>
+              <label class="flex items-center gap-1 text-xs cursor-pointer">
+                <input type="checkbox"
+                       name="role[permissions_checkboxes][admin_users][]"
+                       value="<%= action %>"
+                       class="permission-checkbox rounded border-rsb-border text-rsb-primary focus:ring-rsb-primary"
+                       <%= 'checked' if admin_users_actions.include?(action) || role.superadmin? %>>
+                <span><%= action %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <% roles_actions = role.permissions["roles"] || [] %>
+        <div class="px-4 py-3 flex items-center gap-4 flex-wrap border-t border-rsb-border">
+          <strong class="min-w-[150px] text-sm"><%= rsb_admin_t("roles.title") %></strong>
+          <div class="flex gap-3 flex-wrap">
+            <% %w[index show new create edit update destroy].each do |action| %>
+              <label class="flex items-center gap-1 text-xs cursor-pointer">
+                <input type="checkbox"
+                       name="role[permissions_checkboxes][roles][]"
+                       value="<%= action %>"
+                       class="permission-checkbox rounded border-rsb-border text-rsb-primary focus:ring-rsb-primary"
+                       <%= 'checked' if roles_actions.include?(action) || role.superadmin? %>>
+                <span><%= action %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap-3 mt-6">
+    <button type="submit"
+            class="px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover">
+      <%= rsb_admin_t("shared.save") %>
+    </button>
+    <a href="<%= rsb_admin.roles_path %>"
+       class="px-4 py-2 border border-rsb-border text-rsb-text rounded-rsb text-sm hover:bg-rsb-bg">
+      <%= rsb_admin_t("shared.cancel") %>
+    </a>
+  </div>
+<% end %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var superadminToggle = document.getElementById('superadmin-toggle');
+    var permissionsGrid = document.getElementById('permissions-grid');
+    var allCheckboxes = document.querySelectorAll('.permission-checkbox');
+
+    if (superadminToggle && permissionsGrid) {
+      superadminToggle.addEventListener('change', function() {
+        if (this.checked) {
+          permissionsGrid.style.display = 'none';
+          allCheckboxes.forEach(function(cb) { cb.checked = true; });
+        } else {
+          permissionsGrid.style.display = '';
+          allCheckboxes.forEach(function(cb) { cb.checked = false; });
+        }
+      });
+    }
+  });
+</script>
