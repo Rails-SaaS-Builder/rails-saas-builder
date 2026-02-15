@@ -23,6 +23,7 @@ class RegistrationsRecoveryEmailTest < ActionDispatch::IntegrationTest
     }
 
     cred = RSB::Auth::Credential.last
+    assert_not_nil cred, 'Expected a credential to be created'
     assert_equal 'recovery@example.com', cred.recovery_email
   end
 

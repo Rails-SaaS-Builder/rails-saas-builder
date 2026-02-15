@@ -4,6 +4,11 @@ module RSB
   module Auth
     module TestHelper
       def self.included(base)
+        base.setup do
+          RSB::Auth.reset!
+          Rails.cache.clear
+        end
+
         base.teardown do
           RSB::Auth.reset!
         end

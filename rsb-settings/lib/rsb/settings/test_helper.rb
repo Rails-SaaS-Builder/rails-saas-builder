@@ -6,6 +6,11 @@ module RSB
       extend ActiveSupport::Concern
 
       included do
+        setup do
+          RSB::Settings.reset!
+          RSB::Settings::Setting.delete_all if RSB::Settings::Setting.table_exists?
+        end
+
         teardown do
           RSB::Settings.reset!
           RSB::Settings::Setting.delete_all if RSB::Settings::Setting.table_exists?
