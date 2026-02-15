@@ -26,18 +26,22 @@ Rake::TestTask.new(:test_integration) do |t|
   t.verbose = false
 end
 
-desc 'Run tests for a single sub-gem: rake test_gem GEM=rsb-admin'
+desc 'Run tests for a single sub-gem: rake test_gem GEM=rsb-admin [TEST=path] [SEED=1234]'
 task :test_gem do
   gem_name = ENV['GEM'] || abort('Usage: rake test_gem GEM=rsb-admin')
   abort("Unknown gem: #{gem_name}") unless SUB_GEMS.include?(gem_name)
   Dir.chdir(gem_name) do
     sh 'bundle install --quiet'
     test_file = ENV['TEST']
+    seed = ENV['SEED']
     if test_file
-      sh "bundle exec ruby -Itest #{test_file}"
+      cmd = "bundle exec ruby -Itest #{test_file}"
+      cmd += " -- --seed #{seed}" if seed
     else
-      sh 'bundle exec rake test'
+      cmd = 'bundle exec rake test'
+      cmd += " TESTOPTS=\"--seed=#{seed}\"" if seed
     end
+    sh cmd
   end
 end
 

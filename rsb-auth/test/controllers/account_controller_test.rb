@@ -10,7 +10,6 @@ module RSB
       setup do
         register_auth_settings
         register_auth_credentials
-        Rails.cache.clear
         @identity = RSB::Auth::Identity.create!(metadata: { 'name' => 'Test' })
         @credential = @identity.credentials.create!(
           type: 'RSB::Auth::Credential::EmailPassword',
