@@ -31,7 +31,7 @@ module RSB
       end
 
       def reset!
-        @provider_registry = ProviderRegistry.new
+        @providers = ProviderRegistry.new
         @configuration = Configuration.new
       end
     end

@@ -40,7 +40,7 @@ module RSB
       # --- Test support ---
 
       def reset!
-        @credential_registry = CredentialRegistry.new
+        @credentials = CredentialRegistry.new
         @configuration = Configuration.new
         @settings_schema = nil
       end

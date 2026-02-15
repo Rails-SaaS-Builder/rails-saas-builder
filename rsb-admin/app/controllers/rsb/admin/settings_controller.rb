@@ -159,7 +159,7 @@ module RSB
       def parent_truthy?(value)
         return false if value.nil?
         return false if value == false
-        return false if value.zero?
+        return false if value == 0 # rubocop:disable Style/NumericPredicate
         return false if value.is_a?(String) && value.blank?
         return false if value.to_s.downcase == 'false'
         return false if value.to_s == '0'
