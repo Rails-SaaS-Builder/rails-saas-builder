@@ -37,12 +37,11 @@ task :test_gem do
     if test_file
       cmd = "bundle exec ruby -Itest #{test_file}"
       cmd += " -- --seed #{seed}" if seed
-      sh cmd
     else
       cmd = 'bundle exec rake test'
       cmd += " TESTOPTS=\"--seed=#{seed}\"" if seed
-      sh cmd
     end
+    sh cmd
   end
 end
 
