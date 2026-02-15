@@ -14,7 +14,7 @@ group :development, :test do
   gem 'ostruct'
   gem 'propshaft'
   gem 'puma'
-  gem 'rubocop-rails-omakase', require: false
+  gem 'rubocop', require: false
   gem 'sqlite3'
 end
 
