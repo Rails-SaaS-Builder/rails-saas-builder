@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     # Configuration for rsb-auth lifecycle handler and model concerns.

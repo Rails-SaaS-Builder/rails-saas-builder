@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     class UsageCounterService
@@ -10,7 +12,7 @@ module RSB
       # @return [void]
       def create_counters_for(entitlement)
         return unless entitlement.active?
-        return unless RSB::Settings.get("entitlements.auto_create_counters")
+        return unless RSB::Settings.get('entitlements.auto_create_counters')
 
         plan = entitlement.plan
         return if plan.limits.blank?
@@ -18,8 +20,8 @@ module RSB
         plan.limits.each do |metric, config|
           next unless config.is_a?(Hash)
 
-          period = config["period"]
-          limit_value = config["limit"]
+          period = config['period']
+          limit_value = config['limit']
           period_key = PeriodKeyCalculator.current_key(period)
 
           entitlement.entitleable.usage_counters.find_or_create_by!(
@@ -48,9 +50,9 @@ module RSB
       # @return [void]
       def handle_plan_change(entitleable, old_plan:, new_plan:)
         mode = begin
-          RSB::Settings.get("entitlements.on_plan_change_usage")
-        rescue
-          "continue"
+          RSB::Settings.get('entitlements.on_plan_change_usage')
+        rescue StandardError
+          'continue'
         end
 
         source = entitleable.respond_to?(:entitlement_source) ? entitleable.entitlement_source : entitleable
@@ -58,16 +60,16 @@ module RSB
         new_plan.limits.each do |metric, new_config|
           next unless new_config.is_a?(Hash)
 
-          new_period = new_config["period"]
-          new_limit = new_config["limit"]
+          new_period = new_config['period']
+          new_limit = new_config['limit']
           new_period_key = PeriodKeyCalculator.current_key(new_period)
 
           old_config = old_plan.limit_config_for(metric)
-          old_period = old_config&.dig("period")
+          old_period = old_config&.dig('period')
 
           # Determine carry-over value
           carry_over = 0
-          if old_config && old_period == new_period && mode == "continue"
+          if old_config && old_period == new_period && mode == 'continue'
             old_period_key = PeriodKeyCalculator.current_key(old_period)
             old_counter = source.usage_counters
                                 .for_metric(metric)

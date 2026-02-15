@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     module Stripe
@@ -7,7 +9,7 @@ module RSB
         end
 
         def self.provider_label
-          "Stripe"
+          'Stripe'
         end
 
         def self.manual_resolution?
@@ -26,39 +28,39 @@ module RSB
           setting :enabled,
                   type: :boolean,
                   default: false,
-                  description: "Enable Stripe payment provider"
+                  description: 'Enable Stripe payment provider'
 
           setting :secret_key,
                   type: :string,
-                  default: "",
+                  default: '',
                   encrypted: true,
-                  depends_on: "entitlements.providers.stripe.enabled",
-                  description: "Stripe secret API key (sk_live_... or sk_test_...)"
+                  depends_on: 'entitlements.providers.stripe.enabled',
+                  description: 'Stripe secret API key (sk_live_... or sk_test_...)'
 
           setting :publishable_key,
                   type: :string,
-                  default: "",
-                  depends_on: "entitlements.providers.stripe.enabled",
-                  description: "Stripe publishable key (pk_live_... or pk_test_...)"
+                  default: '',
+                  depends_on: 'entitlements.providers.stripe.enabled',
+                  description: 'Stripe publishable key (pk_live_... or pk_test_...)'
 
           setting :webhook_secret,
                   type: :string,
-                  default: "",
+                  default: '',
                   encrypted: true,
-                  depends_on: "entitlements.providers.stripe.enabled",
-                  description: "Webhook endpoint signing secret (whsec_...)"
+                  depends_on: 'entitlements.providers.stripe.enabled',
+                  description: 'Webhook endpoint signing secret (whsec_...)'
 
           setting :success_url,
                   type: :string,
-                  default: "",
-                  depends_on: "entitlements.providers.stripe.enabled",
-                  description: "URL to redirect after successful checkout (supports {CHECKOUT_SESSION_ID} placeholder)"
+                  default: '',
+                  depends_on: 'entitlements.providers.stripe.enabled',
+                  description: 'URL to redirect after successful checkout (supports {CHECKOUT_SESSION_ID} placeholder)'
 
           setting :cancel_url,
                   type: :string,
-                  default: "",
-                  depends_on: "entitlements.providers.stripe.enabled",
-                  description: "URL to redirect if customer cancels checkout"
+                  default: '',
+                  depends_on: 'entitlements.providers.stripe.enabled',
+                  description: 'URL to redirect if customer cancels checkout'
         end
 
         # Start the Stripe Checkout Session flow.
@@ -68,12 +70,12 @@ module RSB
         # @raise [ArgumentError] if plan has no stripe_price_id in metadata
         def initiate!
           plan = payment_request.plan
-          stripe_price_id = plan.metadata&.dig("stripe_price_id")
+          stripe_price_id = plan.metadata&.dig('stripe_price_id')
 
           unless stripe_price_id.present?
             raise ArgumentError,
-              "Plan '#{plan.slug}' has no stripe_price_id in metadata. " \
-              "Set plan.metadata['stripe_price_id'] to a valid Stripe Price ID."
+                  "Plan '#{plan.slug}' has no stripe_price_id in metadata. " \
+                  "Set plan.metadata['stripe_price_id'] to a valid Stripe Price ID."
           end
 
           mode = checkout_mode(plan.interval)
@@ -86,11 +88,11 @@ module RSB
           session = RSB::Entitlements::Stripe.client.v1.checkout.sessions.create(session_params)
 
           payment_request.update!(
-            status: "processing",
+            status: 'processing',
             provider_ref: session.id,
             provider_data: (payment_request.provider_data || {}).merge(
-              "checkout_session_id" => session.id,
-              "mode" => mode
+              'checkout_session_id' => session.id,
+              'mode' => mode
             )
           )
 
@@ -113,12 +115,10 @@ module RSB
 
           # For subscriptions, store the subscription ID on the entitlement
           # so lifecycle events (invoice.paid, subscription.updated/deleted) can find it.
-          if params[:subscription_id].present?
-            entitlement.update!(provider_ref: params[:subscription_id])
-          end
+          entitlement.update!(provider_ref: params[:subscription_id]) if params[:subscription_id].present?
 
           payment_request.update!(
-            status: "approved",
+            status: 'approved',
             entitlement: entitlement
           )
 
@@ -142,14 +142,14 @@ module RSB
         #
         # @param params [Hash] unused
         # @return [void]
-        def refund!(params = {})
+        def refund!(_params = {})
           data = payment_request.provider_data || {}
           client = RSB::Entitlements::Stripe.client
 
           # Cancel subscription if applicable
-          if data["subscription_id"].present?
+          if data['subscription_id'].present?
             begin
-              client.v1.subscriptions.cancel(data["subscription_id"])
+              client.v1.subscriptions.cancel(data['subscription_id'])
             rescue ::Stripe::InvalidRequestError => e
               # Subscription may already be canceled — log and continue
               Rails.logger.warn("#{RSB::Entitlements::Stripe::LOG_TAG} Subscription cancel failed: #{e.message}")
@@ -157,18 +157,16 @@ module RSB
           end
 
           # Create refund if payment_intent_id is available
-          if data["payment_intent_id"].present?
-            refund = client.v1.refunds.create(payment_intent: data["payment_intent_id"])
-            data["refund_id"] = refund.id
+          if data['payment_intent_id'].present?
+            refund = client.v1.refunds.create(payment_intent: data['payment_intent_id'])
+            data['refund_id'] = refund.id
           end
 
           # Revoke linked entitlement
-          if payment_request.entitlement.present?
-            payment_request.requestable.revoke_entitlement(reason: :refund)
-          end
+          payment_request.requestable.revoke_entitlement(reason: :refund) if payment_request.entitlement.present?
 
           payment_request.update!(
-            status: "refunded",
+            status: 'refunded',
             provider_data: data
           )
 
@@ -181,14 +179,14 @@ module RSB
         def admin_details
           data = payment_request.provider_data || {}
           details = {}
-          details["Mode"] = data["mode"]&.capitalize if data["mode"].present?
-          details["Checkout Session"] = data["checkout_session_id"] if data["checkout_session_id"].present?
-          details["Stripe Customer"] = data["customer_id"] if data["customer_id"].present?
-          details["Subscription"] = data["subscription_id"] if data["subscription_id"].present?
-          details["Payment Intent"] = data["payment_intent_id"] if data["payment_intent_id"].present?
-          details["Invoice"] = data["invoice_id"] if data["invoice_id"].present?
-          details["Refund"] = data["refund_id"] if data["refund_id"].present?
-          details["Failure"] = data["failure_message"] if data["failure_message"].present?
+          details['Mode'] = data['mode']&.capitalize if data['mode'].present?
+          details['Checkout Session'] = data['checkout_session_id'] if data['checkout_session_id'].present?
+          details['Stripe Customer'] = data['customer_id'] if data['customer_id'].present?
+          details['Subscription'] = data['subscription_id'] if data['subscription_id'].present?
+          details['Payment Intent'] = data['payment_intent_id'] if data['payment_intent_id'].present?
+          details['Invoice'] = data['invoice_id'] if data['invoice_id'].present?
+          details['Refund'] = data['refund_id'] if data['refund_id'].present?
+          details['Failure'] = data['failure_message'] if data['failure_message'].present?
           details
         end
 
@@ -200,12 +198,12 @@ module RSB
         # @return [String] "payment" or "subscription"
         def checkout_mode(interval)
           case interval
-          when "monthly", "yearly"
-            "subscription"
-          when "one_time", "lifetime"
-            "payment"
+          when 'monthly', 'yearly'
+            'subscription'
+          when 'one_time', 'lifetime'
+            'payment'
           else
-            "payment"
+            'payment'
           end
         end
 
@@ -220,8 +218,8 @@ module RSB
           params = {
             mode: mode,
             line_items: [{ price: stripe_price_id, quantity: 1 }],
-            success_url: setting("success_url"),
-            cancel_url: setting("cancel_url"),
+            success_url: setting('success_url'),
+            cancel_url: setting('cancel_url'),
             metadata: {
               rsb_payment_request_id: payment_request.id.to_s,
               rsb_plan_id: plan.id.to_s,
@@ -231,7 +229,7 @@ module RSB
           }
 
           # Subscription mode: copy metadata to subscription_data for lifecycle events
-          if mode == "subscription"
+          if mode == 'subscription'
             params[:subscription_data] = {
               metadata: {
                 rsb_plan_id: plan.id.to_s,
@@ -256,15 +254,15 @@ module RSB
           # Try stored Stripe Customer ID first
           if requestable.respond_to?(:metadata) &&
              requestable.metadata.is_a?(Hash) &&
-             requestable.metadata["stripe_customer_id"].present?
-            params[:customer] = requestable.metadata["stripe_customer_id"]
+             requestable.metadata['stripe_customer_id'].present?
+            params[:customer] = requestable.metadata['stripe_customer_id']
             return
           end
 
           # Fall back to email hint
-          if requestable.respond_to?(:billing_email) && requestable.billing_email.present?
-            params[:customer_email] = requestable.billing_email
-          end
+          return unless requestable.respond_to?(:billing_email) && requestable.billing_email.present?
+
+          params[:customer_email] = requestable.billing_email
         end
 
         # Read a Stripe provider setting.

@@ -1,33 +1,39 @@
-require "test_helper"
+# frozen_string_literal: true
 
-class RSB::Auth::LifecycleHandlerRevocationTest < ActiveSupport::TestCase
-  test "after_credential_revoked is a no-op by default" do
-    handler = RSB::Auth::LifecycleHandler.new
-    assert_nothing_raised { handler.after_credential_revoked(nil) }
-  end
+require 'test_helper'
 
-  test "after_credential_restored is a no-op by default" do
-    handler = RSB::Auth::LifecycleHandler.new
-    assert_nothing_raised { handler.after_credential_restored(nil) }
-  end
+module RSB
+  module Auth
+    class LifecycleHandlerRevocationTest < ActiveSupport::TestCase
+      test 'after_credential_revoked is a no-op by default' do
+        handler = RSB::Auth::LifecycleHandler.new
+        assert_nothing_raised { handler.after_credential_revoked(nil) }
+      end
 
-  test "subclass can override after_credential_revoked" do
-    called_with = nil
-    handler_class = Class.new(RSB::Auth::LifecycleHandler) do
-      define_method(:after_credential_revoked) { |cred| called_with = cred }
+      test 'after_credential_restored is a no-op by default' do
+        handler = RSB::Auth::LifecycleHandler.new
+        assert_nothing_raised { handler.after_credential_restored(nil) }
+      end
+
+      test 'subclass can override after_credential_revoked' do
+        called_with = nil
+        handler_class = Class.new(RSB::Auth::LifecycleHandler) do
+          define_method(:after_credential_revoked) { |cred| called_with = cred }
+        end
+
+        handler_class.new.after_credential_revoked(:fake_credential)
+        assert_equal :fake_credential, called_with
+      end
+
+      test 'subclass can override after_credential_restored' do
+        called_with = nil
+        handler_class = Class.new(RSB::Auth::LifecycleHandler) do
+          define_method(:after_credential_restored) { |cred| called_with = cred }
+        end
+
+        handler_class.new.after_credential_restored(:fake_credential)
+        assert_equal :fake_credential, called_with
+      end
     end
-
-    handler_class.new.after_credential_revoked(:fake_credential)
-    assert_equal :fake_credential, called_with
-  end
-
-  test "subclass can override after_credential_restored" do
-    called_with = nil
-    handler_class = Class.new(RSB::Auth::LifecycleHandler) do
-      define_method(:after_credential_restored) { |cred| called_with = cred }
-    end
-
-    handler_class.new.after_credential_restored(:fake_credential)
-    assert_equal :fake_credential, called_with
   end
 end

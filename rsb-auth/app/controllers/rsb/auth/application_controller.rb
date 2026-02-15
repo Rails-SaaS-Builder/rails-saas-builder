@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class ApplicationController < ActionController::Base
@@ -33,15 +35,15 @@ module RSB
       end
 
       def require_authentication
-        unless identity_signed_in?
-          redirect_to new_session_path, alert: "Please sign in."
-        end
+        return if identity_signed_in?
+
+        redirect_to new_session_path, alert: 'Please sign in.'
       end
 
       def redirect_if_authenticated
-        if identity_signed_in?
-          redirect_to main_app.root_path
-        end
+        return unless identity_signed_in?
+
+        redirect_to main_app.root_path
       end
     end
   end

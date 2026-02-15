@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class PasswordResetService
@@ -21,7 +23,7 @@ module RSB
 
       def reset_password(token:, password:, password_confirmation:)
         reset_token = RSB::Auth::PasswordResetToken.valid.find_by(token: token)
-        return failure("Invalid or expired reset token.") unless reset_token
+        return failure('Invalid or expired reset token.') unless reset_token
 
         credential = reset_token.credential
         credential.password = password
@@ -32,7 +34,7 @@ module RSB
           credential.identity.sessions.active.update_all(expires_at: Time.current)
           Result.new(success?: true, error: nil)
         else
-          failure(credential.errors.full_messages.join(", "))
+          failure(credential.errors.full_messages.join(', '))
         end
       end
 

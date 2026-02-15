@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateRSBEntitlementsPlans < ActiveRecord::Migration[8.0]
   def change
     create_table :rsb_entitlements_plans do |t|
@@ -5,7 +7,7 @@ class CreateRSBEntitlementsPlans < ActiveRecord::Migration[8.0]
       t.string  :slug,        null: false
       t.string  :interval,    null: false
       t.integer :price_cents, null: false, default: 0
-      t.string  :currency,    null: false, default: "usd"
+      t.string  :currency,    null: false, default: 'usd'
       t.json    :features,    default: {}
       t.json    :limits,      default: {}
       t.json    :metadata,    default: {}

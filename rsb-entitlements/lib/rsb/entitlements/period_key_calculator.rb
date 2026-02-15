@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     # Computes period keys for usage tracking from period types.
@@ -19,7 +21,7 @@ module RSB
     #   # => "__cumulative__"
     module PeriodKeyCalculator
       # Constant for cumulative (non-resetting) period keys.
-      CUMULATIVE_KEY = "__cumulative__"
+      CUMULATIVE_KEY = '__cumulative__'
 
       # Compute the period key for a given period type and time.
       #
@@ -44,9 +46,9 @@ module RSB
       #   # => "__cumulative__"
       def self.current_key(period, time = Time.current)
         case period&.to_s
-        when "daily"   then time.strftime("%Y-%m-%d")
-        when "weekly"  then time.strftime("%G-W%V")
-        when "monthly" then time.strftime("%Y-%m")
+        when 'daily'   then time.strftime('%Y-%m-%d')
+        when 'weekly'  then time.strftime('%G-W%V')
+        when 'monthly' then time.strftime('%Y-%m')
         else CUMULATIVE_KEY
         end
       end

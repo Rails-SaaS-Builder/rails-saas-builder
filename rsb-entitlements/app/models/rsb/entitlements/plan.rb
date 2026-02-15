@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     class Plan < ApplicationRecord
@@ -17,7 +19,7 @@ module RSB
       scope :active, -> { where(active: true) }
 
       def free?
-        price_cents == 0
+        price_cents.zero?
       end
 
       def feature?(key)
@@ -36,7 +38,8 @@ module RSB
       def limit_for(key)
         config = limits[key.to_s]
         return nil unless config.is_a?(Hash)
-        config["limit"]
+
+        config['limit']
       end
 
       # Returns the period type for a metric from the nested limits config.
@@ -51,7 +54,8 @@ module RSB
       def period_for(key)
         config = limits[key.to_s]
         return nil unless config.is_a?(Hash)
-        config["period"]
+
+        config['period']
       end
 
       # Returns the full limit configuration hash for a metric.
@@ -71,6 +75,7 @@ module RSB
       def limit_config_for(key)
         config = limits[key.to_s]
         return nil unless config.is_a?(Hash)
+
         config
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     module RateLimitable
@@ -9,9 +11,9 @@ module RSB
         cache_key = "rsb_throttle:#{key}:#{request.remote_ip}"
         count = Rails.cache.increment(cache_key, 1, expires_in: period.seconds, initial: 0)
 
-        if count > limit
-          render plain: "Too many requests. Try again later.", status: :too_many_requests
-        end
+        return unless count > limit
+
+        render plain: 'Too many requests. Try again later.', status: :too_many_requests
       end
     end
   end

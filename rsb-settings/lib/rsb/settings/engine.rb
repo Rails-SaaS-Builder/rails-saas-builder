@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     class Engine < ::Rails::Engine
@@ -6,16 +8,16 @@ module RSB
       # Insert locale middleware into the Rails middleware stack.
       # Applies to all requests (host app + all engines).
       # Host app can remove: config.middleware.delete RSB::Settings::LocaleMiddleware
-      initializer "rsb_settings.locale_middleware" do |app|
+      initializer 'rsb_settings.locale_middleware' do |app|
         app.middleware.use RSB::Settings::LocaleMiddleware
       end
 
       # Signal readiness — downstream gems hook in after this
-      initializer "rsb_settings.ready" do
+      initializer 'rsb_settings.ready' do
         # Registry is available. Other gems can now register schemas.
       end
 
-      initializer "rsb_settings.register_seo_settings", after: "rsb_settings.ready" do
+      initializer 'rsb_settings.register_seo_settings', after: 'rsb_settings.ready' do
         RSB::Settings.registry.register(RSB::Settings::SeoSettingsSchema.build)
       end
 

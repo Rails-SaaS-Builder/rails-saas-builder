@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     module BrandingHelper
@@ -5,7 +7,7 @@ module RSB
       #
       # @return [String] the admin panel title
       def rsb_admin_app_name
-        RSB::Settings.get("admin.app_name").to_s.presence || "Admin"
+        RSB::Settings.get('admin.app_name').to_s.presence || 'Admin'
       end
 
       # Returns the resolved logo URL from settings.
@@ -13,7 +15,7 @@ module RSB
       #
       # @return [String] the logo URL or empty string
       def rsb_admin_logo_url
-        RSB::Settings.get("admin.logo_url").to_s
+        RSB::Settings.get('admin.logo_url').to_s
       end
 
       # Returns the resolved company name from settings.
@@ -21,7 +23,7 @@ module RSB
       #
       # @return [String] the company name or empty string
       def rsb_admin_company_name
-        RSB::Settings.get("admin.company_name").to_s
+        RSB::Settings.get('admin.company_name').to_s
       end
 
       # Returns the resolved footer text from settings.
@@ -29,7 +31,7 @@ module RSB
       #
       # @return [String] the footer text or empty string
       def rsb_admin_footer_text
-        RSB::Settings.get("admin.footer_text").to_s
+        RSB::Settings.get('admin.footer_text').to_s
       end
     end
   end

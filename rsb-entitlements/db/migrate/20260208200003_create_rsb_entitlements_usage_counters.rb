@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateRSBEntitlementsUsageCounters < ActiveRecord::Migration[8.0]
   def change
     create_table :rsb_entitlements_usage_counters do |t|
@@ -12,8 +14,8 @@ class CreateRSBEntitlementsUsageCounters < ActiveRecord::Migration[8.0]
     end
 
     add_index :rsb_entitlements_usage_counters,
-              [:countable_type, :countable_id, :metric],
+              %i[countable_type countable_id metric],
               unique: true,
-              name: "idx_rsb_usage_counters_unique"
+              name: 'idx_rsb_usage_counters_unique'
   end
 end

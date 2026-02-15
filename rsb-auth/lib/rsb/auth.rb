@@ -1,14 +1,16 @@
-require "rsb/settings"
-require "rsb/auth/version"
-require "rsb/auth/engine"
-require "rsb/auth/configuration"
-require "rsb/auth/lifecycle_handler"
-require "rsb/auth/credential_conflict_error"
-require "rsb/auth/credential_definition"
-require "rsb/auth/credential_registry"
-require "rsb/auth/credential_settings_registrar"
-require "rsb/auth/credential_deprecation_bridge"
-require "rsb/auth/settings_schema"
+# frozen_string_literal: true
+
+require 'rsb/settings'
+require 'rsb/auth/version'
+require 'rsb/auth/engine'
+require 'rsb/auth/configuration'
+require 'rsb/auth/lifecycle_handler'
+require 'rsb/auth/credential_conflict_error'
+require 'rsb/auth/credential_definition'
+require 'rsb/auth/credential_registry'
+require 'rsb/auth/credential_settings_registrar'
+require 'rsb/auth/credential_deprecation_bridge'
+require 'rsb/auth/settings_schema'
 
 module RSB
   module Auth
@@ -16,7 +18,7 @@ module RSB
       # --- Credential Registry ---
 
       def credentials
-        @credential_registry ||= CredentialRegistry.new
+        @credentials ||= CredentialRegistry.new
       end
 
       # --- Configuration (lifecycle handler) ---

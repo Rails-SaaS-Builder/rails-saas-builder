@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     # Expires stale payment requests whose expires_at has passed.
@@ -14,12 +16,12 @@ module RSB
       def perform
         PaymentRequest
           .actionable
-          .where("expires_at <= ?", Time.current)
+          .where('expires_at <= ?', Time.current)
           .where.not(expires_at: nil)
           .find_each do |request|
             request.update!(
-              status: "expired",
-              resolved_by: "system:expiration",
+              status: 'expired',
+              resolved_by: 'system:expiration',
               resolved_at: Time.current
             )
           end

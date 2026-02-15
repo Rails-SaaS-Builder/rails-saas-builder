@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     class AdminController < ActionController::Base
@@ -37,7 +39,7 @@ module RSB
       def check_admin_enabled
         return if RSB::Admin.enabled?
 
-        render template: "rsb/admin/shared/disabled", layout: false, status: :service_unavailable
+        render template: 'rsb/admin/shared/disabled', layout: false, status: :service_unavailable
       end
 
       def require_admin_authentication
@@ -48,15 +50,15 @@ module RSB
 
       def enforce_two_factor_enrollment
         return unless current_admin_user
-        return unless ActiveModel::Type::Boolean.new.cast(RSB::Settings.get("admin.require_two_factor"))
+        return unless ActiveModel::Type::Boolean.new.cast(RSB::Settings.get('admin.require_two_factor'))
         return if current_admin_user.otp_enabled?
 
         # Allow access to TwoFactorController and logout
-        return if self.is_a?(RSB::Admin::TwoFactorController)
-        return if controller_name == "sessions" && action_name == "destroy"
+        return if is_a?(RSB::Admin::TwoFactorController)
+        return if controller_name == 'sessions' && action_name == 'destroy'
 
         redirect_to rsb_admin.new_profile_two_factor_path,
-          alert: "Two-factor authentication is required. Please set up 2FA to continue."
+                    alert: 'Two-factor authentication is required. Please set up 2FA to continue.'
       end
 
       def current_admin_user
@@ -109,7 +111,7 @@ module RSB
 
         @breadcrumbs = [
           RSB::Admin::BreadcrumbItem.new(
-            label: RSB::Settings.get("admin.app_name").to_s.presence || RSB::Admin.configuration.app_name,
+            label: RSB::Settings.get('admin.app_name').to_s.presence || RSB::Admin.configuration.app_name,
             path: rsb_admin.dashboard_path
           )
         ]

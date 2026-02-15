@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     # Immutable data object representing a registered payment provider.
@@ -24,7 +26,7 @@ module RSB
       def self.build_from(klass)
         unless klass < PaymentProvider::Base
           raise ArgumentError,
-            "#{klass} must inherit from RSB::Entitlements::PaymentProvider::Base"
+                "#{klass} must inherit from RSB::Entitlements::PaymentProvider::Base"
         end
 
         new(

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class AuthenticationService
@@ -15,17 +17,17 @@ module RSB
           identifier: identifier.strip.downcase
         )
 
-        return failure("Invalid credentials.") unless credential
-        return failure("Invalid credentials.") if credential.identity.deleted?
+        return failure('Invalid credentials.') unless credential
+        return failure('Invalid credentials.') if credential.identity.deleted?
 
         # Check credential type is enabled
         credential_type_key = derive_credential_type_key(credential)
         unless RSB::Auth.credentials.enabled?(credential_type_key)
-          return failure("This sign-in method is not available.")
+          return failure('This sign-in method is not available.')
         end
 
-        return failure("Account is locked. Try again later.") if credential.locked?
-        return failure("Account is suspended.") if credential.identity.suspended?
+        return failure('Account is locked. Try again later.') if credential.locked?
+        return failure('Account is suspended.') if credential.identity.suspended?
 
         if credential.authenticate(password)
           credential.update_columns(failed_attempts: 0)
@@ -41,16 +43,18 @@ module RSB
             )
 
             if allow_unverified
-              Result.new(success?: true, identity: credential.identity, credential: credential, error: nil, unverified: true)
+              Result.new(success?: true, identity: credential.identity, credential: credential, error: nil,
+                         unverified: true)
             else
-              failure("Please verify your email before signing in.")
+              failure('Please verify your email before signing in.')
             end
           else
-            Result.new(success?: true, identity: credential.identity, credential: credential, error: nil, unverified: false)
+            Result.new(success?: true, identity: credential.identity, credential: credential, error: nil,
+                       unverified: false)
           end
         else
           record_failed_attempt(credential)
-          failure("Invalid credentials.")
+          failure('Invalid credentials.')
         end
       end
 
@@ -67,11 +71,11 @@ module RSB
 
       def record_failed_attempt(credential)
         credential.increment!(:failed_attempts)
-        threshold = RSB::Settings.get("auth.lockout_threshold")
-        if credential.failed_attempts >= threshold
-          duration = RSB::Settings.get("auth.lockout_duration")
-          credential.update_columns(locked_until: Time.current + duration.to_i.seconds)
-        end
+        threshold = RSB::Settings.get('auth.lockout_threshold')
+        return unless credential.failed_attempts >= threshold
+
+        duration = RSB::Settings.get('auth.lockout_duration')
+        credential.update_columns(locked_until: Time.current + duration.to_i.seconds)
       end
 
       def failure(error)

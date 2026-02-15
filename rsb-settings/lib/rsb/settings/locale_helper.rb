@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     module LocaleHelper
@@ -15,9 +17,9 @@ module RSB
 
       def rsb_locale_switcher(current_path: nil)
         locales = RSB::Settings.available_locales
-        return "".html_safe if locales.size <= 1
+        return ''.html_safe if locales.size <= 1
 
-        path = current_path || (respond_to?(:request) ? request.fullpath : "/")
+        path = current_path || (respond_to?(:request) ? request.fullpath : '/')
         current = rsb_current_locale
 
         parts = locales.map do |loc|
@@ -34,7 +36,7 @@ module RSB
           end
         end
 
-        %(<nav class="rsb-locale-switcher">#{parts.join(" ")}</nav>).html_safe
+        %(<nav class="rsb-locale-switcher">#{parts.join(' ')}</nav>).html_safe
       end
     end
   end

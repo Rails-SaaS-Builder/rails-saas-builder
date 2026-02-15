@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReworkUsageCountersToLedger < ActiveRecord::Migration[8.0]
   def up
     # 1. Add new columns
@@ -36,12 +38,13 @@ class ReworkUsageCountersToLedger < ActiveRecord::Migration[8.0]
     # 4. Data migration — convert Plan.limits from flat to nested format
     RSB::Entitlements::Plan.find_each do |plan|
       next if plan.limits.blank?
+
       # Skip if already in nested format (first value is a Hash)
       first_value = plan.limits.values.first
       next if first_value.is_a?(Hash)
 
       nested = plan.limits.transform_values do |limit_value|
-        { "limit" => limit_value, "period" => nil }
+        { 'limit' => limit_value, 'period' => nil }
       end
       plan.update_column(:limits, nested)
     end
@@ -57,22 +60,22 @@ class ReworkUsageCountersToLedger < ActiveRecord::Migration[8.0]
 
     # 7. Drop old unique index and create new one
     remove_index :rsb_entitlements_usage_counters,
-                 name: "idx_rsb_usage_counters_unique"
+                 name: 'idx_rsb_usage_counters_unique'
 
     add_index :rsb_entitlements_usage_counters,
-              [:countable_type, :countable_id, :metric, :period_key, :plan_id],
+              %i[countable_type countable_id metric period_key plan_id],
               unique: true,
-              name: "idx_rsb_usage_counters_unique"
+              name: 'idx_rsb_usage_counters_unique'
 
     # 8. Add supporting indexes
     add_index :rsb_entitlements_usage_counters, :metric,
-              name: "idx_rsb_usage_counters_on_metric"
+              name: 'idx_rsb_usage_counters_on_metric'
     add_index :rsb_entitlements_usage_counters, :period_key,
-              name: "idx_rsb_usage_counters_on_period_key"
+              name: 'idx_rsb_usage_counters_on_period_key'
   end
 
   def down
     raise ActiveRecord::IrreversibleMigration,
-          "Cannot reverse usage counter ledger migration (data migration is lossy)"
+          'Cannot reverse usage counter ledger migration (data migration is lossy)'
   end
 end

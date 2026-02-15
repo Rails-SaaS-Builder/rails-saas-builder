@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     module Themes
@@ -31,10 +33,10 @@ module RSB
         #   # => #<data RSB::Admin::ThemeDefinition key=:modern, ...>
         def self.register!
           RSB::Admin.register_theme :modern,
-            label: "Modern",
-            css: "rsb/admin/themes/modern",
-            js: "rsb/admin/themes/modern",
-            views_path: "rsb/admin/themes/modern/views"
+                                    label: 'Modern',
+                                    css: 'rsb/admin/themes/modern',
+                                    js: 'rsb/admin/themes/modern',
+                                    views_path: 'rsb/admin/themes/modern/views'
         end
       end
     end

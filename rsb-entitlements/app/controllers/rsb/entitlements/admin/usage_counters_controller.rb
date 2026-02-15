@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     module Admin
@@ -20,8 +22,8 @@ module RSB
           scope = scope.for_period(params[:period_key]) if params[:period_key].present?
           scope = scope.where(countable_type: params[:countable_type]) if params[:countable_type].present?
 
-          sort_col = %w[current_value period_key created_at].include?(params[:sort]) ? params[:sort] : "created_at"
-          sort_dir = params[:direction] == "asc" ? :asc : :desc
+          sort_col = %w[current_value period_key created_at].include?(params[:sort]) ? params[:sort] : 'created_at'
+          sort_dir = params[:direction] == 'asc' ? :asc : :desc
           scope = scope.order(sort_col => sort_dir)
 
           @per_page = 25
@@ -45,21 +47,21 @@ module RSB
           @available_metrics = RSB::Entitlements::UsageCounter.distinct.pluck(:metric).sort
           @metric = params[:metric]
 
-          if @metric.present?
-            scope = RSB::Entitlements::UsageCounter.for_metric(@metric)
-            scope = scope.where(countable_type: params[:countable_type]) if params[:countable_type].present?
-            scope = scope.where(countable_id: params[:countable_id]) if params[:countable_id].present?
+          return unless @metric.present?
 
-            @trend_data = scope
-              .group(:period_key)
-              .order(:period_key)
-              .sum(:current_value)
-              .to_a
-              .last(30)
-              .to_h
+          scope = RSB::Entitlements::UsageCounter.for_metric(@metric)
+          scope = scope.where(countable_type: params[:countable_type]) if params[:countable_type].present?
+          scope = scope.where(countable_id: params[:countable_id]) if params[:countable_id].present?
 
-            @max_value = @trend_data.values.max || 0
-          end
+          @trend_data = scope
+                        .group(:period_key)
+                        .order(:period_key)
+                        .sum(:current_value)
+                        .to_a
+                        .last(30)
+                        .to_h
+
+          @max_value = @trend_data.values.max || 0
         end
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateRSBAuthInvitations < ActiveRecord::Migration[8.1]
   def change
     create_table :rsb_auth_invitations do |t|

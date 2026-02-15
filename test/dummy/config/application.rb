@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'boot'
 
 require 'rails'
@@ -37,7 +39,7 @@ module Dummy
     config.assets.paths << File.expand_path('../../../rsb-admin/app/assets/javascripts', __dir__)
 
     # Configure I18n locales for QA testing
-    config.i18n.available_locales = [:en, :de, :fr]
+    config.i18n.available_locales = %i[en de fr]
     config.i18n.default_locale = :en
   end
 end

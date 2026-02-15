@@ -1,5 +1,7 @@
-require "rack/request"
-require "rack/response"
+# frozen_string_literal: true
+
+require 'rack/request'
+require 'rack/response'
 
 module RSB
   module Settings
@@ -18,9 +20,9 @@ module RSB
     #   config.middleware.delete RSB::Settings::LocaleMiddleware
     #
     class LocaleMiddleware
-      COOKIE_NAME = "rsb_locale"
+      COOKIE_NAME = 'rsb_locale'
       COOKIE_MAX_AGE = 31_536_000 # 1 year in seconds
-      LOCALE_PATH = "/rsb/locale"
+      LOCALE_PATH = '/rsb/locale'
 
       def initialize(app)
         @app = app
@@ -32,14 +34,12 @@ module RSB
         request = Rack::Request.new(env)
 
         # Handle locale switching endpoint
-        if request.post? && request.path_info == LOCALE_PATH
-          return handle_locale_change(request)
-        end
+        return handle_locale_change(request) if request.post? && request.path_info == LOCALE_PATH
 
         # Resolve and set locale for this request
         locale = resolve_locale(request)
         I18n.locale = locale
-        env["rsb.locale"] = locale.to_s
+        env['rsb.locale'] = locale.to_s
 
         @app.call(env)
       ensure
@@ -53,25 +53,23 @@ module RSB
       # @param request [Rack::Request]
       # @return [Array] Rack response tuple
       def handle_locale_change(request)
-        locale = request.params["locale"].to_s.strip
+        locale = request.params['locale'].to_s.strip
         available = RSB::Settings.available_locales
 
         # Empty locale = redirect without setting cookie
-        if locale.empty?
-          return redirect_response(redirect_path(request))
-        end
+        return redirect_response(redirect_path(request)) if locale.empty?
 
         # Invalid locale falls back to default
         locale = RSB::Settings.default_locale unless available.include?(locale)
 
         response = Rack::Response.new
         response.set_cookie(COOKIE_NAME, {
-          value: locale,
-          path: "/",
-          max_age: COOKIE_MAX_AGE,
-          same_site: :lax,
-          httponly: false
-        })
+                              value: locale,
+                              path: '/',
+                              max_age: COOKIE_MAX_AGE,
+                              same_site: :lax,
+                              httponly: false
+                            })
         response.redirect(redirect_path(request))
         response.finish
       end
@@ -90,7 +88,7 @@ module RSB
 
         # 2. Accept-Language header
         accept_locale = parse_accept_language(
-          request.env["HTTP_ACCEPT_LANGUAGE"],
+          request.env['HTTP_ACCEPT_LANGUAGE'],
           available
         )
         return accept_locale if accept_locale
@@ -107,20 +105,20 @@ module RSB
       def parse_accept_language(header, available)
         return nil if header.nil? || header.empty?
 
-        locales = header.split(",").filter_map do |part|
+        locales = header.split(',').filter_map do |part|
           part = part.strip
           next if part.empty?
 
-          lang, quality_str = part.split(";", 2)
-          lang = lang.to_s.split("-").first.to_s.downcase.strip
+          lang, quality_str = part.split(';', 2)
+          lang = lang.to_s.split('-').first.to_s.downcase.strip
           next if lang.empty?
 
           quality = if quality_str
-            q_match = quality_str.match(/q\s*=\s*([\d.]+)/)
-            q_match ? q_match[1].to_f : 1.0
-          else
-            1.0
-          end
+                      q_match = quality_str.match(/q\s*=\s*([\d.]+)/)
+                      q_match ? q_match[1].to_f : 1.0
+                    else
+                      1.0
+                    end
 
           [lang, quality]
         end
@@ -138,22 +136,22 @@ module RSB
       # @return [String] safe redirect path (always starts with "/")
       def redirect_path(request)
         # 1. redirect_to param
-        redirect_to = request.params["redirect_to"].to_s
-        return redirect_to if redirect_to.start_with?("/") && !redirect_to.start_with?("//")
+        redirect_to = request.params['redirect_to'].to_s
+        return redirect_to if redirect_to.start_with?('/') && !redirect_to.start_with?('//')
 
         # 2. Referer header (extract path only)
         if request.referrer.present?
           begin
             uri = URI.parse(request.referrer)
             path = uri.path.to_s
-            return path if path.start_with?("/")
+            return path if path.start_with?('/')
           rescue URI::InvalidURIError
             # fall through
           end
         end
 
         # 3. Fallback
-        "/"
+        '/'
       end
 
       # Creates a simple redirect response without setting a cookie.

@@ -39,7 +39,7 @@ module RSB
         return if rsb_auth_engine_route?
 
         redirect_to RSB::Auth::Engine.routes.url_helpers.account_path,
-                    alert: t("rsb.auth.account.complete_profile")
+                    alert: t('rsb.auth.account.complete_profile')
       end
 
       # Resolves the current identity from the session cookie so the concern

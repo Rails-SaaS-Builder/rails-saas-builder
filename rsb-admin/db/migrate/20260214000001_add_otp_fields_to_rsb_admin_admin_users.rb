@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddOtpFieldsToRSBAdminAdminUsers < ActiveRecord::Migration[8.0]
   def change
     add_column :rsb_admin_admin_users, :otp_secret, :string

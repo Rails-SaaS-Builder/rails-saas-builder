@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     class Registry
@@ -56,14 +58,14 @@ module RSB
       #     ]
       #   )
       def register_dashboard(controller:, actions: [])
-        raise ArgumentError, "controller must be present" if controller.nil? || controller.to_s.strip.empty?
+        raise ArgumentError, 'controller must be present' if controller.nil? || controller.to_s.strip.empty?
 
         @dashboard_page = PageRegistration.build(
           key: :dashboard,
-          label: "Dashboard",
-          icon: "home",
+          label: 'Dashboard',
+          icon: 'home',
           controller: controller,
-          category_name: "System",
+          category_name: 'System',
           actions: actions
         )
       end

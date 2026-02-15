@@ -15,46 +15,46 @@ module RSB
         definitions = RSB::Auth.credentials.all
         return if definitions.empty?
 
-        schema = RSB::Settings::Schema.new("auth") do
+        schema = RSB::Settings::Schema.new('auth') do
           definitions.each do |defn|
             setting :"credentials.#{defn.key}.enabled",
-              type: :boolean,
-              default: true,
-              group: "Credential Types",
-              label: defn.label,
-              description: "Enable or disable #{defn.label} as a sign-in method"
+                    type: :boolean,
+                    default: true,
+                    group: 'Credential Types',
+                    label: defn.label,
+                    description: "Enable or disable #{defn.label} as a sign-in method"
 
             setting :"credentials.#{defn.key}.verification_required",
-              type: :boolean,
-              default: true,
-              group: "Credential Types",
-              label: "#{defn.label} — Verification Required",
-              depends_on: "auth.credentials.#{defn.key}.enabled",
-              description: "Require email verification before login for #{defn.label}"
+                    type: :boolean,
+                    default: true,
+                    group: 'Credential Types',
+                    label: "#{defn.label} — Verification Required",
+                    depends_on: "auth.credentials.#{defn.key}.enabled",
+                    description: "Require email verification before login for #{defn.label}"
 
             setting :"credentials.#{defn.key}.auto_verify_on_signup",
-              type: :boolean,
-              default: false,
-              group: "Credential Types",
-              label: "#{defn.label} — Auto-verify on Signup",
-              depends_on: "auth.credentials.#{defn.key}.enabled",
-              description: "Auto-verify credentials at registration time for #{defn.label}"
+                    type: :boolean,
+                    default: false,
+                    group: 'Credential Types',
+                    label: "#{defn.label} — Auto-verify on Signup",
+                    depends_on: "auth.credentials.#{defn.key}.enabled",
+                    description: "Auto-verify credentials at registration time for #{defn.label}"
 
             setting :"credentials.#{defn.key}.allow_login_unverified",
-              type: :boolean,
-              default: false,
-              group: "Credential Types",
-              label: "#{defn.label} — Allow Login Unverified",
-              depends_on: "auth.credentials.#{defn.key}.enabled",
-              description: "Allow login without verification for #{defn.label}"
+                    type: :boolean,
+                    default: false,
+                    group: 'Credential Types',
+                    label: "#{defn.label} — Allow Login Unverified",
+                    depends_on: "auth.credentials.#{defn.key}.enabled",
+                    description: "Allow login without verification for #{defn.label}"
 
             setting :"credentials.#{defn.key}.registerable",
-              type: :boolean,
-              default: true,
-              group: "Credential Types",
-              label: "#{defn.label} — Self-registration",
-              depends_on: "auth.credentials.#{defn.key}.enabled",
-              description: "Allow self-registration for #{defn.label}"
+                    type: :boolean,
+                    default: true,
+                    group: 'Credential Types',
+                    label: "#{defn.label} — Self-registration",
+                    depends_on: "auth.credentials.#{defn.key}.enabled",
+                    description: "Allow self-registration for #{defn.label}"
           end
         end
 
@@ -81,16 +81,14 @@ module RSB
                 RSB::Auth.credentials.enabled?(other.key)
               end
 
-              if other_enabled == 0
+              if other_enabled.zero?
                 raise RSB::Settings::ValidationError,
-                  "Cannot disable #{defn.label}: at least one credential type must remain enabled."
+                      "Cannot disable #{defn.label}: at least one credential type must remain enabled."
               end
             end
           end
-        end
 
-        # Mutual exclusion: auto_verify_on_signup and verification_required cannot both be true
-        RSB::Auth.credentials.all.each do |defn|
+          # Mutual exclusion: auto_verify_on_signup and verification_required cannot both be true
           auto_verify_key = "auth.credentials.#{defn.key}.auto_verify_on_signup"
           verification_key = "auth.credentials.#{defn.key}.verification_required"
 
@@ -99,7 +97,7 @@ module RSB
               verif = RSB::Settings.get(verification_key)
               if ActiveModel::Type::Boolean.new.cast(verif)
                 raise RSB::Settings::ValidationError,
-                  "Cannot enable auto-verify when verification is required for #{defn.label}. Disable verification_required first."
+                      "Cannot enable auto-verify when verification is required for #{defn.label}. Disable verification_required first."
               end
             end
           end
@@ -109,7 +107,7 @@ module RSB
               auto = RSB::Settings.get(auto_verify_key)
               if ActiveModel::Type::Boolean.new.cast(auto)
                 raise RSB::Settings::ValidationError,
-                  "Cannot enable verification_required when auto-verify is enabled for #{defn.label}. Disable auto_verify_on_signup first."
+                      "Cannot enable verification_required when auto-verify is enabled for #{defn.label}. Disable auto_verify_on_signup first."
               end
             end
           end

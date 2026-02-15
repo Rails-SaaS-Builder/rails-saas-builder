@@ -13,9 +13,9 @@ module RSB
     # @see SRS-004 US-006 (Deprecate login_identifier)
     class CredentialDeprecationBridge
       IDENTIFIER_MAP = {
-        "email" => { email_password: true, phone_password: false, username_password: false },
-        "phone" => { email_password: false, phone_password: true, username_password: false },
-        "username" => { email_password: false, phone_password: false, username_password: true }
+        'email' => { email_password: true, phone_password: false, username_password: false },
+        'phone' => { email_password: false, phone_password: true, username_password: false },
+        'username' => { email_password: false, phone_password: false, username_password: true }
       }.freeze
 
       class << self
@@ -24,7 +24,7 @@ module RSB
         # @param identifier [String] "email", "phone", or "username"
         # @return [Hash<Symbol, Boolean>]
         def enabled_map_for(identifier)
-          IDENTIFIER_MAP.fetch(identifier.to_s, IDENTIFIER_MAP["email"])
+          IDENTIFIER_MAP.fetch(identifier.to_s, IDENTIFIER_MAP['email'])
         end
 
         # Checks whether any per-credential enabled setting has been explicitly
@@ -34,7 +34,7 @@ module RSB
         def per_credential_settings_explicit?
           RSB::Auth.credentials.all.any? do |defn|
             RSB::Settings::Setting.exists?(
-              category: "auth",
+              category: 'auth',
               key: "credentials.#{defn.key}.enabled"
             )
           end
@@ -48,9 +48,9 @@ module RSB
         #
         # @return [void]
         def resolve_from_login_identifier
-          identifier = RSB::Settings.get("auth.login_identifier")
+          identifier = RSB::Settings.get('auth.login_identifier')
           fire_deprecation(
-            "auth.login_identifier is deprecated. Use auth.credentials.<key>.enabled settings instead. " \
+            'auth.login_identifier is deprecated. Use auth.credentials.<key>.enabled settings instead. ' \
             "Current value '#{identifier}' maps to: #{enabled_map_for(identifier).inspect}"
           )
         end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     module Authorization
@@ -9,10 +11,10 @@ module RSB
         resource ||= controller_name
         action ||= action_name
 
-        unless current_admin_user.can?(resource, action)
-          render template: "rsb/admin/shared/forbidden", status: :forbidden
-          return
-        end
+        return if current_admin_user.can?(resource, action)
+
+        render template: 'rsb/admin/shared/forbidden', status: :forbidden
+        nil
       end
     end
   end

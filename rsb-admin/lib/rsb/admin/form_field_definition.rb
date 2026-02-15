@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Represents a form field definition for admin resource forms.
@@ -29,9 +31,9 @@ module RSB
     #   field.required  #=> false
     #
     # @example Building a required email field
-    #   field = FormFieldDefinition.build(:email, 
-    #     type: :email, 
-    #     required: true, 
+    #   field = FormFieldDefinition.build(:email,
+    #     type: :email,
+    #     required: true,
     #     hint: "We'll never share your email"
     #   )
     #
@@ -65,7 +67,7 @@ module RSB
       #
       # @example
       #   FormFieldDefinition.build(:description, type: :textarea, required: true)
-      def self.build(key, label: nil, type: :text, options: nil, required: false, hint: nil, visible_on: [:new, :edit])
+      def self.build(key, label: nil, type: :text, options: nil, required: false, hint: nil, visible_on: %i[new edit])
         new(
           key: key.to_sym,
           label: label || key.to_s.humanize,

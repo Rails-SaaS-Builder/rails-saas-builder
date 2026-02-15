@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     module Admin
@@ -6,10 +8,10 @@ module RSB
           page = params[:page].to_i
           per_page = 20
           @sessions = RSB::Auth::Session.active
-                        .includes(:identity)
-                        .order(last_active_at: :desc)
-                        .limit(per_page)
-                        .offset(page * per_page)
+                                        .includes(:identity)
+                                        .order(last_active_at: :desc)
+                                        .limit(per_page)
+                                        .offset(page * per_page)
           @current_page = page
           @per_page = per_page
         end
@@ -17,7 +19,7 @@ module RSB
         def destroy
           session_record = RSB::Auth::Session.find(params[:id])
           session_record.revoke!
-          redirect_to "/admin/sessions_management", notice: "Session revoked."
+          redirect_to '/admin/sessions_management', notice: 'Session revoked.'
         end
       end
     end

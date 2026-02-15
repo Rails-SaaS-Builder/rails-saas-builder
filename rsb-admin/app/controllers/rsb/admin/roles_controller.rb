@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     class RolesController < AdminController
       before_action :authorize_roles
-      before_action :set_role, only: [:show, :edit, :update, :destroy]
+      before_action :set_role, only: %i[show edit update destroy]
 
       def index
-        @rsb_page_title = I18n.t("rsb.admin.roles.index.page_title", default: "Roles")
+        @rsb_page_title = I18n.t('rsb.admin.roles.index.page_title', default: 'Roles')
         @roles = Role.all.order(:name)
       end
 
@@ -22,7 +24,7 @@ module RSB
         @role = Role.new(role_params)
         @registry = RSB::Admin.registry
         if @role.save
-          redirect_to rsb_admin.role_path(@role), notice: "Role created."
+          redirect_to rsb_admin.role_path(@role), notice: 'Role created.'
         else
           render :new, status: :unprocessable_entity
         end
@@ -35,7 +37,7 @@ module RSB
       def update
         @registry = RSB::Admin.registry
         if @role.update(role_params)
-          redirect_to rsb_admin.role_path(@role), notice: "Role updated."
+          redirect_to rsb_admin.role_path(@role), notice: 'Role updated.'
         else
           render :edit, status: :unprocessable_entity
         end
@@ -43,7 +45,7 @@ module RSB
 
       def destroy
         if @role.destroy
-          redirect_to rsb_admin.roles_path, notice: "Role deleted."
+          redirect_to rsb_admin.roles_path, notice: 'Role deleted.'
         else
           redirect_to rsb_admin.roles_path, alert: "Cannot delete role: #{@role.errors.full_messages.join(', ')}"
         end
@@ -57,17 +59,13 @@ module RSB
       # @return [void]
       def build_breadcrumbs
         super
-        add_breadcrumb(I18n.t("rsb.admin.shared.system"))
-        add_breadcrumb(I18n.t("rsb.admin.roles.title"), rsb_admin.roles_path)
-        if params[:id].present?
-          add_breadcrumb("##{params[:id]}", rsb_admin.role_path(params[:id]))
-        end
-        if action_name.in?(%w[new create])
-          add_breadcrumb(I18n.t("rsb.admin.shared.new", resource: "Role"))
-        end
-        if action_name.in?(%w[edit update])
-          add_breadcrumb(I18n.t("rsb.admin.shared.edit"))
-        end
+        add_breadcrumb(I18n.t('rsb.admin.shared.system'))
+        add_breadcrumb(I18n.t('rsb.admin.roles.title'), rsb_admin.roles_path)
+        add_breadcrumb("##{params[:id]}", rsb_admin.role_path(params[:id])) if params[:id].present?
+        add_breadcrumb(I18n.t('rsb.admin.shared.new', resource: 'Role')) if action_name.in?(%w[new create])
+        return unless action_name.in?(%w[edit update])
+
+        add_breadcrumb(I18n.t('rsb.admin.shared.edit'))
       end
 
       def set_role
@@ -86,15 +84,15 @@ module RSB
         # so we manually extract permissions_checkboxes
         if params[:role][:permissions_checkboxes].present?
           permitted[:permissions_checkboxes] = params[:role][:permissions_checkboxes]
-            .to_unsafe_h
-            .transform_values { |v| Array(v) }
+                                               .to_unsafe_h
+                                               .transform_values { |v| Array(v) }
         end
 
         permitted
       end
 
       def authorize_roles
-        authorize_admin_action!(resource: "roles", action: action_name)
+        authorize_admin_action!(resource: 'roles', action: action_name)
       end
     end
   end

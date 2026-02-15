@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # View helper methods for generating sortable table links and preserving filter state.
@@ -62,28 +64,26 @@ module RSB
         new_dir = if current_sort == column.key.to_s
                     # Clicking same column: cycle through asc → desc → none
                     case current_dir
-                    when "asc"
-                      "desc"
-                    when "desc"
+                    when 'asc'
+                      'desc'
+                    when 'desc'
                       nil # Remove sort
                     else
-                      "asc"
+                      'asc'
                     end
                   else
                     # Clicking different column: start with asc
-                    "asc"
+                    'asc'
                   end
 
         # Build URL with or without sort parameters
         if new_dir
           "#{request.path}?sort=#{column.key}&dir=#{new_dir}#{filter_query_string}"
-        else
+        elsif filter_query_string.present?
           # No sort - just path + filters
-          if filter_query_string.present?
-            "#{request.path}#{filter_query_string}"
-          else
-            request.path
-          end
+          "#{request.path}#{filter_query_string}"
+        else
+          request.path
         end
       end
 
@@ -122,10 +122,10 @@ module RSB
       #
       # @api private
       def filter_query_string
-        return "" unless params[:q].present?
+        return '' unless params[:q].present?
 
         filter_hash = params[:q].respond_to?(:to_unsafe_h) ? params[:q].to_unsafe_h : params[:q]
-        "&" + filter_hash.map { |k, v| "q[#{k}]=#{ERB::Util.url_encode(v)}" }.join("&")
+        '&' + filter_hash.map { |k, v| "q[#{k}]=#{ERB::Util.url_encode(v)}" }.join('&')
       end
     end
   end

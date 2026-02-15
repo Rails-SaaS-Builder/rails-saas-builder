@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     module Entitleable
@@ -5,17 +7,17 @@ module RSB
 
       included do
         has_many :entitlements,
-                 class_name: "RSB::Entitlements::Entitlement",
+                 class_name: 'RSB::Entitlements::Entitlement',
                  as: :entitleable,
                  dependent: :restrict_with_error
 
         has_many :usage_counters,
-                 class_name: "RSB::Entitlements::UsageCounter",
+                 class_name: 'RSB::Entitlements::UsageCounter',
                  as: :countable,
                  dependent: :destroy
 
         has_many :payment_requests,
-                 class_name: "RSB::Entitlements::PaymentRequest",
+                 class_name: 'RSB::Entitlements::PaymentRequest',
                  as: :requestable,
                  dependent: :restrict_with_error
       end
@@ -46,12 +48,12 @@ module RSB
         return false unless plan
 
         config = plan.limit_config_for(metric)
-        return true unless config  # metric not defined = unlimited
+        return true unless config # metric not defined = unlimited
 
-        limit_value = config["limit"]
-        return true if limit_value.nil?  # nil limit = unlimited
+        limit_value = config['limit']
+        return true if limit_value.nil? # nil limit = unlimited
 
-        period_key = PeriodKeyCalculator.current_key(config["period"])
+        period_key = PeriodKeyCalculator.current_key(config['period'])
         counter = current_period_counter(metric, period_key, plan)
         return true unless counter
 
@@ -69,10 +71,10 @@ module RSB
         config = plan.limit_config_for(metric)
         return nil unless config
 
-        limit_value = config["limit"]
+        limit_value = config['limit']
         return nil if limit_value.nil?
 
-        period_key = PeriodKeyCalculator.current_key(config["period"])
+        period_key = PeriodKeyCalculator.current_key(config['period'])
         counter = current_period_counter(metric, period_key, plan)
         return limit_value unless counter
 
@@ -90,11 +92,11 @@ module RSB
         source = entitlement_source
         current = source.current_entitlement
         old_plan = current&.plan
-        current&.revoke!(reason: "upgrade") if current
+        current&.revoke!(reason: 'upgrade')
 
         new_entitlement = source.entitlements.create!(
           plan: plan,
-          status: "active",
+          status: 'active',
           provider: provider.to_s,
           activated_at: Time.current,
           expires_at: expires_at,
@@ -109,7 +111,7 @@ module RSB
         new_entitlement
       end
 
-      def revoke_entitlement(reason: "admin")
+      def revoke_entitlement(reason: 'admin')
         entitlement_source.current_entitlement&.revoke!(reason: reason)
       end
 
@@ -130,13 +132,13 @@ module RSB
         config = plan.limit_config_for(metric.to_s)
         raise "No limit defined for metric: #{metric}" unless config
 
-        period_key = PeriodKeyCalculator.current_key(config["period"])
+        period_key = PeriodKeyCalculator.current_key(config['period'])
 
         counter = source.usage_counters.find_or_create_by!(
           metric: metric.to_s,
           period_key: period_key,
           plan_id: plan.id
-        ) { |c| c.limit = config["limit"] }
+        ) { |c| c.limit = config['limit'] }
 
         counter.increment!(amount)
       end

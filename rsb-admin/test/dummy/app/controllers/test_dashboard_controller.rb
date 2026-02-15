@@ -5,12 +5,12 @@
 class TestDashboardController < RSB::Admin::AdminController
   # Renders plain text for testing dashboard override.
   def index
-    render plain: "Custom Dashboard Index"
+    render plain: 'Custom Dashboard Index'
   end
 
   # Custom action for testing dashboard sub-actions (tabs).
   def metrics
-    render plain: "Custom Dashboard Metrics"
+    render plain: 'Custom Dashboard Metrics'
   end
 
   private
@@ -21,6 +21,6 @@ class TestDashboardController < RSB::Admin::AdminController
   # @return [void]
   def build_breadcrumbs
     @breadcrumbs = request.env['rsb.admin.breadcrumbs'] || []
-    add_breadcrumb("Metrics") if action_name == "metrics"
+    add_breadcrumb('Metrics') if action_name == 'metrics'
   end
 end

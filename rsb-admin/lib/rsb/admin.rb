@@ -1,22 +1,24 @@
-require "rsb/settings"
-require "rotp"
-require "rqrcode"
-require "rsb/admin/version"
-require "rsb/admin/engine"
-require "rsb/admin/configuration"
-require "rsb/admin/registry"
-require "rsb/admin/resource_registration"
-require "rsb/admin/category_registration"
-require "rsb/admin/column_definition"
-require "rsb/admin/filter_definition"
-require "rsb/admin/form_field_definition"
-require "rsb/admin/page_registration"
-require "rsb/admin/resource_dsl_context"
-require "rsb/admin/breadcrumb_item"
-require "rsb/admin/theme_definition"
-require "rsb/admin/settings_schema"
-require "rsb/admin/icons"
-require "rsb/admin/themes/modern"
+# frozen_string_literal: true
+
+require 'rsb/settings'
+require 'rotp'
+require 'rqrcode'
+require 'rsb/admin/version'
+require 'rsb/admin/engine'
+require 'rsb/admin/configuration'
+require 'rsb/admin/registry'
+require 'rsb/admin/resource_registration'
+require 'rsb/admin/category_registration'
+require 'rsb/admin/column_definition'
+require 'rsb/admin/filter_definition'
+require 'rsb/admin/form_field_definition'
+require 'rsb/admin/page_registration'
+require 'rsb/admin/resource_dsl_context'
+require 'rsb/admin/breadcrumb_item'
+require 'rsb/admin/theme_definition'
+require 'rsb/admin/settings_schema'
+require 'rsb/admin/icons'
+require 'rsb/admin/themes/modern'
 
 module RSB
   module Admin
@@ -93,7 +95,7 @@ module RSB
       #   RSB::Admin.current_theme
       #   # => #<data RSB::Admin::ThemeDefinition key=:modern, ...>
       def current_theme
-        theme_key = RSB::Settings.get("admin.theme").presence || configuration.theme
+        theme_key = RSB::Settings.get('admin.theme').presence || configuration.theme
         themes[theme_key.to_sym] || themes[:default]
       end
 
@@ -115,11 +117,10 @@ module RSB
       #   RSB::Admin.enabled?  # => true (even if DB says false)
       def enabled?
         # ENV override has highest priority (escape hatch)
-        if ENV.key?("RSB_ADMIN_ENABLED")
-          return ActiveModel::Type::Boolean.new.cast(ENV["RSB_ADMIN_ENABLED"])
-        end
+        return ActiveModel::Type::Boolean.new.cast(ENV['RSB_ADMIN_ENABLED']) if ENV.key?('RSB_ADMIN_ENABLED')
+
         # Normal settings resolution: DB → initializer → default
-        RSB::Settings.get("admin.enabled") != false
+        RSB::Settings.get('admin.enabled') != false
       end
 
       def reset!
@@ -162,9 +163,9 @@ module RSB
       # @api private
       def register_built_in_themes
         register_theme :default,
-          label: "Default",
-          css: "rsb/admin/themes/default",
-          views_path: nil
+                       label: 'Default',
+                       css: 'rsb/admin/themes/default',
+                       views_path: nil
 
         Themes::Modern.register!
       end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class Credential < ApplicationRecord
@@ -12,7 +14,7 @@ module RSB
       validates :identifier, presence: true
       validate :identifier_unique_among_active, if: -> { identifier_changed? || new_record? }
       validates :password,
-                length: { minimum: -> { RSB::Settings.get("auth.password_min_length") } },
+                length: { minimum: -> { RSB::Settings.get('auth.password_min_length') } },
                 if: :password_required?
 
       normalizes :identifier, with: ->(v) { v.strip.downcase }
@@ -111,9 +113,9 @@ module RSB
 
         scope = self.class.active.where(type: type, identifier: identifier)
         scope = scope.where.not(id: id) if persisted?
-        if scope.exists?
-          errors.add(:identifier, :taken)
-        end
+        return unless scope.exists?
+
+        errors.add(:identifier, :taken)
       end
     end
   end

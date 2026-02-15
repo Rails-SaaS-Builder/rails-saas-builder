@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   mount RSB::Auth::Engine => '/auth'
   mount RSB::Admin::Engine => '/admin'

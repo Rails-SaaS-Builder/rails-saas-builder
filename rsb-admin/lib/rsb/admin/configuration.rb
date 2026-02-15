@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Holds configuration options for the RSB Admin panel.
@@ -51,15 +53,15 @@ module RSB
 
       def initialize
         @enabled = true
-        @app_name = "Admin"
-        @company_name = ""
-        @logo_url = ""
-        @footer_text = ""
+        @app_name = 'Admin'
+        @company_name = ''
+        @logo_url = ''
+        @footer_text = ''
         @per_page = 25
         @theme = :default
         @view_overrides_path = nil
-        @layout = "rsb/admin/application"
-        @mailer_sender = "no-reply@example.com"
+        @layout = 'rsb/admin/application'
+        @mailer_sender = 'no-reply@example.com'
         @email_verification_expiry = 24.hours
       end
     end

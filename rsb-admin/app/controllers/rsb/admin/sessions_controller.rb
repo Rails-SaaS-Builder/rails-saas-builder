@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     class SessionsController < ActionController::Base
@@ -15,7 +17,7 @@ module RSB
       before_action :redirect_if_signed_in, only: [:new]
 
       def new
-        @rsb_page_title = I18n.t("rsb.admin.sessions.new.page_title", default: "Admin Sign In")
+        @rsb_page_title = I18n.t('rsb.admin.sessions.new.page_title', default: 'Admin Sign In')
       end
 
       def create
@@ -27,18 +29,16 @@ module RSB
             session[:rsb_admin_pending_at] = Time.current.to_i
             session[:rsb_admin_2fa_attempts] = 0
             redirect_to rsb_admin.two_factor_login_path
-          else
+          elsif ActiveModel::Type::Boolean.new.cast(RSB::Settings.get('admin.require_two_factor'))
             # Check if force 2FA is enabled
-            if ActiveModel::Type::Boolean.new.cast(RSB::Settings.get("admin.require_two_factor"))
-              # Create session but redirect to enrollment
-              admin_session = AdminSession.create_from_request!(admin_user: admin, request: request)
-              session[:rsb_admin_session_token] = admin_session.session_token
-              admin.record_sign_in!(ip: request.remote_ip)
-              redirect_to rsb_admin.new_profile_two_factor_path,
-                alert: "Two-factor authentication is required. Please set up 2FA to continue."
-            else
-              complete_sign_in!(admin)
-            end
+            admin_session = AdminSession.create_from_request!(admin_user: admin, request: request)
+            session[:rsb_admin_session_token] = admin_session.session_token
+            admin.record_sign_in!(ip: request.remote_ip)
+            redirect_to rsb_admin.new_profile_two_factor_path,
+                        alert: 'Two-factor authentication is required. Please set up 2FA to continue.'
+          # Create session but redirect to enrollment
+          else
+            complete_sign_in!(admin)
           end
         else
           @email = params[:email]
@@ -48,21 +48,21 @@ module RSB
       end
 
       def two_factor
-        unless valid_pending_session?
-          redirect_to rsb_admin.login_path, alert: pending_expired? ? "Session expired. Please sign in again." : nil
-          return
-        end
+        return if valid_pending_session?
+
+        redirect_to rsb_admin.login_path, alert: pending_expired? ? 'Session expired. Please sign in again.' : nil
+        nil
       end
 
       def verify_two_factor
         unless valid_pending_session?
-          redirect_to rsb_admin.login_path, alert: pending_expired? ? "Session expired. Please sign in again." : nil
+          redirect_to rsb_admin.login_path, alert: pending_expired? ? 'Session expired. Please sign in again.' : nil
           return
         end
 
         if session[:rsb_admin_2fa_attempts].to_i >= 5
           clear_pending_session!
-          redirect_to rsb_admin.login_path, alert: "Too many attempts. Please sign in again."
+          redirect_to rsb_admin.login_path, alert: 'Too many attempts. Please sign in again.'
           return
         end
 
@@ -78,7 +78,7 @@ module RSB
           complete_sign_in!(admin)
         else
           session[:rsb_admin_2fa_attempts] = session[:rsb_admin_2fa_attempts].to_i + 1
-          flash.now[:alert] = "Invalid verification code."
+          flash.now[:alert] = 'Invalid verification code.'
           render :two_factor, status: :unprocessable_entity
         end
       end
@@ -100,7 +100,7 @@ module RSB
         admin_session = AdminSession.create_from_request!(admin_user: admin, request: request)
         session[:rsb_admin_session_token] = admin_session.session_token
         admin.record_sign_in!(ip: request.remote_ip)
-        redirect_to rsb_admin.dashboard_path, notice: "Signed in successfully."
+        redirect_to rsb_admin.dashboard_path, notice: 'Signed in successfully.'
       end
 
       def valid_pending_session?
@@ -109,7 +109,7 @@ module RSB
 
       def pending_expired?
         pending_at = session[:rsb_admin_pending_at].to_i
-        pending_at > 0 && Time.at(pending_at) < 5.minutes.ago
+        pending_at.positive? && Time.at(pending_at) < 5.minutes.ago
       end
 
       def clear_pending_session!

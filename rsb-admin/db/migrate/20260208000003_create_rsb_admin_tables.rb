@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateRSBAdminTables < ActiveRecord::Migration[8.0]
   def change
     create_table :rsb_admin_roles do |t|

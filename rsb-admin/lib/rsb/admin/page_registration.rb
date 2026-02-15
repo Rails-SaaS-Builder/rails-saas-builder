@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Represents a custom page registration in the admin panel.
@@ -66,7 +68,7 @@ module RSB
       #     controller: "admin/settings",
       #     category_name: "System"
       #   )
-      def self.build(key:, label:, icon: nil, controller:, category_name:, actions: [])
+      def self.build(key:, label:, controller:, category_name:, icon: nil, actions: [])
         new(
           key: key.to_sym,
           label: label,

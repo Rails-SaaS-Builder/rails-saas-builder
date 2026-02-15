@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  mount RSB::Auth::Engine => "/auth"
+  mount RSB::Auth::Engine => '/auth'
 
-  get "up" => "rails/health#show", as: :rails_health_check
+  get 'up' => 'rails/health#show', as: :rails_health_check
 
-  root to: "home#index"
+  root to: 'home#index'
 end

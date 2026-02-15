@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 # Integration tests that verify the engine boot path: concerns registered in
 # RSB::Auth.configuration are applied to Identity and Credential when
@@ -25,11 +25,11 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
 
   # --- Identity concerns via to_prepare ---
 
-  test "identity concern registered in configuration is applied after to_prepare" do
+  test 'identity concern registered in configuration is applied after to_prepare' do
     concern = Module.new do
       extend ActiveSupport::Concern
       def integration_test_method
-        "applied"
+        'applied'
       end
     end
 
@@ -37,14 +37,14 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
     trigger_to_prepare
 
     identity = RSB::Auth::Identity.create!
-    assert_equal "applied", identity.integration_test_method
+    assert_equal 'applied', identity.integration_test_method
   end
 
-  test "identity concern overrides complete? through engine boot path" do
+  test 'identity concern overrides complete? through engine boot path' do
     concern = Module.new do
       extend ActiveSupport::Concern
       def complete?
-        metadata["first_name"].present?
+        metadata['first_name'].present?
       end
     end
 
@@ -54,11 +54,11 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
     incomplete = RSB::Auth::Identity.create!(metadata: {})
     assert_not incomplete.complete?
 
-    complete = RSB::Auth::Identity.create!(metadata: { "first_name" => "Alice" })
+    complete = RSB::Auth::Identity.create!(metadata: { 'first_name' => 'Alice' })
     assert complete.complete?
   end
 
-  test "multiple identity concerns applied in order — last override wins" do
+  test 'multiple identity concerns applied in order — last override wins' do
     concern_a = Module.new do
       extend ActiveSupport::Concern
       def complete?
@@ -83,11 +83,11 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
 
   # --- Credential concerns via to_prepare ---
 
-  test "credential concern registered in configuration is applied after to_prepare" do
+  test 'credential concern registered in configuration is applied after to_prepare' do
     concern = Module.new do
       extend ActiveSupport::Concern
       def credential_integration_method
-        "applied"
+        'applied'
       end
     end
 
@@ -96,19 +96,19 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
 
     identity = RSB::Auth::Identity.create!
     cred = identity.credentials.create!(
-      type: "RSB::Auth::Credential::EmailPassword",
-      identifier: "concern-integration@example.com",
-      password: "password1234",
-      password_confirmation: "password1234"
+      type: 'RSB::Auth::Credential::EmailPassword',
+      identifier: 'concern-integration@example.com',
+      password: 'password1234',
+      password_confirmation: 'password1234'
     )
-    assert_equal "applied", cred.credential_integration_method
+    assert_equal 'applied', cred.credential_integration_method
   end
 
-  test "credential concern is inherited by STI subtypes via to_prepare" do
+  test 'credential concern is inherited by STI subtypes via to_prepare' do
     concern = Module.new do
       extend ActiveSupport::Concern
       def sti_integration_method
-        "inherited"
+        'inherited'
       end
     end
 
@@ -117,26 +117,26 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
 
     identity = RSB::Auth::Identity.create!
     email_cred = identity.credentials.create!(
-      type: "RSB::Auth::Credential::EmailPassword",
-      identifier: "sti-integration@example.com",
-      password: "password1234",
-      password_confirmation: "password1234"
+      type: 'RSB::Auth::Credential::EmailPassword',
+      identifier: 'sti-integration@example.com',
+      password: 'password1234',
+      password_confirmation: 'password1234'
     )
-    assert_equal "inherited", email_cred.sti_integration_method
+    assert_equal 'inherited', email_cred.sti_integration_method
     assert_kind_of RSB::Auth::Credential::EmailPassword, email_cred
   end
 
   # --- Metadata accessor concern (Flow 3 from RFC) ---
 
-  test "concern-based metadata accessors work end-to-end" do
+  test 'concern-based metadata accessors work end-to-end' do
     concern = Module.new do
       extend ActiveSupport::Concern
       def first_name
-        metadata["first_name"]
+        metadata['first_name']
       end
 
       def first_name=(val)
-        metadata["first_name"] = val
+        metadata['first_name'] = val
       end
 
       def complete?
@@ -151,15 +151,15 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
     assert_not identity.complete?
     assert_nil identity.first_name
 
-    identity.first_name = "Alice"
+    identity.first_name = 'Alice'
     identity.save!
-    assert_equal "Alice", identity.reload.first_name
+    assert_equal 'Alice', identity.reload.first_name
     assert identity.complete?
   end
 
   # --- Default behavior without concerns ---
 
-  test "identity complete? returns true when no concerns registered" do
+  test 'identity complete? returns true when no concerns registered' do
     identity = RSB::Auth::Identity.create!
     assert identity.complete?
   end
@@ -176,6 +176,6 @@ class ConcernApplicationTest < ActionDispatch::IntegrationTest
   end
 
   def default_url_options
-    { host: "localhost" }
+    { host: 'localhost' }
   end
 end

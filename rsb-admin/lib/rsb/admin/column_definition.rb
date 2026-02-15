@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Represents a column definition for admin resource tables.
@@ -31,9 +33,9 @@ module RSB
     #   col.link #=> true
     #
     # @example Building a custom column with formatter
-    #   col = ColumnDefinition.build(:status, 
-    #     label: "State", 
-    #     sortable: true, 
+    #   col = ColumnDefinition.build(:status,
+    #     label: "State",
+    #     sortable: true,
     #     formatter: :badge,
     #     visible_on: [:index]
     #   )
@@ -59,7 +61,7 @@ module RSB
       #
       # @example
       #   ColumnDefinition.build(:created_at, label: "Created", sortable: true)
-      def self.build(key, label: nil, sortable: false, formatter: nil, link: nil, visible_on: [:index, :show])
+      def self.build(key, label: nil, sortable: false, formatter: nil, link: nil, visible_on: %i[index show])
         new(
           key: key.to_sym,
           label: label || key.to_s.humanize,

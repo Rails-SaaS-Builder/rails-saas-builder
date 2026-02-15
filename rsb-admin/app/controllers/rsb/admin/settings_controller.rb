@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     class SettingsController < AdminController
@@ -12,7 +14,7 @@ module RSB
       #
       # @return [void]
       def index
-        @rsb_page_title = I18n.t("rsb.admin.settings.page_title", default: "Settings")
+        @rsb_page_title = I18n.t('rsb.admin.settings.page_title', default: 'Settings')
         @categories = RSB::Settings.registry.categories
         @active_tab = resolve_active_tab
 
@@ -41,7 +43,7 @@ module RSB
 
         schema = RSB::Settings.registry.for(category)
         unless schema
-          redirect_to rsb_admin.settings_path, alert: "Unknown settings category."
+          redirect_to rsb_admin.settings_path, alert: 'Unknown settings category.'
           return
         end
 
@@ -68,9 +70,7 @@ module RSB
               current = RSB::Settings.get(full_key)
               submitted_val = submitted[key_str]
 
-              unless values_equal?(current, submitted_val, defn.type)
-                RSB::Settings.set(full_key, submitted_val)
-              end
+              RSB::Settings.set(full_key, submitted_val) unless values_equal?(current, submitted_val, defn.type)
             end
           end
         rescue RSB::Settings::ValidationError => e
@@ -79,7 +79,7 @@ module RSB
           return
         end
 
-        redirect_to rsb_admin.settings_path(tab: tab), notice: "Settings updated successfully."
+        redirect_to rsb_admin.settings_path(tab: tab), notice: 'Settings updated successfully.'
       end
 
       # Existing single-setting update (kept for backward compatibility)
@@ -87,12 +87,12 @@ module RSB
         key = "#{params[:category]}.#{params[:key]}"
 
         if RSB::Settings.configuration.locked?(key)
-          redirect_to rsb_admin.settings_path, alert: "Setting is locked."
+          redirect_to rsb_admin.settings_path, alert: 'Setting is locked.'
           return
         end
 
         RSB::Settings.set(key, params[:value])
-        redirect_to rsb_admin.settings_path, notice: "Setting updated."
+        redirect_to rsb_admin.settings_path, notice: 'Setting updated.'
       end
 
       private
@@ -159,10 +159,10 @@ module RSB
       def parent_truthy?(value)
         return false if value.nil?
         return false if value == false
-        return false if value == 0
+        return false if value.zero?
         return false if value.is_a?(String) && value.blank?
-        return false if value.to_s.downcase == "false"
-        return false if value.to_s == "0"
+        return false if value.to_s.downcase == 'false'
+        return false if value.to_s == '0'
 
         true
       end
@@ -191,12 +191,12 @@ module RSB
 
       def build_breadcrumbs
         super
-        add_breadcrumb(I18n.t("rsb.admin.shared.system"))
-        add_breadcrumb(I18n.t("rsb.admin.settings.title"))
+        add_breadcrumb(I18n.t('rsb.admin.shared.system'))
+        add_breadcrumb(I18n.t('rsb.admin.settings.title'))
       end
 
       def authorize_settings
-        authorize_admin_action!(resource: "settings", action: action_name)
+        authorize_admin_action!(resource: 'settings', action: action_name)
       end
     end
   end

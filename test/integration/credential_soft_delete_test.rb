@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
   setup do
@@ -8,19 +10,19 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
     Rails.cache.clear
 
     @admin = create_test_admin!(superadmin: true)
-    @identity = RSB::Auth::Identity.create!(status: "active")
+    @identity = RSB::Auth::Identity.create!(status: 'active')
     @credential = @identity.credentials.create!(
-      type: "RSB::Auth::Credential::EmailPassword",
-      identifier: "victim@example.com",
-      password: "password1234",
-      password_confirmation: "password1234"
+      type: 'RSB::Auth::Credential::EmailPassword',
+      identifier: 'victim@example.com',
+      password: 'password1234',
+      password_confirmation: 'password1234'
     )
     @credential.update_column(:verified_at, Time.current)
   end
 
   # --- Flow 1: Admin revokes credential, user can no longer log in ---
 
-  test "admin revokes credential and user cannot authenticate" do
+  test 'admin revokes credential and user cannot authenticate' do
     sign_in_admin(@admin)
     patch "/admin/identities/#{@identity.id}/revoke_credential",
           params: { credential_id: @credential.id }
@@ -28,16 +30,16 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
     assert @credential.reload.revoked?
 
     result = RSB::Auth::AuthenticationService.new.call(
-      identifier: "victim@example.com",
-      password: "password1234"
+      identifier: 'victim@example.com',
+      password: 'password1234'
     )
     assert_not result.success?
-    assert_equal "Invalid credentials.", result.error
+    assert_equal 'Invalid credentials.', result.error
   end
 
   # --- Flow 2: Admin restores credential, user can log in again ---
 
-  test "admin restores credential and user can authenticate again" do
+  test 'admin restores credential and user can authenticate again' do
     @credential.update_columns(revoked_at: Time.current)
 
     sign_in_admin(@admin)
@@ -47,23 +49,23 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
     assert_not @credential.reload.revoked?
 
     result = RSB::Auth::AuthenticationService.new.call(
-      identifier: "victim@example.com",
-      password: "password1234"
+      identifier: 'victim@example.com',
+      password: 'password1234'
     )
     assert result.success?
   end
 
   # --- Flow 3: Restore blocked when active duplicate exists ---
 
-  test "admin cannot restore when active duplicate exists" do
+  test 'admin cannot restore when active duplicate exists' do
     @credential.update_columns(revoked_at: Time.current)
 
     other_identity = RSB::Auth::Identity.create!
     other_identity.credentials.create!(
-      type: "RSB::Auth::Credential::EmailPassword",
-      identifier: "victim@example.com",
-      password: "password1234",
-      password_confirmation: "password1234"
+      type: 'RSB::Auth::Credential::EmailPassword',
+      identifier: 'victim@example.com',
+      password: 'password1234',
+      password_confirmation: 'password1234'
     )
 
     sign_in_admin(@admin)
@@ -75,14 +77,14 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
 
   # --- Flow 4: Registration re-uses revoked identifier ---
 
-  test "new user can register with previously revoked identifier" do
+  test 'new user can register with previously revoked identifier' do
     @credential.revoke!
 
-    result = with_settings("auth.verification_required" => false) do
+    result = with_settings('auth.verification_required' => false) do
       RSB::Auth::RegistrationService.new.call(
-        identifier: "victim@example.com",
-        password: "newpassword5678",
-        password_confirmation: "newpassword5678"
+        identifier: 'victim@example.com',
+        password: 'newpassword5678',
+        password_confirmation: 'newpassword5678'
       )
     end
 
@@ -91,35 +93,35 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
     assert_nil result.credential.revoked_at
 
     assert @credential.reload.revoked?
-    assert_equal 2, RSB::Auth::Credential.where(identifier: "victim@example.com").count
+    assert_equal 2, RSB::Auth::Credential.where(identifier: 'victim@example.com').count
   end
 
   # --- Flow 5: primary_credential skips revoked ---
 
-  test "primary_credential and primary_identifier skip revoked credentials" do
+  test 'primary_credential and primary_identifier skip revoked credentials' do
     @credential.revoke!
     assert_nil @identity.reload.primary_credential
     assert_nil @identity.primary_identifier
 
     new_cred = @identity.credentials.create!(
-      type: "RSB::Auth::Credential::EmailPassword",
-      identifier: "new@example.com",
-      password: "password1234",
-      password_confirmation: "password1234"
+      type: 'RSB::Auth::Credential::EmailPassword',
+      identifier: 'new@example.com',
+      password: 'password1234',
+      password_confirmation: 'password1234'
     )
     assert_equal new_cred, @identity.primary_credential
-    assert_equal "new@example.com", @identity.primary_identifier
+    assert_equal 'new@example.com', @identity.primary_identifier
   end
 
   # --- Flow 6: identity.credentials returns all ---
 
-  test "identity.credentials returns both active and revoked" do
+  test 'identity.credentials returns both active and revoked' do
     @credential.revoke!
     new_cred = @identity.credentials.create!(
-      type: "RSB::Auth::Credential::EmailPassword",
-      identifier: "new@example.com",
-      password: "password1234",
-      password_confirmation: "password1234"
+      type: 'RSB::Auth::Credential::EmailPassword',
+      identifier: 'new@example.com',
+      password: 'password1234',
+      password_confirmation: 'password1234'
     )
 
     all_creds = @identity.credentials
@@ -130,7 +132,7 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
 
   # --- Flow 7: Lifecycle handlers fire ---
 
-  test "lifecycle handler fires on revoke and restore" do
+  test 'lifecycle handler fires on revoke and restore' do
     revoked_credentials = []
     restored_credentials = []
 
@@ -140,7 +142,7 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
     end
 
     RSB::Auth.const_set(:TestSoftDeleteHandler, handler_class)
-    RSB::Auth.configuration.lifecycle_handler = "RSB::Auth::TestSoftDeleteHandler"
+    RSB::Auth.configuration.lifecycle_handler = 'RSB::Auth::TestSoftDeleteHandler'
 
     @credential.revoke!
     assert_equal [@credential], revoked_credentials
@@ -155,6 +157,6 @@ class CredentialSoftDeleteTest < ActionDispatch::IntegrationTest
   private
 
   def default_url_options
-    { host: "localhost" }
+    { host: 'localhost' }
   end
 end

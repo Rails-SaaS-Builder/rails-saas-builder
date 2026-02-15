@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     class Setting < ActiveRecord::Base
-      self.table_name = "rsb_settings_settings"
+      self.table_name = 'rsb_settings_settings'
 
       encrypts :value
 

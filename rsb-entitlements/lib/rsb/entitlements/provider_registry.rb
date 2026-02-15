@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     # Registry for payment provider classes. Providers register by passing
@@ -22,7 +24,7 @@ module RSB
       def register(provider_class)
         unless provider_class.is_a?(Class) && provider_class < PaymentProvider::Base
           raise ArgumentError,
-            "#{provider_class} must inherit from RSB::Entitlements::PaymentProvider::Base"
+                "#{provider_class} must inherit from RSB::Entitlements::PaymentProvider::Base"
         end
 
         key = provider_class.provider_key
@@ -66,8 +68,8 @@ module RSB
       #
       # @return [Array<ProviderDefinition>]
       def enabled
-        all.select do |definition|
-          RSB::Settings.get("entitlements.providers.#{definition.key}.enabled") != false
+        all.reject do |definition|
+          RSB::Settings.get("entitlements.providers.#{definition.key}.enabled") == false
         end
       end
 
@@ -91,14 +93,14 @@ module RSB
         prefix = "providers.#{key}"
         provider_label = provider_class.provider_label
 
-        schema = RSB::Settings::Schema.new("entitlements")
+        schema = RSB::Settings::Schema.new('entitlements')
 
         # Collect provider's custom settings first to check for enabled override
         custom_settings = []
         provider_defines_enabled = false
 
         if schema_block
-          collector = RSB::Settings::Schema.new("_collector")
+          collector = RSB::Settings::Schema.new('_collector')
           collector.instance_eval(&schema_block)
           custom_settings = collector.definitions
           provider_defines_enabled = custom_settings.any? { |defn| defn.key == :enabled }
@@ -107,17 +109,17 @@ module RSB
         # Add auto-generated enabled setting only if provider doesn't define it
         unless provider_defines_enabled
           schema.setting :"#{prefix}.enabled",
-                          type: :boolean,
-                          default: true,
-                          description: "Enable #{provider_label} provider"
+                         type: :boolean,
+                         default: true,
+                         description: "Enable #{provider_label} provider"
         end
 
         # Register all provider's settings with the prefix
         custom_settings.each do |defn|
           schema.setting :"#{prefix}.#{defn.key}",
-                          type: defn.type,
-                          default: defn.default,
-                          description: defn.description
+                         type: defn.type,
+                         default: defn.default,
+                         description: defn.description
         end
 
         RSB::Settings.registry.register(schema)
@@ -130,13 +132,13 @@ module RSB
         key = provider_class.provider_key
         missing = provider_class.required_settings.select do |setting_key|
           value = RSB::Settings.get("entitlements.providers.#{key}.#{setting_key}")
-          value.nil? || value == ""
+          value.nil? || value == ''
         end
 
         return if missing.empty?
 
         raise ArgumentError,
-          "Provider :#{key} has required settings that are not configured: #{missing.join(', ')}"
+              "Provider :#{key} has required settings that are not configured: #{missing.join(', ')}"
       end
     end
   end

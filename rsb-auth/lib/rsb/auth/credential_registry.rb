@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class CredentialRegistry
@@ -8,11 +10,11 @@ module RSB
       end
 
       def register(definition)
-        if definition.is_a?(CredentialDefinition)
-          @definitions[definition.key] = definition
-        else
+        unless definition.is_a?(CredentialDefinition)
           raise ArgumentError, "Expected CredentialDefinition, got #{definition.class}"
         end
+
+        @definitions[definition.key] = definition
       end
 
       def find(key)

@@ -20,7 +20,7 @@ module RSB
     # @example Force overwrite existing files
     #   rails generate rsb:admin:views --force
     class ViewsGenerator < Rails::Generators::Base
-      namespace "rsb:admin:views"
+      namespace 'rsb:admin:views'
       desc 'Export RSB Admin views to your application for customization.'
 
       class_option :only, type: :string, default: nil,

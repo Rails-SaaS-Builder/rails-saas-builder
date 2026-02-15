@@ -2,6 +2,6 @@
 
 class HomeController < ApplicationController
   def index
-    render plain: "OK"
+    render plain: 'OK'
   end
 end

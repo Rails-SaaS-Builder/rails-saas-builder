@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Represents a category of admin resources and pages.
@@ -73,7 +75,7 @@ module RSB
       #
       # @see ResourceDSLContext
       # @see ResourceRegistration
-      def resource(model_class, icon: nil, label: nil, actions: [:index, :show], controller: nil,
+      def resource(model_class, icon: nil, label: nil, actions: %i[index show], controller: nil,
                    per_page: nil, default_sort: nil, search_fields: nil,
                    **options, &block)
         dsl = nil
@@ -123,7 +125,7 @@ module RSB
       #     ]
       #
       # @see PageRegistration
-      def page(key, label:, icon: nil, controller:, actions: [])
+      def page(key, label:, controller:, icon: nil, actions: [])
         registration = PageRegistration.build(
           key: key,
           label: label,

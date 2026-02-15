@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     class Registry
@@ -12,11 +14,11 @@ module RSB
       def register(schema)
         raise ArgumentError, "Expected RSB::Settings::Schema, got #{schema.class}" unless schema.is_a?(Schema)
 
-        if @schemas[schema.category]
-          @schemas[schema.category] = @schemas[schema.category].merge(schema)
-        else
-          @schemas[schema.category] = schema
-        end
+        @schemas[schema.category] = if @schemas[schema.category]
+                                      @schemas[schema.category].merge(schema)
+                                    else
+                                      schema
+                                    end
       end
 
       # Convenience: define and register in one step
@@ -40,7 +42,7 @@ module RSB
       end
 
       def find_definition(key)
-        category, setting_key = key.to_s.split(".", 2)
+        category, setting_key = key.to_s.split('.', 2)
         @schemas[category]&.find(setting_key)
       end
 
@@ -60,16 +62,16 @@ module RSB
 
         groups = {}
         schema.definitions.each do |defn|
-          group_name = defn.group || "General"
+          group_name = defn.group || 'General'
           groups[group_name] ||= []
           groups[group_name] << defn
         end
 
         # Ensure "General" is first if present
-        return groups unless groups.key?("General") && groups.keys.first != "General"
+        return groups unless groups.key?('General') && groups.keys.first != 'General'
 
-        general = groups.delete("General")
-        { "General" => general }.merge(groups)
+        general = groups.delete('General')
+        { 'General' => general }.merge(groups)
       end
 
       # Change callbacks

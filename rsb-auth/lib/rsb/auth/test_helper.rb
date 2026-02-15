@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     module TestHelper
@@ -11,9 +13,9 @@ module RSB
         RSB::Auth::Identity.create!(status: status)
       end
 
-      def create_test_credential(identity:, email: "test@example.com", password: "password1234", verified: true)
+      def create_test_credential(identity:, email: 'test@example.com', password: 'password1234', verified: true)
         cred = identity.credentials.create!(
-          type: "RSB::Auth::Credential::EmailPassword",
+          type: 'RSB::Auth::Credential::EmailPassword',
           identifier: email,
           password: password,
           password_confirmation: password
@@ -25,8 +27,8 @@ module RSB
       def sign_in_identity(identity)
         session = RSB::Auth::SessionService.new.create(
           identity: identity,
-          ip_address: "127.0.0.1",
-          user_agent: "TestBrowser/1.0"
+          ip_address: '127.0.0.1',
+          user_agent: 'TestBrowser/1.0'
         )
         cookies.signed[:rsb_session_token] = session.token if respond_to?(:cookies)
         session
@@ -40,13 +42,13 @@ module RSB
         RSB::Auth.credentials.register(
           RSB::Auth::CredentialDefinition.new(
             key: :email_password,
-            class_name: "RSB::Auth::Credential::EmailPassword",
+            class_name: 'RSB::Auth::Credential::EmailPassword',
             authenticatable: true,
             registerable: true,
-            label: "Email & Password",
-            icon: "mail",
-            form_partial: "rsb/auth/credentials/email_password",
-            admin_form_partial: "rsb/auth/admin/credentials/email_password"
+            label: 'Email & Password',
+            icon: 'mail',
+            form_partial: 'rsb/auth/credentials/email_password',
+            admin_form_partial: 'rsb/auth/admin/credentials/email_password'
           )
         )
       end
@@ -55,25 +57,25 @@ module RSB
         RSB::Auth.credentials.register(
           RSB::Auth::CredentialDefinition.new(
             key: :email_password,
-            class_name: "RSB::Auth::Credential::EmailPassword",
+            class_name: 'RSB::Auth::Credential::EmailPassword',
             authenticatable: true,
             registerable: true,
-            label: "Email & Password",
-            icon: "mail",
-            form_partial: "rsb/auth/credentials/email_password",
-            admin_form_partial: "rsb/auth/admin/credentials/email_password"
+            label: 'Email & Password',
+            icon: 'mail',
+            form_partial: 'rsb/auth/credentials/email_password',
+            admin_form_partial: 'rsb/auth/admin/credentials/email_password'
           )
         )
         RSB::Auth.credentials.register(
           RSB::Auth::CredentialDefinition.new(
             key: :username_password,
-            class_name: "RSB::Auth::Credential::UsernamePassword",
+            class_name: 'RSB::Auth::Credential::UsernamePassword',
             authenticatable: true,
             registerable: true,
-            label: "Username & Password",
-            icon: "user",
-            form_partial: "rsb/auth/credentials/username_password",
-            admin_form_partial: "rsb/auth/admin/credentials/username_password"
+            label: 'Username & Password',
+            icon: 'user',
+            form_partial: 'rsb/auth/credentials/username_password',
+            admin_form_partial: 'rsb/auth/admin/credentials/username_password'
           )
         )
       end

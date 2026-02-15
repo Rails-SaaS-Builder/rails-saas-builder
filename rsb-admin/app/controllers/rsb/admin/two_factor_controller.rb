@@ -14,7 +14,11 @@ module RSB
         @otp_secret = @admin_user.generate_otp_secret!
         session[:rsb_admin_otp_provisional_secret] = @otp_secret
 
-        issuer = RSB::Settings.get("admin.app_name") rescue "RSB Admin"
+        issuer = begin
+          RSB::Settings.get('admin.app_name')
+        rescue StandardError
+          'RSB Admin'
+        end
         @otp_uri = @admin_user.otp_provisioning_uri(@otp_secret, issuer: issuer)
         @qr_svg = RQRCode::QRCode.new(@otp_uri).as_svg(
           module_size: 4,
@@ -30,7 +34,7 @@ module RSB
         @otp_secret = session[:rsb_admin_otp_provisional_secret]
 
         unless @otp_secret
-          redirect_to rsb_admin.new_profile_two_factor_path, alert: "Enrollment session expired. Please try again."
+          redirect_to rsb_admin.new_profile_two_factor_path, alert: 'Enrollment session expired. Please try again.'
           return
         end
 
@@ -48,14 +52,18 @@ module RSB
           redirect_to rsb_admin.profile_two_factor_backup_codes_path
         else
           # Re-render enrollment page with error
-          issuer = RSB::Settings.get("admin.app_name") rescue "RSB Admin"
+          issuer = begin
+            RSB::Settings.get('admin.app_name')
+          rescue StandardError
+            'RSB Admin'
+          end
           @otp_uri = @admin_user.otp_provisioning_uri(@otp_secret, issuer: issuer)
           @qr_svg = RQRCode::QRCode.new(@otp_uri).as_svg(
             module_size: 4,
             standalone: true,
             use_path: true
           )
-          flash.now[:alert] = "Invalid verification code. Please try again."
+          flash.now[:alert] = 'Invalid verification code. Please try again.'
           render :new, status: :unprocessable_entity
         end
       end
@@ -64,10 +72,10 @@ module RSB
       # Displays backup codes one time after enrollment.
       def backup_codes
         @backup_codes = session.delete(:rsb_admin_backup_codes)
-        unless @backup_codes
-          redirect_to rsb_admin.profile_path, alert: "Backup codes are only shown once after enrollment."
-          return
-        end
+        return if @backup_codes
+
+        redirect_to rsb_admin.profile_path, alert: 'Backup codes are only shown once after enrollment.'
+        nil
       end
 
       # DELETE /admin/profile/two_factor
@@ -76,12 +84,12 @@ module RSB
         admin = current_admin_user
 
         unless admin.authenticate(params[:current_password].to_s)
-          redirect_to rsb_admin.profile_path, alert: "Incorrect password."
+          redirect_to rsb_admin.profile_path, alert: 'Incorrect password.'
           return
         end
 
         admin.disable_otp!
-        redirect_to rsb_admin.profile_path, notice: "Two-factor authentication disabled."
+        redirect_to rsb_admin.profile_path, notice: 'Two-factor authentication disabled.'
       end
 
       private
@@ -89,8 +97,8 @@ module RSB
       # Override breadcrumbs for 2FA pages
       def build_breadcrumbs
         super
-        add_breadcrumb(I18n.t("rsb.admin.profile.title", default: "Profile"), rsb_admin.profile_path)
-        add_breadcrumb("Two-Factor Authentication")
+        add_breadcrumb(I18n.t('rsb.admin.profile.title', default: 'Profile'), rsb_admin.profile_path)
+        add_breadcrumb('Two-Factor Authentication')
       end
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     class Schema
@@ -6,7 +8,8 @@ module RSB
         :enum, :validates, :encrypted, :locked,
         :group, :depends_on, :label
       ) do
-        def initialize(key:, type:, default:, description:, enum:, validates:, encrypted:, locked:, group: nil, depends_on: nil, label: nil)
+        def initialize(key:, type:, default:, description:, enum:, validates:, encrypted:, locked:, group: nil,
+                       depends_on: nil, label: nil)
           super
         end
       end
@@ -33,7 +36,8 @@ module RSB
       # @param depends_on [String, nil] full setting key (e.g., "auth.account_enabled") this setting depends on.
       #   When the referenced setting resolves to a falsy value, this setting is rendered disabled in the admin UI.
       # @return [void]
-      def setting(key, type:, default: nil, description: "", enum: nil, validates: nil, encrypted: false, locked: false, group: nil, depends_on: nil, label: nil)
+      def setting(key, type:, default: nil, description: '', enum: nil, validates: nil, encrypted: false,
+                  locked: false, group: nil, depends_on: nil, label: nil)
         @definitions << SettingDefinition.new(
           key: key.to_sym,
           type: type.to_sym,
@@ -66,7 +70,8 @@ module RSB
       end
 
       def merge(other_schema)
-        raise ArgumentError, "Cannot merge schemas from different categories" unless other_schema.category == @category
+        raise ArgumentError, 'Cannot merge schemas from different categories' unless other_schema.category == @category
+
         merged = Schema.new(@category)
         merged.instance_variable_set(:@definitions, @definitions + other_schema.definitions)
         merged

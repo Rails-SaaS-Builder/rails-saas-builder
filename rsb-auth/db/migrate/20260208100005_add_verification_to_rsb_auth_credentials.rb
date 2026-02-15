@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddVerificationToRSBAuthCredentials < ActiveRecord::Migration[8.1]
   def change
     add_column :rsb_auth_credentials, :verification_token, :string

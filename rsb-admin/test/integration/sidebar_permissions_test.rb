@@ -1,18 +1,20 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class SidebarPermissionsTest < ActionDispatch::IntegrationTest
   include RSB::Admin::TestKit::Helpers
 
   setup do
-    RSB::Admin.registry.register_category "Authentication" do
+    RSB::Admin.registry.register_category 'Authentication' do
       resource RSB::Admin::AdminUser,
-        actions: [:index, :show],
-        label: "Test Users",
-        icon: "users"
+               actions: %i[index show],
+               label: 'Test Users',
+               icon: 'users'
     end
   end
 
-  test "superadmin sees all sidebar items as active links" do
+  test 'superadmin sees all sidebar items as active links' do
     admin = create_test_admin!(superadmin: true)
     sign_in_admin(admin)
 
@@ -22,11 +24,11 @@ class SidebarPermissionsTest < ActionDispatch::IntegrationTest
     assert_select "nav a[href='#{rsb_admin.admin_users_path}']"
     assert_select "nav a[href='#{rsb_admin.roles_path}']"
     assert_select "nav a[href='#{rsb_admin.settings_path}']"
-    assert_select "nav span.cursor-not-allowed", count: 0
+    assert_select 'nav span.cursor-not-allowed', count: 0
   end
 
-  test "restricted admin sees unpermitted items as disabled spans" do
-    admin = create_test_admin!(permissions: { "dashboard" => ["index"], "settings" => ["index"] })
+  test 'restricted admin sees unpermitted items as disabled spans' do
+    admin = create_test_admin!(permissions: { 'dashboard' => ['index'], 'settings' => ['index'] })
     sign_in_admin(admin)
 
     get rsb_admin.dashboard_path
@@ -42,13 +44,13 @@ class SidebarPermissionsTest < ActionDispatch::IntegrationTest
     assert_select "nav span[title='No access']", minimum: 2
   end
 
-  test "no-role admin sees all items as disabled" do
+  test 'no-role admin sees all items as disabled' do
     admin = RSB::Admin::AdminUser.create!(
-      email: "norole-sidebar@example.com",
-      password: "password-secure-123",
-      password_confirmation: "password-secure-123"
+      email: 'norole-sidebar@example.com',
+      password: 'password-secure-123',
+      password_confirmation: 'password-secure-123'
     )
-    post rsb_admin.login_path, params: { email: admin.email, password: "password-secure-123" }
+    post rsb_admin.login_path, params: { email: admin.email, password: 'password-secure-123' }
 
     # Will get forbidden page but sidebar still renders in layout
     get rsb_admin.dashboard_path
@@ -59,8 +61,8 @@ class SidebarPermissionsTest < ActionDispatch::IntegrationTest
     assert_select "nav span[title='No access']", text: /Dashboard/, minimum: 1
   end
 
-  test "category header is hidden when no items in category are permitted" do
-    admin = create_test_admin!(permissions: { "dashboard" => ["index"], "settings" => ["index"] })
+  test 'category header is hidden when no items in category are permitted' do
+    admin = create_test_admin!(permissions: { 'dashboard' => ['index'], 'settings' => ['index'] })
     sign_in_admin(admin)
 
     get rsb_admin.dashboard_path
@@ -70,14 +72,14 @@ class SidebarPermissionsTest < ActionDispatch::IntegrationTest
     refute_match %r{<div[^>]*>Authentication</div>}, response.body
   end
 
-  test "category header is visible when at least one item is permitted" do
-    admin = create_test_admin!(permissions: { "dashboard" => ["index"], "admin_users" => ["index"] })
+  test 'category header is visible when at least one item is permitted' do
+    admin = create_test_admin!(permissions: { 'dashboard' => ['index'], 'admin_users' => ['index'] })
     sign_in_admin(admin)
 
     get rsb_admin.dashboard_path
     assert_response :success
 
     # "System" header should be visible
-    assert_match "System", response.body
+    assert_match 'System', response.body
   end
 end

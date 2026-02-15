@@ -15,6 +15,6 @@ class TestBreadcrumbController < RSB::Admin::AdminController
   # Appends the action name to inherited breadcrumbs.
   def custom
     # Breadcrumbs inherited from request.env['rsb.admin.breadcrumbs']
-    add_breadcrumb("Custom Action")
+    add_breadcrumb('Custom Action')
   end
 end

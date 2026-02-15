@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     module Stripe
@@ -5,12 +7,12 @@ module RSB
         LOG_TAG = RSB::Entitlements::Stripe::LOG_TAG
 
         HANDLERS = {
-          "checkout.session.completed" => :handle_checkout_session_completed,
-          "invoice.paid" => :handle_invoice_paid,
-          "invoice.payment_failed" => :handle_invoice_payment_failed,
-          "customer.subscription.updated" => :handle_subscription_updated,
-          "customer.subscription.deleted" => :handle_subscription_deleted,
-          "charge.refunded" => :handle_charge_refunded
+          'checkout.session.completed' => :handle_checkout_session_completed,
+          'invoice.paid' => :handle_invoice_paid,
+          'invoice.payment_failed' => :handle_invoice_payment_failed,
+          'customer.subscription.updated' => :handle_subscription_updated,
+          'customer.subscription.deleted' => :handle_subscription_deleted,
+          'charge.refunded' => :handle_charge_refunded
         }.freeze
 
         def self.handle(event)
@@ -46,19 +48,19 @@ module RSB
 
           # Update provider_data with Stripe details
           data = payment_request.provider_data || {}
-          data["customer_id"] = session.customer.to_s if session.respond_to?(:customer) && session.customer
-          mode = data["mode"] || session.mode
+          data['customer_id'] = session.customer.to_s if session.respond_to?(:customer) && session.customer
+          mode = data['mode'] || session.mode
 
           complete_params = {}
 
-          if mode == "subscription" && session.respond_to?(:subscription) && session.subscription
+          if mode == 'subscription' && session.respond_to?(:subscription) && session.subscription
             subscription_id = session.subscription.to_s
-            data["subscription_id"] = subscription_id
+            data['subscription_id'] = subscription_id
             complete_params[:subscription_id] = subscription_id
             # Update provider_ref to subscription ID for future lifecycle events
             payment_request.update!(provider_ref: subscription_id, provider_data: data)
           elsif session.respond_to?(:payment_intent) && session.payment_intent
-            data["payment_intent_id"] = session.payment_intent.to_s
+            data['payment_intent_id'] = session.payment_intent.to_s
             payment_request.update!(provider_data: data)
           else
             payment_request.update!(provider_data: data)
@@ -69,7 +71,7 @@ module RSB
           provider.complete!(complete_params)
 
           # Store Stripe Customer ID on requestable for future checkouts
-          store_customer_id(payment_request.requestable, data["customer_id"])
+          store_customer_id(payment_request.requestable, data['customer_id'])
 
           Rails.logger.info("#{LOG_TAG} Granted entitlement for PaymentRequest ##{payment_request.id}")
         end
@@ -96,18 +98,16 @@ module RSB
 
           # Extend entitlement to next billing period
           period_end = if invoice.respond_to?(:lines) && invoice.lines.respond_to?(:data) && invoice.lines.data.any?
-            line = invoice.lines.data.first
-            if line.respond_to?(:period) && line.period.respond_to?(:end)
-              Time.at(line.period.end)
-            end
-          end
+                         line = invoice.lines.data.first
+                         Time.at(line.period.end) if line.respond_to?(:period) && line.period.respond_to?(:end)
+                       end
 
           # Default: extend by 1 month if period_end is not available
           period_end ||= 1.month.from_now
 
           updates = { expires_at: period_end }
           # Re-activate if previously revoked/expired
-          updates[:status] = "active" unless entitlement.status == "active"
+          updates[:status] = 'active' unless entitlement.status == 'active'
 
           entitlement.update!(updates)
 
@@ -115,7 +115,7 @@ module RSB
           payment_request = find_payment_request_by_subscription(subscription_id)
           if payment_request
             data = payment_request.provider_data || {}
-            data["invoice_id"] = invoice.id.to_s
+            data['invoice_id'] = invoice.id.to_s
             payment_request.update!(provider_data: data)
           end
 
@@ -142,11 +142,15 @@ module RSB
 
           # Store failure info
           data = payment_request.provider_data || {}
-          data["failure_code"] = invoice.respond_to?(:last_finalization_error) ?
-            invoice.last_finalization_error&.code : nil
-          data["failure_message"] = invoice.respond_to?(:last_finalization_error) ?
-            invoice.last_finalization_error&.message : "Payment failed"
-          data["invoice_id"] = invoice.id.to_s
+          data['failure_code'] = if invoice.respond_to?(:last_finalization_error)
+                                   invoice.last_finalization_error&.code
+                                 end
+          data['failure_message'] = if invoice.respond_to?(:last_finalization_error)
+                                      invoice.last_finalization_error&.message
+                                    else
+                                      'Payment failed'
+                                    end
+          data['invoice_id'] = invoice.id.to_s
 
           payment_request.update!(provider_data: data)
           fire_callback(:after_payment_request_changed, payment_request)
@@ -174,21 +178,21 @@ module RSB
 
           # Map Stripe subscription status to RSB entitlement status
           case status
-          when "active", "trialing"
+          when 'active', 'trialing'
             # Activate if not already active
-            unless entitlement.status == "active"
-              entitlement.update!(status: "active", activated_at: Time.current)
+            unless entitlement.status == 'active'
+              entitlement.update!(status: 'active', activated_at: Time.current)
               fire_callback(:after_entitlement_changed, entitlement)
               Rails.logger.info("#{LOG_TAG} Activated entitlement for subscription #{subscription_id}")
             end
-          when "past_due"
+          when 'past_due'
             # Keep active — Stripe Smart Retries will handle recovery or eventual cancellation
             Rails.logger.info("#{LOG_TAG} Subscription #{subscription_id} is past_due, keeping entitlement active")
-          when "canceled", "unpaid", "incomplete_expired"
+          when 'canceled', 'unpaid', 'incomplete_expired'
             # Revoke entitlement — map to :non_renewal (valid Entitlement::REVOKE_REASONS)
-            revoke_entitlement(entitlement, reason: "non_renewal")
+            revoke_entitlement(entitlement, reason: 'non_renewal')
             Rails.logger.info("#{LOG_TAG} Revoked entitlement for subscription #{subscription_id} (status: #{status})")
-          when "incomplete", "paused"
+          when 'incomplete', 'paused'
             # No action — incomplete subscriptions haven't been granted yet, paused are suspended
             Rails.logger.debug("#{LOG_TAG} Subscription #{subscription_id} status #{status}, no action")
           else
@@ -212,12 +216,12 @@ module RSB
           end
 
           # Revoke entitlement — map to :non_renewal (valid Entitlement::REVOKE_REASONS)
-          revoke_entitlement(entitlement, reason: "non_renewal")
+          revoke_entitlement(entitlement, reason: 'non_renewal')
 
           # Mark payment request as expired
           payment_request = find_payment_request_by_subscription(subscription_id)
-          if payment_request && payment_request.status != "expired"
-            payment_request.update!(status: "expired", expires_at: Time.current)
+          if payment_request && payment_request.status != 'expired'
+            payment_request.update!(status: 'expired', expires_at: Time.current)
             fire_callback(:after_payment_request_changed, payment_request)
           end
 
@@ -253,7 +257,7 @@ module RSB
           end
 
           # Revoke entitlement with refund reason
-          revoke_entitlement(entitlement, reason: "refund")
+          revoke_entitlement(entitlement, reason: 'refund')
 
           Rails.logger.info("#{LOG_TAG} Revoked entitlement for refunded charge (payment_intent: #{payment_intent_id})")
         end
@@ -264,16 +268,16 @@ module RSB
         # @return [RSB::Entitlements::PaymentRequest, nil]
         def self.find_payment_request_by_session(session)
           pr = RSB::Entitlements::PaymentRequest.find_by(
-            provider_key: "stripe",
+            provider_key: 'stripe',
             provider_ref: session.id
           )
           return pr if pr
 
           # Fallback: lookup by metadata
-          if session.respond_to?(:metadata) && session.metadata&.respond_to?(:rsb_payment_request_id)
-            pr_id = session.metadata.rsb_payment_request_id
-            RSB::Entitlements::PaymentRequest.find_by(id: pr_id, provider_key: "stripe") if pr_id
-          end
+          return unless session.respond_to?(:metadata) && session.metadata.respond_to?(:rsb_payment_request_id)
+
+          pr_id = session.metadata.rsb_payment_request_id
+          RSB::Entitlements::PaymentRequest.find_by(id: pr_id, provider_key: 'stripe') if pr_id
         end
 
         # Find Entitlement by subscription ID stored in provider_ref.
@@ -296,7 +300,7 @@ module RSB
         # @return [RSB::Entitlements::PaymentRequest, nil]
         def self.find_payment_request_by_subscription(subscription_id)
           RSB::Entitlements::PaymentRequest.find_by(
-            provider_key: "stripe",
+            provider_key: 'stripe',
             provider_ref: subscription_id
           )
         end
@@ -308,8 +312,8 @@ module RSB
         # @return [RSB::Entitlements::PaymentRequest, nil]
         def self.find_payment_request_by_payment_intent(payment_intent_id)
           RSB::Entitlements::PaymentRequest
-            .where(provider_key: "stripe")
-            .find { |pr| pr.provider_data&.dig("payment_intent_id") == payment_intent_id }
+            .where(provider_key: 'stripe')
+            .find { |pr| pr.provider_data&.dig('payment_intent_id') == payment_intent_id }
         end
 
         # Store Stripe Customer ID on requestable's metadata for future checkouts.
@@ -322,9 +326,9 @@ module RSB
           return unless requestable.respond_to?(:metadata=)
 
           metadata = requestable.metadata || {}
-          metadata["stripe_customer_id"] = customer_id
+          metadata['stripe_customer_id'] = customer_id
           requestable.update!(metadata: metadata)
-        rescue => e
+        rescue StandardError => e
           Rails.logger.warn("#{LOG_TAG} Failed to store customer ID: #{e.message}")
         end
 
@@ -334,10 +338,10 @@ module RSB
         # @param reason [String, Symbol]
         # @return [void]
         def self.revoke_entitlement(entitlement, reason:)
-          return if entitlement.status == "revoked"
+          return if entitlement.status == 'revoked'
 
           entitlement.update!(
-            status: "revoked",
+            status: 'revoked',
             revoked_at: Time.current,
             revoke_reason: reason.to_s
           )

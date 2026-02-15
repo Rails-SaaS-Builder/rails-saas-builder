@@ -1,20 +1,23 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class SessionService
       def create(identity:, ip_address:, user_agent:)
         enforce_session_limit(identity)
-        session = identity.sessions.create!(
+        identity.sessions.create!(
           ip_address: ip_address,
           user_agent: user_agent,
           last_active_at: Time.current
         )
-        session
       end
 
       def find_by_token(token)
         return nil if token.blank?
+
         session = RSB::Auth::Session.active.find_by(token: token)
         return nil unless session
+
         session.touch_activity!
         session
       end
@@ -32,12 +35,12 @@ module RSB
       private
 
       def enforce_session_limit(identity)
-        max = RSB::Settings.get("auth.max_sessions")
+        max = RSB::Settings.get('auth.max_sessions')
         active_count = identity.sessions.active.count
-        if active_count >= max
-          oldest = identity.sessions.active.order(:created_at).first
-          oldest&.revoke!
-        end
+        return unless active_count >= max
+
+        oldest = identity.sessions.active.order(:created_at).first
+        oldest&.revoke!
       end
     end
   end

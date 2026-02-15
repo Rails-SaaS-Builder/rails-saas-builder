@@ -14,7 +14,7 @@ module RSB
         def destroy
           target = current_identity.sessions.find(params[:id])
           RSB::Auth::SessionService.new.revoke(target)
-          redirect_to account_path, notice: t("rsb.auth.account.session_revoked")
+          redirect_to account_path, notice: t('rsb.auth.account.session_revoked')
         end
 
         # Revokes all active sessions for the current identity except
@@ -23,7 +23,7 @@ module RSB
         # @route DELETE /auth/account/sessions
         def destroy_all
           RSB::Auth::SessionService.new.revoke_all(current_identity, except: current_session)
-          redirect_to account_path, notice: t("rsb.auth.account.all_sessions_revoked")
+          redirect_to account_path, notice: t('rsb.auth.account.all_sessions_revoked')
         end
       end
     end

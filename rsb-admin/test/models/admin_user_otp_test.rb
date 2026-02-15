@@ -1,53 +1,53 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 class AdminUserOtpTest < ActiveSupport::TestCase
   setup do
     @role = RSB::Admin::Role.create!(
       name: "Superadmin-#{SecureRandom.hex(4)}",
-      permissions: { "*" => ["*"] }
+      permissions: { '*' => ['*'] }
     )
     @admin = RSB::Admin::AdminUser.create!(
-      email: "admin@example.com",
-      password: "password123",
-      password_confirmation: "password123",
+      email: 'admin@example.com',
+      password: 'password123',
+      password_confirmation: 'password123',
       role: @role
     )
   end
 
   # --- otp_enabled? ---
 
-  test "otp_enabled? returns false by default" do
+  test 'otp_enabled? returns false by default' do
     refute @admin.otp_enabled?
   end
 
-  test "otp_enabled? returns true when otp_secret and otp_required are set" do
+  test 'otp_enabled? returns true when otp_secret and otp_required are set' do
     @admin.update!(otp_secret: ROTP::Base32.random, otp_required: true)
     assert @admin.otp_enabled?
   end
 
-  test "otp_enabled? returns false when otp_required is false even with secret" do
+  test 'otp_enabled? returns false when otp_required is false even with secret' do
     @admin.update!(otp_secret: ROTP::Base32.random, otp_required: false)
     refute @admin.otp_enabled?
   end
 
-  test "otp_enabled? returns false when otp_secret is nil even with required true" do
+  test 'otp_enabled? returns false when otp_secret is nil even with required true' do
     @admin.update!(otp_required: true)
     refute @admin.otp_enabled?
   end
 
   # --- generate_otp_secret! ---
 
-  test "generate_otp_secret! returns a base32 secret" do
+  test 'generate_otp_secret! returns a base32 secret' do
     secret = @admin.generate_otp_secret!
     assert secret.is_a?(String)
-    assert secret.length > 0
+    assert secret.length.positive?
     # Base32 characters
     assert_match(/\A[A-Z2-7=]+\z/, secret)
   end
 
-  test "generate_otp_secret! does not save to database" do
+  test 'generate_otp_secret! does not save to database' do
     @admin.generate_otp_secret!
     @admin.reload
     assert_nil @admin.otp_secret
@@ -55,7 +55,7 @@ class AdminUserOtpTest < ActiveSupport::TestCase
 
   # --- verify_otp ---
 
-  test "verify_otp returns true for valid current code" do
+  test 'verify_otp returns true for valid current code' do
     secret = ROTP::Base32.random
     @admin.update!(otp_secret: secret, otp_required: true)
 
@@ -65,18 +65,18 @@ class AdminUserOtpTest < ActiveSupport::TestCase
     assert @admin.verify_otp(code)
   end
 
-  test "verify_otp returns false for invalid code" do
+  test 'verify_otp returns false for invalid code' do
     secret = ROTP::Base32.random
     @admin.update!(otp_secret: secret, otp_required: true)
 
-    refute @admin.verify_otp("000000")
+    refute @admin.verify_otp('000000')
   end
 
-  test "verify_otp returns false when otp_secret is nil" do
-    refute @admin.verify_otp("123456")
+  test 'verify_otp returns false when otp_secret is nil' do
+    refute @admin.verify_otp('123456')
   end
 
-  test "verify_otp allows drift of 30 seconds" do
+  test 'verify_otp allows drift of 30 seconds' do
     secret = ROTP::Base32.random
     @admin.update!(otp_secret: secret, otp_required: true)
 
@@ -89,7 +89,7 @@ class AdminUserOtpTest < ActiveSupport::TestCase
 
   # --- generate_backup_codes! ---
 
-  test "generate_backup_codes! returns 10 plaintext codes" do
+  test 'generate_backup_codes! returns 10 plaintext codes' do
     codes = @admin.generate_backup_codes!
     assert_equal 10, codes.length
     codes.each do |code|
@@ -98,7 +98,7 @@ class AdminUserOtpTest < ActiveSupport::TestCase
     end
   end
 
-  test "generate_backup_codes! stores hashed codes in database" do
+  test 'generate_backup_codes! stores hashed codes in database' do
     codes = @admin.generate_backup_codes!
     @admin.reload
 
@@ -107,7 +107,7 @@ class AdminUserOtpTest < ActiveSupport::TestCase
 
     # Each stored code is a bcrypt hash, not plaintext
     stored.each do |hash|
-      assert hash.start_with?("$2")
+      assert hash.start_with?('$2')
     end
 
     # Plaintext codes should NOT be in the stored array
@@ -118,7 +118,7 @@ class AdminUserOtpTest < ActiveSupport::TestCase
 
   # --- verify_backup_code ---
 
-  test "verify_backup_code returns true and consumes valid code" do
+  test 'verify_backup_code returns true and consumes valid code' do
     codes = @admin.generate_backup_codes!
 
     assert @admin.verify_backup_code(codes.first)
@@ -130,16 +130,16 @@ class AdminUserOtpTest < ActiveSupport::TestCase
     assert @admin.verify_backup_code(codes[1])
   end
 
-  test "verify_backup_code returns false for invalid code" do
+  test 'verify_backup_code returns false for invalid code' do
     @admin.generate_backup_codes!
-    refute @admin.verify_backup_code("invalidcode")
+    refute @admin.verify_backup_code('invalidcode')
   end
 
-  test "verify_backup_code returns false when no backup codes exist" do
-    refute @admin.verify_backup_code("anything")
+  test 'verify_backup_code returns false when no backup codes exist' do
+    refute @admin.verify_backup_code('anything')
   end
 
-  test "all 10 backup codes can be consumed one by one" do
+  test 'all 10 backup codes can be consumed one by one' do
     codes = @admin.generate_backup_codes!
 
     codes.each do |code|
@@ -154,11 +154,11 @@ class AdminUserOtpTest < ActiveSupport::TestCase
 
   # --- disable_otp! ---
 
-  test "disable_otp! clears all OTP fields" do
+  test 'disable_otp! clears all OTP fields' do
     @admin.update!(
       otp_secret: ROTP::Base32.random,
       otp_required: true,
-      otp_backup_codes: ["hash1", "hash2"].to_json
+      otp_backup_codes: %w[hash1 hash2].to_json
     )
 
     @admin.disable_otp!
@@ -171,13 +171,13 @@ class AdminUserOtpTest < ActiveSupport::TestCase
 
   # --- otp_provisioning_uri ---
 
-  test "otp_provisioning_uri returns otpauth URI" do
+  test 'otp_provisioning_uri returns otpauth URI' do
     secret = ROTP::Base32.random
-    uri = @admin.otp_provisioning_uri(secret, issuer: "TestApp")
+    uri = @admin.otp_provisioning_uri(secret, issuer: 'TestApp')
 
-    assert uri.start_with?("otpauth://totp/")
-    assert_includes uri, "admin%40example.com"
-    assert_includes uri, "issuer=TestApp"
+    assert uri.start_with?('otpauth://totp/')
+    assert_includes uri, 'admin%40example.com'
+    assert_includes uri, 'issuer=TestApp'
     assert_includes uri, "secret=#{secret}"
   end
 end

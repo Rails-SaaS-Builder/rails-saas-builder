@@ -1,203 +1,209 @@
-require "test_helper"
+# frozen_string_literal: true
 
-class RSB::Entitlements::EntitlementTest < ActiveSupport::TestCase
-  setup do
-    # Register providers needed for existing tests
-    register_test_provider(key: :admin, label: "Admin")
-    register_test_provider(key: :stripe, label: "Stripe")
-    register_test_provider(key: :trial, label: "Trial")
-    RSB::Entitlements.providers.register(RSB::Entitlements::PaymentProvider::Wire)
+require 'test_helper'
 
-    @org = Organization.create!(name: "Test Org")
-    @plan = create_test_plan(
-      features: { "api" => true },
-      limits: { "projects" => 10 }
-    )
-  end
+module RSB
+  module Entitlements
+    class EntitlementTest < ActiveSupport::TestCase
+      setup do
+        # Register providers needed for existing tests
+        register_test_provider(key: :admin, label: 'Admin')
+        register_test_provider(key: :stripe, label: 'Stripe')
+        register_test_provider(key: :trial, label: 'Trial')
+        RSB::Entitlements.providers.register(RSB::Entitlements::PaymentProvider::Wire)
 
-  def create_entitlement(**overrides)
-    defaults = {
-      entitleable: @org,
-      plan: @plan,
-      status: "active",
-      provider: "admin",
-      activated_at: Time.current
-    }
-    RSB::Entitlements::Entitlement.create!(defaults.merge(overrides))
-  end
+        @org = Organization.create!(name: 'Test Org')
+        @plan = create_test_plan(
+          features: { 'api' => true },
+          limits: { 'projects' => 10 }
+        )
+      end
 
-  test "creates a valid entitlement" do
-    entitlement = create_entitlement
-    assert entitlement.persisted?
-  end
+      def create_entitlement(**overrides)
+        defaults = {
+          entitleable: @org,
+          plan: @plan,
+          status: 'active',
+          provider: 'admin',
+          activated_at: Time.current
+        }
+        RSB::Entitlements::Entitlement.create!(defaults.merge(overrides))
+      end
 
-  test "validates status inclusion" do
-    entitlement = RSB::Entitlements::Entitlement.new(
-      entitleable: @org, plan: @plan, status: "invalid", provider: "admin"
-    )
-    refute entitlement.valid?
-    assert_includes entitlement.errors[:status], "is not included in the list"
-  end
+      test 'creates a valid entitlement' do
+        entitlement = create_entitlement
+        assert entitlement.persisted?
+      end
 
-  test "validates provider inclusion" do
-    entitlement = RSB::Entitlements::Entitlement.new(
-      entitleable: @org, plan: @plan, status: "active", provider: "invalid"
-    )
-    refute entitlement.valid?
-    assert entitlement.errors[:provider].any?
-  end
+      test 'validates status inclusion' do
+        entitlement = RSB::Entitlements::Entitlement.new(
+          entitleable: @org, plan: @plan, status: 'invalid', provider: 'admin'
+        )
+        refute entitlement.valid?
+        assert_includes entitlement.errors[:status], 'is not included in the list'
+      end
 
-  test "validates revoke_reason inclusion when present" do
-    entitlement = RSB::Entitlements::Entitlement.new(
-      entitleable: @org, plan: @plan, status: "revoked", provider: "admin",
-      revoke_reason: "invalid_reason"
-    )
-    refute entitlement.valid?
-    assert_includes entitlement.errors[:revoke_reason], "is not included in the list"
-  end
+      test 'validates provider inclusion' do
+        entitlement = RSB::Entitlements::Entitlement.new(
+          entitleable: @org, plan: @plan, status: 'active', provider: 'invalid'
+        )
+        refute entitlement.valid?
+        assert entitlement.errors[:provider].any?
+      end
 
-  test "allows nil revoke_reason" do
-    entitlement = create_entitlement(revoke_reason: nil)
-    assert entitlement.valid?
-  end
+      test 'validates revoke_reason inclusion when present' do
+        entitlement = RSB::Entitlements::Entitlement.new(
+          entitleable: @org, plan: @plan, status: 'revoked', provider: 'admin',
+          revoke_reason: 'invalid_reason'
+        )
+        refute entitlement.valid?
+        assert_includes entitlement.errors[:revoke_reason], 'is not included in the list'
+      end
 
-  test "activate! sets status to active and activated_at" do
-    entitlement = create_entitlement(status: "pending", activated_at: nil)
-    entitlement.activate!
+      test 'allows nil revoke_reason' do
+        entitlement = create_entitlement(revoke_reason: nil)
+        assert entitlement.valid?
+      end
 
-    assert_equal "active", entitlement.status
-    assert_not_nil entitlement.activated_at
-  end
+      test 'activate! sets status to active and activated_at' do
+        entitlement = create_entitlement(status: 'pending', activated_at: nil)
+        entitlement.activate!
 
-  test "expire! sets status to expired" do
-    entitlement = create_entitlement
-    entitlement.expire!
+        assert_equal 'active', entitlement.status
+        assert_not_nil entitlement.activated_at
+      end
 
-    assert_equal "expired", entitlement.status
-  end
+      test 'expire! sets status to expired' do
+        entitlement = create_entitlement
+        entitlement.expire!
 
-  test "revoke! sets status, revoked_at, and revoke_reason" do
-    entitlement = create_entitlement
-    entitlement.revoke!(reason: "refund")
+        assert_equal 'expired', entitlement.status
+      end
 
-    assert_equal "revoked", entitlement.status
-    assert_not_nil entitlement.revoked_at
-    assert_equal "refund", entitlement.revoke_reason
-  end
+      test 'revoke! sets status, revoked_at, and revoke_reason' do
+        entitlement = create_entitlement
+        entitlement.revoke!(reason: 'refund')
 
-  test "active scope returns only active entitlements" do
-    active = create_entitlement(status: "active")
-    expired = create_entitlement(status: "expired")
+        assert_equal 'revoked', entitlement.status
+        assert_not_nil entitlement.revoked_at
+        assert_equal 'refund', entitlement.revoke_reason
+      end
 
-    result = RSB::Entitlements::Entitlement.active
-    assert_includes result, active
-    assert_not_includes result, expired
-  end
+      test 'active scope returns only active entitlements' do
+        active = create_entitlement(status: 'active')
+        expired = create_entitlement(status: 'expired')
 
-  test "current scope returns pending and active" do
-    pending = create_entitlement(status: "pending")
-    active = create_entitlement(status: "active")
-    expired = create_entitlement(status: "expired")
-    revoked = create_entitlement(status: "revoked")
+        result = RSB::Entitlements::Entitlement.active
+        assert_includes result, active
+        assert_not_includes result, expired
+      end
 
-    result = RSB::Entitlements::Entitlement.current
-    assert_includes result, pending
-    assert_includes result, active
-    assert_not_includes result, expired
-    assert_not_includes result, revoked
-  end
+      test 'current scope returns pending and active' do
+        pending = create_entitlement(status: 'pending')
+        active = create_entitlement(status: 'active')
+        expired = create_entitlement(status: 'expired')
+        revoked = create_entitlement(status: 'revoked')
 
-  test "belongs_to entitleable polymorphically" do
-    entitlement = create_entitlement
-    assert_equal @org, entitlement.entitleable
-    assert_equal "Organization", entitlement.entitleable_type
-  end
+        result = RSB::Entitlements::Entitlement.current
+        assert_includes result, pending
+        assert_includes result, active
+        assert_not_includes result, expired
+        assert_not_includes result, revoked
+      end
 
-  test "belongs_to plan" do
-    entitlement = create_entitlement
-    assert_equal @plan, entitlement.plan
-  end
+      test 'belongs_to entitleable polymorphically' do
+        entitlement = create_entitlement
+        assert_equal @org, entitlement.entitleable
+        assert_equal 'Organization', entitlement.entitleable_type
+      end
 
-  test "fires after_entitlement_changed callback on status change" do
-    called_with = nil
-    RSB::Entitlements.configuration.after_entitlement_changed = ->(e) { called_with = e }
+      test 'belongs_to plan' do
+        entitlement = create_entitlement
+        assert_equal @plan, entitlement.plan
+      end
 
-    entitlement = create_entitlement
-    entitlement.revoke!(reason: "admin")
+      test 'fires after_entitlement_changed callback on status change' do
+        called_with = nil
+        RSB::Entitlements.configuration.after_entitlement_changed = ->(e) { called_with = e }
 
-    assert_equal entitlement, called_with
-  ensure
-    RSB::Entitlements.configuration.after_entitlement_changed = nil
-  end
+        entitlement = create_entitlement
+        entitlement.revoke!(reason: 'admin')
 
-  test "does not fire callback when status has not changed" do
-    called = false
-    RSB::Entitlements.configuration.after_entitlement_changed = ->(_e) { called = true }
+        assert_equal entitlement, called_with
+      ensure
+        RSB::Entitlements.configuration.after_entitlement_changed = nil
+      end
 
-    entitlement = create_entitlement
-    # Reset the flag after creation (which fires the callback)
-    called = false
+      test 'does not fire callback when status has not changed' do
+        called = false
+        RSB::Entitlements.configuration.after_entitlement_changed = ->(_e) { called = true }
 
-    # Update a non-status field
-    entitlement.update!(provider_ref: "ref-123")
+        entitlement = create_entitlement
+        # Reset the flag after creation (which fires the callback)
+        called = false
 
-    refute called
-  ensure
-    RSB::Entitlements.configuration.after_entitlement_changed = nil
-  end
+        # Update a non-status field
+        entitlement.update!(provider_ref: 'ref-123')
 
-  test "all valid statuses" do
-    %w[pending active expired revoked].each do |status|
-      entitlement = RSB::Entitlements::Entitlement.new(
-        entitleable: @org, plan: @plan, status: status, provider: "admin"
-      )
-      assert entitlement.valid?, "Expected status '#{status}' to be valid"
-    end
-  end
+        refute called
+      ensure
+        RSB::Entitlements.configuration.after_entitlement_changed = nil
+      end
 
-  test "all valid revoke_reasons" do
-    %w[refund admin chargeback non_renewal upgrade].each do |reason|
-      entitlement = RSB::Entitlements::Entitlement.new(
-        entitleable: @org, plan: @plan, status: "revoked", provider: "admin",
-        revoke_reason: reason
-      )
-      assert entitlement.valid?, "Expected revoke_reason '#{reason}' to be valid"
-    end
-  end
+      test 'all valid statuses' do
+        %w[pending active expired revoked].each do |status|
+          entitlement = RSB::Entitlements::Entitlement.new(
+            entitleable: @org, plan: @plan, status: status, provider: 'admin'
+          )
+          assert entitlement.valid?, "Expected status '#{status}' to be valid"
+        end
+      end
 
-  # -- Dynamic provider validation --
+      test 'all valid revoke_reasons' do
+        %w[refund admin chargeback non_renewal upgrade].each do |reason|
+          entitlement = RSB::Entitlements::Entitlement.new(
+            entitleable: @org, plan: @plan, status: 'revoked', provider: 'admin',
+            revoke_reason: reason
+          )
+          assert entitlement.valid?, "Expected revoke_reason '#{reason}' to be valid"
+        end
+      end
 
-  test "provider validates against registered provider keys dynamically" do
-    register_test_provider(key: :custom_pay, label: "Custom Pay")
-    plan = create_test_plan
-    org = Organization.create!(name: "Dynamic Provider Org")
+      # -- Dynamic provider validation --
 
-    entitlement = RSB::Entitlements::Entitlement.new(
-      entitleable: org, plan: plan, provider: "custom_pay", status: "pending"
-    )
-    assert entitlement.valid?, "Expected entitlement with registered provider to be valid"
-  end
+      test 'provider validates against registered provider keys dynamically' do
+        register_test_provider(key: :custom_pay, label: 'Custom Pay')
+        plan = create_test_plan
+        org = Organization.create!(name: 'Dynamic Provider Org')
 
-  test "provider rejects unregistered provider key" do
-    plan = create_test_plan
-    org = Organization.create!(name: "Bad Provider Org")
+        entitlement = RSB::Entitlements::Entitlement.new(
+          entitleable: org, plan: plan, provider: 'custom_pay', status: 'pending'
+        )
+        assert entitlement.valid?, 'Expected entitlement with registered provider to be valid'
+      end
 
-    entitlement = RSB::Entitlements::Entitlement.new(
-      entitleable: org, plan: plan, provider: "nonexistent", status: "pending"
-    )
-    assert_not entitlement.valid?
-    assert entitlement.errors[:provider].any?
-  end
+      test 'provider rejects unregistered provider key' do
+        plan = create_test_plan
+        org = Organization.create!(name: 'Bad Provider Org')
 
-  test "provider accepts all built-in providers when registered" do
-    plan = create_test_plan
-    org = Organization.create!(name: "Provider Org")
+        entitlement = RSB::Entitlements::Entitlement.new(
+          entitleable: org, plan: plan, provider: 'nonexistent', status: 'pending'
+        )
+        assert_not entitlement.valid?
+        assert entitlement.errors[:provider].any?
+      end
 
-    %w[wire admin trial stripe].each do |provider_name|
-      entitlement = RSB::Entitlements::Entitlement.new(
-        entitleable: org, plan: plan, provider: provider_name, status: "pending"
-      )
-      assert entitlement.valid?, "Expected provider '#{provider_name}' to be valid"
+      test 'provider accepts all built-in providers when registered' do
+        plan = create_test_plan
+        org = Organization.create!(name: 'Provider Org')
+
+        %w[wire admin trial stripe].each do |provider_name|
+          entitlement = RSB::Entitlements::Entitlement.new(
+            entitleable: org, plan: plan, provider: provider_name, status: 'pending'
+          )
+          assert entitlement.valid?, "Expected provider '#{provider_name}' to be valid"
+        end
+      end
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # View helper methods for internationalization (i18n) in the admin panel.

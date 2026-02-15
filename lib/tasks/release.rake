@@ -1,33 +1,41 @@
+# frozen_string_literal: true
+
+require 'English'
 PUBLISH_ORDER = [
-  { name: "rsb-settings",        dir: "rsb-settings",        gemspec: "rsb-settings.gemspec",        version_file: "rsb-settings/lib/rsb/settings/version.rb" },
-  { name: "rsb-auth",            dir: "rsb-auth",            gemspec: "rsb-auth.gemspec",            version_file: "rsb-auth/lib/rsb/auth/version.rb" },
-  { name: "rsb-entitlements",    dir: "rsb-entitlements",    gemspec: "rsb-entitlements.gemspec",    version_file: "rsb-entitlements/lib/rsb/entitlements/version.rb" },
-  { name: "rsb-admin",           dir: "rsb-admin",           gemspec: "rsb-admin.gemspec",           version_file: "rsb-admin/lib/rsb/admin/version.rb" },
-  { name: "rails-saas-builder",  dir: ".",                   gemspec: "rails-saas-builder.gemspec",  version_file: "lib/rsb/version.rb" }
+  { name: 'rsb-settings',        dir: 'rsb-settings',        gemspec: 'rsb-settings.gemspec',
+    version_file: 'rsb-settings/lib/rsb/settings/version.rb' },
+  { name: 'rsb-auth',            dir: 'rsb-auth',            gemspec: 'rsb-auth.gemspec',
+    version_file: 'rsb-auth/lib/rsb/auth/version.rb' },
+  { name: 'rsb-entitlements',    dir: 'rsb-entitlements',    gemspec: 'rsb-entitlements.gemspec',
+    version_file: 'rsb-entitlements/lib/rsb/entitlements/version.rb' },
+  { name: 'rsb-admin',           dir: 'rsb-admin',           gemspec: 'rsb-admin.gemspec',
+    version_file: 'rsb-admin/lib/rsb/admin/version.rb' },
+  { name: 'rails-saas-builder',  dir: '.',                   gemspec: 'rails-saas-builder.gemspec',
+    version_file: 'lib/rsb/version.rb' }
 ].freeze
 
 VERSION_FILES = PUBLISH_ORDER.map { |g| g[:version_file] }.freeze
 
-PKG_DIR = File.expand_path("pkg", __dir__.then { File.expand_path("../..", _1) })
+PKG_DIR = File.expand_path('pkg', __dir__.then { File.expand_path('../..', _1) })
 
 module ReleaseHelper
   module_function
 
   def root
-    File.expand_path("../..", __dir__)
+    File.expand_path('../..', __dir__)
   end
 
   def current_version
-    content = File.read(File.join(root, "lib/rsb/version.rb"))
+    content = File.read(File.join(root, 'lib/rsb/version.rb'))
     content.match(/VERSION\s*=\s*"([^"]+)"/)[1]
   end
 
   def next_version(current, bump)
-    major, minor, patch = current.split(".").map(&:to_i)
+    major, minor, patch = current.split('.').map(&:to_i)
     case bump.to_s
-    when "major" then "#{major + 1}.0.0"
-    when "minor" then "#{major}.#{minor + 1}.0"
-    when "patch" then "#{major}.#{minor}.#{patch + 1}"
+    when 'major' then "#{major + 1}.0.0"
+    when 'minor' then "#{major}.#{minor + 1}.0"
+    when 'patch' then "#{major}.#{minor}.#{patch + 1}"
     else abort "Unknown bump type: #{bump}. Use patch, minor, or major."
     end
   end
@@ -42,19 +50,19 @@ module ReleaseHelper
 
   def ensure_clean_git!
     status = `git -C #{root} status --porcelain`.strip
-    abort "Aborting: working tree is dirty. Commit or stash changes first." unless status.empty?
+    abort 'Aborting: working tree is dirty. Commit or stash changes first.' unless status.empty?
   end
 
   def ensure_on_master!
     branch = `git -C #{root} branch --show-current`.strip
-    abort "Aborting: not on master branch (currently on '#{branch}')." unless branch == "master"
+    abort "Aborting: not on master branch (currently on '#{branch}')." unless branch == 'master'
   end
 
   def ensure_tests_pass!
-    puts "Running full test suite..."
-    unless system("bundle exec rake test", chdir: root)
-      abort "Aborting: tests failed."
-    end
+    puts 'Running full test suite...'
+    return if system('bundle exec rake test', chdir: root)
+
+    abort 'Aborting: tests failed.'
   end
 
   def build_gem(gem_info)
@@ -65,9 +73,7 @@ module ReleaseHelper
 
     puts "  Building #{gem_info[:name]}..."
     output = `cd #{gem_dir} && gem build #{gemspec} 2>&1`
-    unless $?.success?
-      abort "Failed to build #{gem_info[:name]}:\n#{output}"
-    end
+    abort "Failed to build #{gem_info[:name]}:\n#{output}" unless $CHILD_STATUS.success?
 
     gem_file = output.match(/File:\s*(.+\.gem)/)[1].strip
     source = File.join(gem_dir, gem_file)
@@ -80,9 +86,7 @@ module ReleaseHelper
   def push_gem(gem_path)
     name = File.basename(gem_path)
     puts "  Pushing #{name}..."
-    unless system("gem push #{gem_path}")
-      abort "Failed to push #{name}."
-    end
+    abort "Failed to push #{name}." unless system("gem push #{gem_path}")
     puts "  Pushed #{name}"
   end
 
@@ -97,7 +101,7 @@ module ReleaseHelper
   end
 end
 
-desc "Build and push all gems to RubyGems.org (no version bump)"
+desc 'Build and push all gems to RubyGems.org (no version bump)'
 task :publish do
   version = ReleaseHelper.current_version
   puts "Publishing v#{version}..."
@@ -108,9 +112,9 @@ task :publish do
   puts "\nPublished v#{version} successfully!"
 end
 
-desc "Bump version, build, push gems, tag and push git (default: patch)"
+desc 'Bump version, build, push gems, tag and push git (default: patch)'
 task :release, [:bump] do |_t, args|
-  bump = args[:bump] || "patch"
+  bump = args[:bump] || 'patch'
   current = ReleaseHelper.current_version
   new_version = ReleaseHelper.next_version(current, bump)
 

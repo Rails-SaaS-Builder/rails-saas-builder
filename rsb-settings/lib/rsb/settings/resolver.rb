@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     class Resolver
@@ -79,7 +81,7 @@ module RSB
         when :boolean then ActiveModel::Type::Boolean.new.cast(value)
         when :symbol then value.to_sym
         when :string then value.to_s
-        when :array then value.is_a?(Array) ? value : value.split(",").map(&:strip)
+        when :array then value.is_a?(Array) ? value : value.split(',').map(&:strip)
         when :duration then value.to_i.seconds
         else value
         end

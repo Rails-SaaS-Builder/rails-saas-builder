@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # View helper methods for theme-aware partial resolution in admin panel views.

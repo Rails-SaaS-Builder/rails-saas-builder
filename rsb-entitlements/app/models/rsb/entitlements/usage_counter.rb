@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     class UsageCounter < ApplicationRecord
       belongs_to :countable, polymorphic: true
-      belongs_to :plan, class_name: "RSB::Entitlements::Plan"
+      belongs_to :plan, class_name: 'RSB::Entitlements::Plan'
 
       validates :metric, presence: true,
-                         uniqueness: { scope: [:countable_type, :countable_id, :period_key, :plan_id] }
+                         uniqueness: { scope: %i[countable_type countable_id period_key plan_id] }
       validates :period_key, presence: true
       validates :current_value, numericality: { greater_than_or_equal_to: 0 }
 
@@ -24,7 +26,7 @@ module RSB
       # @return [Integer] the new current_value after increment
       def increment!(amount = 1)
         self.class.where(id: id).update_all(
-          ["current_value = current_value + ?", amount]
+          ['current_value = current_value + ?', amount]
         )
         reload
         check_limit_reached
@@ -36,6 +38,7 @@ module RSB
       # @return [Boolean] true if current_value >= limit, false if no limit set
       def at_limit?
         return false if limit.nil?
+
         current_value >= limit
       end
 
@@ -44,6 +47,7 @@ module RSB
       # @return [Integer, nil] remaining count, or nil if no limit (unlimited)
       def remaining
         return nil if limit.nil?
+
         [limit - current_value, 0].max
       end
 
@@ -51,6 +55,7 @@ module RSB
 
       def check_limit_reached
         return unless at_limit?
+
         callback = RSB::Entitlements.configuration.after_usage_limit_reached
         callback&.call(self)
       end

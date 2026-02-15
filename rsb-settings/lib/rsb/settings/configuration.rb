@@ -1,27 +1,29 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     class Configuration
       BUILT_IN_LOCALE_NAMES = {
-        "en" => "English",
-        "de" => "Deutsch",
-        "fr" => "Français",
-        "es" => "Español",
-        "pt" => "Português",
-        "it" => "Italiano",
-        "nl" => "Nederlands",
-        "ja" => "日本語",
-        "zh" => "中文",
-        "ko" => "한국어",
-        "ru" => "Русский",
-        "ar" => "العربية",
-        "pl" => "Polski",
-        "sv" => "Svenska",
-        "da" => "Dansk",
-        "nb" => "Norsk",
-        "fi" => "Suomi",
-        "cs" => "Čeština",
-        "tr" => "Türkçe",
-        "uk" => "Українська"
+        'en' => 'English',
+        'de' => 'Deutsch',
+        'fr' => 'Français',
+        'es' => 'Español',
+        'pt' => 'Português',
+        'it' => 'Italiano',
+        'nl' => 'Nederlands',
+        'ja' => '日本語',
+        'zh' => '中文',
+        'ko' => '한국어',
+        'ru' => 'Русский',
+        'ar' => 'العربية',
+        'pl' => 'Polski',
+        'sv' => 'Svenska',
+        'da' => 'Dansk',
+        'nb' => 'Norsk',
+        'fi' => 'Suomi',
+        'cs' => 'Čeština',
+        'tr' => 'Türkçe',
+        'uk' => 'Українська'
       }.freeze
 
       attr_accessor :available_locales, :default_locale
@@ -29,8 +31,8 @@ module RSB
       def initialize
         @overrides = {}  # { "auth.registration_mode" => "open" }
         @locks = Set.new # { "auth.registration_mode" }
-        @available_locales = ["en"]
-        @default_locale = "en"
+        @available_locales = ['en']
+        @default_locale = 'en'
         @custom_locale_display_names = {}
       end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # RSB Settings configuration
 # See: https://github.com/Rails-SaaS-Builder/rails-saas-builder
 

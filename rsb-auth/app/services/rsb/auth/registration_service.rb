@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class RegistrationService
@@ -13,19 +15,19 @@ module RSB
       # @param recovery_email [String, nil] optional recovery email for username credentials
       # @return [Result]
       def call(identifier:, password:, password_confirmation:, credential_type: nil, recovery_email: nil)
-        registration_mode = RSB::Settings.get("auth.registration_mode")
-        return failure("Registration is disabled.") if registration_mode.to_s == "disabled"
-        return failure("Registration is invite-only.") if registration_mode.to_s == "invite_only"
+        registration_mode = RSB::Settings.get('auth.registration_mode')
+        return failure('Registration is disabled.') if registration_mode.to_s == 'disabled'
+        return failure('Registration is invite-only.') if registration_mode.to_s == 'invite_only'
 
         resolved = resolve_credential_type(credential_type)
-        return failure("This registration method is not available.") unless resolved
+        return failure('This registration method is not available.') unless resolved
 
         # Check per-credential registerable setting
         resolved_key = credential_type_key_from_class(resolved)
         if resolved_key
           registerable = RSB::Settings.get("auth.credentials.#{resolved_key}.registerable")
           unless ActiveModel::Type::Boolean.new.cast(registerable)
-            return failure("This registration method is not available.")
+            return failure('This registration method is not available.')
           end
         end
 
@@ -53,9 +55,9 @@ module RSB
             elsif verif_required
               credential.send_verification!
             end
-          else
+          elsif RSB::Settings.get('auth.verification_required')
             # Fallback to global setting (backward compat)
-            credential.send_verification! if RSB::Settings.get("auth.verification_required")
+            credential.send_verification!
           end
 
           Result.new(success?: true, identity: identity, credential: credential, errors: [])
@@ -80,21 +82,20 @@ module RSB
           return nil unless definition.registerable
           return nil unless RSB::Auth.credentials.enabled?(key)
 
-          definition.class_name
         else
           # Backward compat: fall back to login_identifier
-          identifier = RSB::Settings.get("auth.login_identifier")
+          identifier = RSB::Settings.get('auth.login_identifier')
           definition = RSB::Auth.credentials.for_identifier(identifier)
           return nil unless definition
           return nil unless RSB::Auth.credentials.enabled?(definition.key)
 
-          definition.class_name
         end
+        definition.class_name
       end
 
       def credential_type_key_from_class(class_name)
         class_name.demodulize.underscore.to_sym
-      rescue
+      rescue StandardError
         nil
       end
 

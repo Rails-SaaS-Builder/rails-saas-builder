@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     class PaymentRequest < ApplicationRecord
@@ -11,7 +13,7 @@ module RSB
       validates :provider_key, presence: true,
                                inclusion: {
                                  in: ->(_) { RSB::Entitlements.providers.keys.map(&:to_s) },
-                                 message: "is not a registered provider"
+                                 message: 'is not a registered provider'
                                }
       validates :status, presence: true, inclusion: { in: STATUSES }
       validates :amount_cents, numericality: { greater_than_or_equal_to: 0 }
@@ -24,32 +26,32 @@ module RSB
 
       # @return [Boolean] true if status is "pending"
       def pending?
-        status == "pending"
+        status == 'pending'
       end
 
       # @return [Boolean] true if status is "processing"
       def processing?
-        status == "processing"
+        status == 'processing'
       end
 
       # @return [Boolean] true if status is "approved"
       def approved?
-        status == "approved"
+        status == 'approved'
       end
 
       # @return [Boolean] true if status is "rejected"
       def rejected?
-        status == "rejected"
+        status == 'rejected'
       end
 
       # @return [Boolean] true if status is "expired"
       def expired?
-        status == "expired"
+        status == 'expired'
       end
 
       # @return [Boolean] true if status is "refunded"
       def refunded?
-        status == "refunded"
+        status == 'refunded'
       end
 
       # @return [Boolean] true if status is "pending" or "processing"

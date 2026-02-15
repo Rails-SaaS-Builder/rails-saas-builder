@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # View helper for permission-aware rendering in admin views.
@@ -39,6 +41,7 @@ module RSB
       #   rsb_admin_can?("roles", "index") #=> false
       def rsb_admin_can?(resource, action)
         return false unless respond_to?(:current_admin_user) && current_admin_user
+
         current_admin_user.can?(resource, action)
       end
     end

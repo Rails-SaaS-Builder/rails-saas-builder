@@ -18,7 +18,7 @@ module RSB
       #
       # @return [void]
       def show
-        @rsb_page_title = I18n.t("rsb.admin.profile.show.page_title", default: "Profile")
+        @rsb_page_title = I18n.t('rsb.admin.profile.show.page_title', default: 'Profile')
         @admin_user = current_admin_user
       end
 
@@ -27,7 +27,7 @@ module RSB
       #
       # @return [void]
       def edit
-        @rsb_page_title = I18n.t("rsb.admin.profile.edit.page_title", default: "Edit Profile")
+        @rsb_page_title = I18n.t('rsb.admin.profile.edit.page_title', default: 'Edit Profile')
         @admin_user = current_admin_user
       end
 

@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class InvitationsController < ApplicationController
-      layout "rsb/auth/application"
+      layout 'rsb/auth/application'
 
       def show
         @invitation = RSB::Auth::Invitation.pending.find_by(token: params[:token])
-        redirect_to new_session_path, alert: "Invalid or expired invitation." unless @invitation
-        @rsb_page_title = t("rsb.auth.invitations.show.page_title", default: "Accept Invitation")
+        redirect_to new_session_path, alert: 'Invalid or expired invitation.' unless @invitation
+        @rsb_page_title = t('rsb.auth.invitations.show.page_title', default: 'Accept Invitation')
       end
 
       def update
@@ -17,7 +19,7 @@ module RSB
         )
 
         if result.success?
-          redirect_to new_session_path, notice: "Account created. Please sign in."
+          redirect_to new_session_path, notice: 'Account created. Please sign in.'
         else
           @invitation = RSB::Auth::Invitation.find_by(token: params[:token])
           @error = result.error

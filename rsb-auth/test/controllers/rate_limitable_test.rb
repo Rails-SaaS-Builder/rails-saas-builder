@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class RateLimitableTest < ActionDispatch::IntegrationTest
   include RSB::Auth::Engine.routes.url_helpers
@@ -9,11 +11,11 @@ class RateLimitableTest < ActionDispatch::IntegrationTest
     Rails.cache.clear
   end
 
-  test "rate limits login attempts" do
+  test 'rate limits login attempts' do
     11.times do
       post session_path, params: {
-        identifier: "test@example.com",
-        password: "wrong"
+        identifier: 'test@example.com',
+        password: 'wrong'
       }
     end
 
@@ -21,12 +23,12 @@ class RateLimitableTest < ActionDispatch::IntegrationTest
     assert_response :too_many_requests
   end
 
-  test "rate limits registration attempts" do
+  test 'rate limits registration attempts' do
     6.times do
       post registration_path, params: {
         identifier: "test#{rand(9999)}@example.com",
-        password: "short",
-        password_confirmation: "short"
+        password: 'short',
+        password_confirmation: 'short'
       }
     end
 
@@ -37,6 +39,6 @@ class RateLimitableTest < ActionDispatch::IntegrationTest
   private
 
   def default_url_options
-    { host: "localhost" }
+    { host: 'localhost' }
   end
 end

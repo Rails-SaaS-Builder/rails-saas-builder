@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # View helper methods for rendering Lucide icons in admin panel views.
@@ -43,7 +45,7 @@ module RSB
       def rsb_admin_icon(name, size: 18, css_class: nil)
         svg = RSB::Admin::Icons.render(name, size: size)
         if css_class && svg.present?
-          svg.sub("<svg ", "<svg class=\"#{ERB::Util.html_escape(css_class)}\" ").html_safe
+          svg.sub('<svg ', "<svg class=\"#{ERB::Util.html_escape(css_class)}\" ").html_safe
         else
           svg
         end

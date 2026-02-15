@@ -1,4 +1,6 @@
-require "ostruct"
+# frozen_string_literal: true
+
+require 'ostruct'
 
 module RSB
   module Entitlements
@@ -24,11 +26,11 @@ module RSB
         def register_test_stripe_provider
           RSB::Settings.registry.register(RSB::Entitlements.settings_schema) unless settings_registered?
           RSB::Entitlements.providers.register(RSB::Entitlements::Stripe::PaymentProvider) unless stripe_registered?
-          RSB::Settings.set("entitlements.providers.stripe.secret_key", "sk_test_fake_key")
-          RSB::Settings.set("entitlements.providers.stripe.webhook_secret", "whsec_test_fake_secret")
-          RSB::Settings.set("entitlements.providers.stripe.success_url", "https://test.example.com/success")
-          RSB::Settings.set("entitlements.providers.stripe.cancel_url", "https://test.example.com/cancel")
-          RSB::Settings.set("entitlements.providers.stripe.enabled", true)
+          RSB::Settings.set('entitlements.providers.stripe.secret_key', 'sk_test_fake_key')
+          RSB::Settings.set('entitlements.providers.stripe.webhook_secret', 'whsec_test_fake_secret')
+          RSB::Settings.set('entitlements.providers.stripe.success_url', 'https://test.example.com/success')
+          RSB::Settings.set('entitlements.providers.stripe.cancel_url', 'https://test.example.com/cancel')
+          RSB::Settings.set('entitlements.providers.stripe.enabled', true)
         end
 
         # Build a mock Stripe Checkout Session object.
@@ -37,7 +39,7 @@ module RSB
         # @param url [String] checkout URL
         # @param mode [String] "payment" or "subscription"
         # @return [OpenStruct] mock session with id, url, mode
-        def stub_stripe_checkout_session(id: nil, url: nil, mode: "payment")
+        def stub_stripe_checkout_session(id: nil, url: nil, mode: 'payment')
           id ||= "cs_test_#{SecureRandom.hex(8)}"
           url ||= "https://checkout.stripe.com/pay/#{id}"
           OpenStruct.new(id: id, url: url, mode: mode)
@@ -61,10 +63,10 @@ module RSB
         # @return [Stripe::Event]
         def build_stripe_event(type, data = {})
           ::Stripe::Event.construct_from({
-            "id" => "evt_test_#{SecureRandom.hex(8)}",
-            "type" => type,
-            "data" => { "object" => data.deep_stringify_keys }
-          })
+                                           'id' => "evt_test_#{SecureRandom.hex(8)}",
+                                           'type' => type,
+                                           'data' => { 'object' => data.deep_stringify_keys }
+                                         })
         end
 
         # Build a mock Stripe client that captures API calls for assertion.
@@ -124,15 +126,15 @@ module RSB
         private
 
         def settings_registered?
-          RSB::Settings.get("entitlements.providers.stripe.enabled")
+          RSB::Settings.get('entitlements.providers.stripe.enabled')
           true
-        rescue
+        rescue StandardError
           false
         end
 
         def stripe_registered?
           RSB::Entitlements.providers.find(:stripe).present?
-        rescue
+        rescue StandardError
           false
         end
       end

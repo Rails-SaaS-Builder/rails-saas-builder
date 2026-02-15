@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Wire Identity to Entitlements (cross-gem integration)
 # This is how host apps would integrate the two gems that have no dependency on each other.
 Rails.application.config.to_prepare do

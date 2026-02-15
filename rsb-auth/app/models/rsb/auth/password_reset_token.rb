@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class PasswordResetToken < ApplicationRecord
@@ -6,7 +8,7 @@ module RSB
       before_create :generate_token
       before_create :set_expiry
 
-      scope :valid, -> { where(used_at: nil).where("expires_at > ?", Time.current) }
+      scope :valid, -> { where(used_at: nil).where('expires_at > ?', Time.current) }
 
       def expired?
         expires_at <= Time.current

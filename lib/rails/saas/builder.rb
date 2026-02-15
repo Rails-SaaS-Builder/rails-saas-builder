@@ -1,1 +1,3 @@
-require "rails_saas_builder"
+# frozen_string_literal: true
+
+require 'rails_saas_builder'

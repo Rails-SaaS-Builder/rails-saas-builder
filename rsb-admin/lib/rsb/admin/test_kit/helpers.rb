@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     module TestKit
@@ -10,7 +12,8 @@ module RSB
           end
         end
 
-        def create_test_admin!(permissions: nil, superadmin: false, no_role: false, email: nil, password: "test-password-secure")
+        def create_test_admin!(permissions: nil, superadmin: false, no_role: false, email: nil,
+                               password: 'test-password-secure')
           email ||= "test-admin-#{SecureRandom.hex(4)}@example.com"
 
           if no_role
@@ -24,11 +27,11 @@ module RSB
           if superadmin || permissions.nil?
             role = RSB::Admin::Role.create!(
               name: "Test Superadmin #{SecureRandom.hex(4)}",
-              permissions: { "*" => ["*"] }
+              permissions: { '*' => ['*'] }
             )
           else
             # For empty permissions, use a sentinel value that passes validation
-            perm = permissions.empty? ? { "_none" => [] } : permissions
+            perm = permissions.empty? ? { '_none' => [] } : permissions
             role = RSB::Admin::Role.create!(
               name: "Test Role #{SecureRandom.hex(4)}",
               permissions: perm
@@ -43,7 +46,7 @@ module RSB
           )
         end
 
-        def sign_in_admin(admin, password: "test-password-secure")
+        def sign_in_admin(admin, password: 'test-password-secure')
           post rsb_admin.login_path, params: { email: admin.email, password: password }
         end
 
@@ -97,21 +100,21 @@ module RSB
         #   assert_admin_forbidden_page(dashboard_link: true)
         def assert_admin_forbidden_page(dashboard_link: nil)
           assert_response :forbidden
-          
-          # Use assert_select to properly handle HTML entities
-          assert_select "h1", text: I18n.t("rsb.admin.shared.access_denied"),
-            message: "Expected 'Access Denied' title in forbidden page"
-          assert_select "p", text: I18n.t("rsb.admin.shared.access_denied_message"),
-            message: "Expected explanation message in forbidden page"
 
-          unless dashboard_link.nil?
-            if dashboard_link
-              assert_select "a", text: I18n.t("rsb.admin.shared.go_to_dashboard"),
-                message: "Expected 'Go to Dashboard' link in forbidden page"
-            else
-              assert_select "a", text: I18n.t("rsb.admin.shared.go_to_dashboard"), count: 0,
-                message: "Expected NO 'Go to Dashboard' link in forbidden page"
-            end
+          # Use assert_select to properly handle HTML entities
+          assert_select 'h1', text: I18n.t('rsb.admin.shared.access_denied'),
+                              message: "Expected 'Access Denied' title in forbidden page"
+          assert_select 'p', text: I18n.t('rsb.admin.shared.access_denied_message'),
+                             message: 'Expected explanation message in forbidden page'
+
+          return if dashboard_link.nil?
+
+          if dashboard_link
+            assert_select 'a', text: I18n.t('rsb.admin.shared.go_to_dashboard'),
+                               message: "Expected 'Go to Dashboard' link in forbidden page"
+          else
+            assert_select 'a', text: I18n.t('rsb.admin.shared.go_to_dashboard'), count: 0,
+                               message: "Expected NO 'Go to Dashboard' link in forbidden page"
           end
         end
 
@@ -150,8 +153,8 @@ module RSB
         #   get "/admin/identities"
         #   assert_admin_column_rendered("Identity Email")
         def assert_admin_column_rendered(label)
-          assert_select "th", text: /#{Regexp.escape(label)}/i,
-            message: "Expected column '#{label}' in table header"
+          assert_select 'th', text: /#{Regexp.escape(label)}/i,
+                              message: "Expected column '#{label}' in table header"
         end
 
         # Assert that a filter input exists in the response.
@@ -176,7 +179,7 @@ module RSB
         #   assert_admin_filter_rendered(:status)
         def assert_admin_filter_rendered(key)
           assert_select "[name*='q[#{key}]']",
-            message: "Expected filter for '#{key}'"
+                        message: "Expected filter for '#{key}'"
         end
 
         # Assert that breadcrumbs contain specific items.
@@ -202,7 +205,7 @@ module RSB
         def assert_admin_breadcrumbs(*labels)
           labels.each do |label|
             assert_match label, response.body,
-              "Expected breadcrumb '#{label}' in response"
+                         "Expected breadcrumb '#{label}' in response"
           end
         end
 
@@ -228,7 +231,7 @@ module RSB
         #   assert_admin_form_field(:name)
         def assert_admin_form_field(key)
           assert_select "[name*='[#{key}]']",
-            message: "Expected form field '#{key}'"
+                        message: "Expected form field '#{key}'"
         end
 
         # Assert that page tabs are rendered for a static page.
@@ -254,7 +257,7 @@ module RSB
         def assert_admin_page_tabs(*labels)
           labels.each do |label|
             assert_match label, response.body,
-              "Expected page tab '#{label}' in response"
+                         "Expected page tab '#{label}' in response"
           end
         end
 
@@ -283,7 +286,7 @@ module RSB
           theme = RSB::Admin.themes[theme_key.to_sym]
           assert theme, "Theme '#{theme_key}' not registered"
           assert_select "link[href*='#{theme.css}']",
-            message: "Expected theme CSS '#{theme.css}' in layout"
+                        message: "Expected theme CSS '#{theme.css}' in layout"
         end
 
         # Assert that a custom dashboard page is registered with the given controller.
@@ -303,9 +306,9 @@ module RSB
         #   assert_admin_dashboard_override(controller: "admin/dashboard")
         def assert_admin_dashboard_override(controller:)
           page = RSB::Admin.registry.dashboard_page
-          assert page, "Expected a dashboard override to be registered"
+          assert page, 'Expected a dashboard override to be registered'
           assert_equal controller, page.controller,
-            "Expected dashboard controller '#{controller}', got '#{page.controller}'"
+                       "Expected dashboard controller '#{controller}', got '#{page.controller}'"
         end
       end
     end

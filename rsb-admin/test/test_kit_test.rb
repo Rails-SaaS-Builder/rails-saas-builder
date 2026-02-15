@@ -1,13 +1,15 @@
-require "test_helper"
-require "rsb/admin/test_kit"
+# frozen_string_literal: true
+
+require 'test_helper'
+require 'rsb/admin/test_kit'
 
 class TestKitHelpersExpansionTest < ActionDispatch::IntegrationTest
   include RSB::Admin::TestKit::Helpers
 
   setup do
-    RSB::Admin.registry.register_category "Content" do
+    RSB::Admin.registry.register_category 'Content' do
       resource TestPost,
-        actions: [:index, :show, :new, :create, :edit, :update, :destroy] do
+               actions: %i[index show new create edit update destroy] do
         column :id, link: true
         column :title, sortable: true
         column :status, formatter: :badge
@@ -21,76 +23,76 @@ class TestKitHelpersExpansionTest < ActionDispatch::IntegrationTest
     sign_in_admin(@admin)
   end
 
-  test "assert_admin_column_rendered finds column header" do
+  test 'assert_admin_column_rendered finds column header' do
     # Create a record so the table renders
-    TestPost.create!(title: "Test Post", body: "Content", status: "published")
-    
-    get "/admin/test_posts"
+    TestPost.create!(title: 'Test Post', body: 'Content', status: 'published')
+
+    get '/admin/test_posts'
     assert_admin_authorized
-    assert_admin_column_rendered("Title")
+    assert_admin_column_rendered('Title')
   end
 
-  test "assert_admin_filter_rendered finds filter input" do
-    get "/admin/test_posts"
+  test 'assert_admin_filter_rendered finds filter input' do
+    get '/admin/test_posts'
     assert_admin_authorized
-    assert_admin_filter_rendered("status")
+    assert_admin_filter_rendered('status')
   end
 
-  test "assert_admin_breadcrumbs finds breadcrumb labels" do
-    get "/admin/test_posts"
+  test 'assert_admin_breadcrumbs finds breadcrumb labels' do
+    get '/admin/test_posts'
     assert_admin_authorized
-    assert_admin_breadcrumbs("Dashboard", "Content")
+    assert_admin_breadcrumbs('Dashboard', 'Content')
   end
 
-  test "assert_admin_form_field finds form field" do
-    get "/admin/test_posts/new"
+  test 'assert_admin_form_field finds form field' do
+    get '/admin/test_posts/new'
     assert_admin_authorized
-    assert_admin_form_field("title")
+    assert_admin_form_field('title')
   end
 
-  test "assert_admin_theme finds theme CSS link" do
+  test 'assert_admin_theme finds theme CSS link' do
     get rsb_admin.dashboard_path
     assert_admin_theme(:default)
   end
 
-  test "assert_admin_page_tabs finds page tab labels" do
+  test 'assert_admin_page_tabs finds page tab labels' do
     # Test the helper by visiting settings page which has the System category tabs
     # The tabs render as links with the action labels
     get rsb_admin.settings_path
     # Settings page renders with "Settings" as the title which acts as a tab
-    assert_admin_page_tabs("Settings")
+    assert_admin_page_tabs('Settings')
   end
 
-  test "assert_admin_dashboard_override passes when dashboard registered with matching controller" do
-    RSB::Admin.registry.register_dashboard(controller: "admin/custom_dashboard")
-    assert_admin_dashboard_override(controller: "admin/custom_dashboard")
+  test 'assert_admin_dashboard_override passes when dashboard registered with matching controller' do
+    RSB::Admin.registry.register_dashboard(controller: 'admin/custom_dashboard')
+    assert_admin_dashboard_override(controller: 'admin/custom_dashboard')
   end
 
-  test "assert_admin_dashboard_override fails when no dashboard registered" do
-    assert_raises(Minitest::Assertion) { assert_admin_dashboard_override(controller: "admin/foo") }
+  test 'assert_admin_dashboard_override fails when no dashboard registered' do
+    assert_raises(Minitest::Assertion) { assert_admin_dashboard_override(controller: 'admin/foo') }
   end
 
   test "assert_admin_dashboard_override fails when controller doesn't match" do
-    RSB::Admin.registry.register_dashboard(controller: "admin/other")
-    assert_raises(Minitest::Assertion) { assert_admin_dashboard_override(controller: "admin/foo") }
+    RSB::Admin.registry.register_dashboard(controller: 'admin/other')
+    assert_raises(Minitest::Assertion) { assert_admin_dashboard_override(controller: 'admin/foo') }
   end
 end
 
 class ResourceTestCaseContractTest < RSB::Admin::TestKit::ResourceTestCase
   self.resource_class = TestPost
-  self.category = "Content"
-  self.record_factory = -> {
+  self.category = 'Content'
+  self.record_factory = lambda {
     TestPost.create!(
       title: "Contract Test Post #{SecureRandom.hex(4)}",
-      body: "Test content",
-      status: "published"
+      body: 'Test content',
+      status: 'published'
     )
   }
 
   registers_in_admin do
-    RSB::Admin.registry.register_category "Content" do
+    RSB::Admin.registry.register_category 'Content' do
       resource TestPost,
-        actions: [:index, :show, :new, :create] do
+               actions: %i[index show new create] do
         column :id, link: true
         column :title, sortable: true
         column :status, formatter: :badge

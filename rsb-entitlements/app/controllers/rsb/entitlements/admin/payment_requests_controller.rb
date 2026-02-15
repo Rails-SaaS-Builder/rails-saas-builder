@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     module Admin
       class PaymentRequestsController < RSB::Admin::AdminController
         before_action :authorize_payment_requests
-        before_action :set_payment_request, only: [:show, :approve, :reject, :refund]
+        before_action :set_payment_request, only: %i[show approve reject refund]
 
         def index
           page = params[:page].to_i
@@ -33,9 +35,9 @@ module RSB
 
         def approve
           definition = RSB::Entitlements.providers.find(@payment_request.provider_key)
-          return redirect_with_alert("Provider not found") unless definition
+          return redirect_with_alert('Provider not found') unless definition
 
-          return redirect_with_alert("Request is not actionable") unless @payment_request.actionable?
+          return redirect_with_alert('Request is not actionable') unless @payment_request.actionable?
 
           @payment_request.update!(
             resolved_by: current_admin_user.email,
@@ -46,14 +48,14 @@ module RSB
           provider_instance.complete!
 
           redirect_to "/admin/payment_requests/#{@payment_request.id}",
-                      notice: "Payment request approved."
+                      notice: 'Payment request approved.'
         end
 
         def reject
           definition = RSB::Entitlements.providers.find(@payment_request.provider_key)
-          return redirect_with_alert("Provider not found") unless definition
+          return redirect_with_alert('Provider not found') unless definition
 
-          return redirect_with_alert("Request is not actionable") unless @payment_request.actionable?
+          return redirect_with_alert('Request is not actionable') unless @payment_request.actionable?
 
           @payment_request.update!(
             admin_note: params[:admin_note],
@@ -65,14 +67,14 @@ module RSB
           provider_instance.reject!
 
           redirect_to "/admin/payment_requests/#{@payment_request.id}",
-                      notice: "Payment request rejected."
+                      notice: 'Payment request rejected.'
         end
 
         def refund
           definition = RSB::Entitlements.providers.find(@payment_request.provider_key)
-          return redirect_with_alert("Provider not found") unless definition
-          return redirect_with_alert("Provider does not support refunds") unless definition.refundable
-          return redirect_with_alert("Request is not approved") unless @payment_request.approved?
+          return redirect_with_alert('Provider not found') unless definition
+          return redirect_with_alert('Provider does not support refunds') unless definition.refundable
+          return redirect_with_alert('Request is not approved') unless @payment_request.approved?
 
           @payment_request.update!(
             resolved_by: current_admin_user.email,
@@ -83,14 +85,12 @@ module RSB
           provider_instance.refund!
 
           # Revoke linked entitlement if present
-          if @payment_request.entitlement&.active?
-            @payment_request.entitlement.revoke!(reason: "refund")
-          end
+          @payment_request.entitlement.revoke!(reason: 'refund') if @payment_request.entitlement&.active?
 
-          @payment_request.update!(status: "refunded")
+          @payment_request.update!(status: 'refunded')
 
           redirect_to "/admin/payment_requests/#{@payment_request.id}",
-                      notice: "Payment request refunded."
+                      notice: 'Payment request refunded.'
         end
 
         private
@@ -100,7 +100,7 @@ module RSB
         end
 
         def authorize_payment_requests
-          authorize_admin_action!(resource: "payment_requests", action: action_name)
+          authorize_admin_action!(resource: 'payment_requests', action: action_name)
         end
 
         def redirect_with_alert(message)

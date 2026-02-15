@@ -133,7 +133,7 @@ module RSB
       # @param secret [String] base32-encoded TOTP secret
       # @param issuer [String] application name for authenticator app display
       # @return [String] otpauth:// URI
-      def otp_provisioning_uri(secret, issuer: "RSB Admin")
+      def otp_provisioning_uri(secret, issuer: 'RSB Admin')
         ROTP::TOTP.new(secret, issuer: issuer).provisioning_uri(email)
       end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Settings
     module TestHelper
@@ -11,12 +13,12 @@ module RSB
       end
 
       # Temporarily override settings within a block
-      def with_settings(overrides = {}, &block)
+      def with_settings(overrides = {})
         originals = {}
         overrides.each do |key, value|
           originals[key] = begin
             RSB::Settings.get(key)
-          rescue
+          rescue StandardError
             nil
           end
           RSB::Settings.set(key, value)
@@ -24,7 +26,7 @@ module RSB
         yield
       ensure
         originals.each do |key, value|
-          category, setting_key = key.to_s.split(".", 2)
+          category, setting_key = key.to_s.split('.', 2)
           if value.nil?
             RSB::Settings::Setting.find_by(category: category, key: setting_key)&.destroy
             # Invalidate cache so the resolver picks up the deletion

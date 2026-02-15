@@ -1,6 +1,8 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
 
 gemspec
 
-gem "rsb-settings", path: "../rsb-settings"
-gem "sqlite3"
+gem 'rsb-settings', path: '../rsb-settings'
+gem 'sqlite3'

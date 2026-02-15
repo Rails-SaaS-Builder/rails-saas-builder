@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class Session < ApplicationRecord
@@ -8,8 +10,8 @@ module RSB
 
       after_commit :fire_created_callback, on: :create
 
-      scope :active, -> { where("expires_at > ?", Time.current) }
-      scope :expired, -> { where("expires_at <= ?", Time.current) }
+      scope :active, -> { where('expires_at > ?', Time.current) }
+      scope :expired, -> { where('expires_at <= ?', Time.current) }
 
       def expired?
         expires_at <= Time.current
@@ -30,7 +32,7 @@ module RSB
       end
 
       def set_expiry
-        duration = RSB::Settings.get("auth.session_duration")
+        duration = RSB::Settings.get('auth.session_duration')
         self.expires_at = Time.current + duration.to_i.seconds
       end
 

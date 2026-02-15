@@ -1,5 +1,7 @@
-Rails.application.routes.draw do
-  get "up" => "rails/health#show", as: :rails_health_check
+# frozen_string_literal: true
 
-  root to: proc { [200, {}, ["OK"]] }
+Rails.application.routes.draw do
+  get 'up' => 'rails/health#show', as: :rails_health_check
+
+  root to: proc { [200, {}, ['OK']] }
 end

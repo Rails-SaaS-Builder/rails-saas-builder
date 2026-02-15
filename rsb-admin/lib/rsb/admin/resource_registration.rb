@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Represents a registered resource in the admin panel.
@@ -140,6 +142,7 @@ module RSB
       # @see #auto_detect_columns
       def index_columns
         return auto_detect_columns.select { |c| c.visible_on?(:index) } unless columns
+
         columns.select { |c| c.visible_on?(:index) }
       end
 
@@ -157,6 +160,7 @@ module RSB
       # @see #auto_detect_columns
       def show_columns
         return auto_detect_columns.select { |c| c.visible_on?(:show) } unless columns
+
         columns.select { |c| c.visible_on?(:show) }
       end
 
@@ -179,6 +183,7 @@ module RSB
       # @see #auto_detect_form_fields
       def new_form_fields
         return auto_detect_form_fields.select { |f| f.visible_on?(:new) } unless form_fields
+
         form_fields.select { |f| f.visible_on?(:new) }
       end
 
@@ -193,6 +198,7 @@ module RSB
       # @see #auto_detect_form_fields
       def edit_form_fields
         return auto_detect_form_fields.select { |f| f.visible_on?(:edit) } unless form_fields
+
         form_fields.select { |f| f.visible_on?(:edit) }
       end
 
@@ -245,16 +251,17 @@ module RSB
       # @api private
       def auto_detect_columns
         return [] unless model_class.respond_to?(:column_names)
+
         model_class.column_names
-          .reject { |c| SENSITIVE_COLUMNS.include?(c) }
-          .map do |c|
-            # Skip index for timestamp/metadata columns
-            if SKIP_INDEX_COLUMNS.include?(c)
-              ColumnDefinition.build(c.to_sym, visible_on: [:show])
-            else
-              ColumnDefinition.build(c.to_sym)
-            end
-          end
+                   .reject { |c| SENSITIVE_COLUMNS.include?(c) }
+                   .map do |c|
+                     # Skip index for timestamp/metadata columns
+                     if SKIP_INDEX_COLUMNS.include?(c)
+                       ColumnDefinition.build(c.to_sym, visible_on: [:show])
+                     else
+                       ColumnDefinition.build(c.to_sym)
+                     end
+                   end
       end
 
       # Auto-detect form field definitions from the model's database schema.
@@ -270,9 +277,10 @@ module RSB
       # @api private
       def auto_detect_form_fields
         return [] unless model_class.respond_to?(:column_names)
+
         model_class.column_names
-          .reject { |c| SENSITIVE_COLUMNS.include?(c) || SKIP_FORM_COLUMNS.include?(c) }
-          .map { |c| FormFieldDefinition.build(c.to_sym) }
+                   .reject { |c| SENSITIVE_COLUMNS.include?(c) || SKIP_FORM_COLUMNS.include?(c) }
+                   .map { |c| FormFieldDefinition.build(c.to_sym) }
       end
     end
   end

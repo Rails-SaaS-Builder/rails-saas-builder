@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class RolesPermissionsTest < ActionDispatch::IntegrationTest
   include RSB::Admin::TestKit::Helpers
@@ -10,47 +12,47 @@ class RolesPermissionsTest < ActionDispatch::IntegrationTest
 
   # --- Form Rendering ---
 
-  test "new role form renders without textarea" do
+  test 'new role form renders without textarea' do
     get rsb_admin.new_role_path
     assert_response :success
 
     # Should not have the old JSON textarea
     refute_match(/<textarea.*permissions_json/m, response.body)
-    
+
     # Should have System section with hardcoded resources
-    assert_match "System", response.body
+    assert_match 'System', response.body
     assert_match(/Settings|Roles|Admin Users/i, response.body)
   end
 
-  test "new role form has superadmin toggle" do
+  test 'new role form has superadmin toggle' do
     get rsb_admin.new_role_path
     assert_response :success
     assert_match(/superadmin/i, response.body)
     assert_match(/name="role\[superadmin_toggle\]"/i, response.body)
   end
 
-  test "edit role form pre-checks existing permissions" do
+  test 'edit role form pre-checks existing permissions' do
     role = RSB::Admin::Role.create!(
-      name: "Editor",
-      permissions: { "settings" => ["index"] }
+      name: 'Editor',
+      permissions: { 'settings' => ['index'] }
     )
 
     get rsb_admin.edit_role_path(role)
     assert_response :success
-    assert_match "Editor", response.body
+    assert_match 'Editor', response.body
     # The checkbox for settings index should be checked
     assert_match(/checked/i, response.body)
   end
 
-  test "role form groups pages with their category" do
+  test 'role form groups pages with their category' do
     # Register a page in a category
     with_fresh_admin_registry do
-      RSB::Admin.registry.register_category "Authentication" do
+      RSB::Admin.registry.register_category 'Authentication' do
         page :sessions_management,
-          label: "Sessions",
-          icon: "key",
-          controller: "rsb/admin/resources",
-          actions: [{ key: :index, label: "Overview" }, { key: :destroy, label: "Revoke All" }]
+             label: 'Sessions',
+             icon: 'key',
+             controller: 'rsb/admin/resources',
+             actions: [{ key: :index, label: 'Overview' }, { key: :destroy, label: 'Revoke All' }]
       end
 
       get rsb_admin.new_role_path
@@ -58,11 +60,11 @@ class RolesPermissionsTest < ActionDispatch::IntegrationTest
 
       # Page should be under "Authentication" header, not a separate "Pages" section
       body = response.body
-      auth_section_pos = body.index("Authentication")
-      assert auth_section_pos, "Authentication category should appear in form"
+      auth_section_pos = body.index('Authentication')
+      assert auth_section_pos, 'Authentication category should appear in form'
 
-      sessions_pos = body.index("Sessions", auth_section_pos)
-      assert sessions_pos, "Sessions page should appear under Authentication category"
+      sessions_pos = body.index('Sessions', auth_section_pos)
+      assert sessions_pos, 'Sessions page should appear under Authentication category'
 
       # The old flat "Pages" section header should NOT exist
       # (Check that "Pages" doesn't appear as a standalone section header)
@@ -70,34 +72,34 @@ class RolesPermissionsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "role form includes Dashboard in System section" do
+  test 'role form includes Dashboard in System section' do
     get rsb_admin.new_role_path
     assert_response :success
 
     # Dashboard should appear in System section
-    assert_match "Dashboard", response.body
+    assert_match 'Dashboard', response.body
     assert_select "input[name='role[permissions_checkboxes][dashboard][]'][value='index']"
   end
 
-  test "saving role with dashboard permission persists correctly" do
+  test 'saving role with dashboard permission persists correctly' do
     post rsb_admin.roles_path, params: {
       role: {
-        name: "With Dashboard",
+        name: 'With Dashboard',
         permissions_checkboxes: {
-          "dashboard" => ["index"],
-          "settings" => ["index"]
+          'dashboard' => ['index'],
+          'settings' => ['index']
         }
       }
     }
 
-    role = RSB::Admin::Role.find_by(name: "With Dashboard")
-    assert_equal({ "dashboard" => ["index"], "settings" => ["index"] }, role.permissions)
+    role = RSB::Admin::Role.find_by(name: 'With Dashboard')
+    assert_equal({ 'dashboard' => ['index'], 'settings' => ['index'] }, role.permissions)
   end
 
-  test "role form pre-checks existing dashboard permission on edit" do
+  test 'role form pre-checks existing dashboard permission on edit' do
     role = RSB::Admin::Role.create!(
       name: "Has Dashboard #{SecureRandom.hex(4)}",
-      permissions: { "dashboard" => ["index"], "settings" => ["index"] }
+      permissions: { 'dashboard' => ['index'], 'settings' => ['index'] }
     )
 
     get rsb_admin.edit_role_path(role)
@@ -107,67 +109,67 @@ class RolesPermissionsTest < ActionDispatch::IntegrationTest
 
   # --- Permission Saving ---
 
-  test "create role with checkbox permissions" do
-    assert_difference "RSB::Admin::Role.count", 1 do
+  test 'create role with checkbox permissions' do
+    assert_difference 'RSB::Admin::Role.count', 1 do
       post rsb_admin.roles_path, params: {
         role: {
-          name: "Viewer",
+          name: 'Viewer',
           permissions_checkboxes: {
-            "settings" => ["index"],
-            "roles" => ["index", "show"]
+            'settings' => ['index'],
+            'roles' => %w[index show]
           }
         }
       }
     end
 
     role = RSB::Admin::Role.last
-    assert_equal "Viewer", role.name
-    assert_equal({ "settings" => ["index"], "roles" => ["index", "show"] }, role.permissions)
+    assert_equal 'Viewer', role.name
+    assert_equal({ 'settings' => ['index'], 'roles' => %w[index show] }, role.permissions)
   end
 
-  test "create superadmin role via toggle" do
+  test 'create superadmin role via toggle' do
     post rsb_admin.roles_path, params: {
       role: {
-        name: "Super",
-        superadmin_toggle: "1"
+        name: 'Super',
+        superadmin_toggle: '1'
       }
     }
 
     role = RSB::Admin::Role.last
-    assert_equal({ "*" => ["*"] }, role.permissions)
+    assert_equal({ '*' => ['*'] }, role.permissions)
     assert role.superadmin?
   end
 
-  test "update role replaces permissions with new checkboxes" do
+  test 'update role replaces permissions with new checkboxes' do
     role = RSB::Admin::Role.create!(
-      name: "Old Perms",
-      permissions: { "settings" => ["index", "update"], "roles" => ["index"] }
+      name: 'Old Perms',
+      permissions: { 'settings' => %w[index update], 'roles' => ['index'] }
     )
 
     patch rsb_admin.role_path(role), params: {
       role: {
-        name: "Old Perms",
+        name: 'Old Perms',
         permissions_checkboxes: {
-          "settings" => ["index"]
+          'settings' => ['index']
         }
       }
     }
 
     role.reload
-    assert_equal({ "settings" => ["index"] }, role.permissions)
+    assert_equal({ 'settings' => ['index'] }, role.permissions)
   end
 
-  test "update with no checkboxes selected sets empty permissions" do
+  test 'update with no checkboxes selected sets empty permissions' do
     role = RSB::Admin::Role.create!(
-      name: "No Perms",
-      permissions: { "settings" => ["index"] }
+      name: 'No Perms',
+      permissions: { 'settings' => ['index'] }
     )
 
     # Mimic what the form sends: a hidden _dummy field to ensure the param is always present
     patch rsb_admin.role_path(role), params: {
       role: {
-        name: "No Perms",
-        permissions_checkboxes: { "_dummy" => [""] }
+        name: 'No Perms',
+        permissions_checkboxes: { '_dummy' => [''] }
       }
     }
 
@@ -177,26 +179,26 @@ class RolesPermissionsTest < ActionDispatch::IntegrationTest
 
   # --- Show Page ---
 
-  test "show page displays permissions as visual grid" do
+  test 'show page displays permissions as visual grid' do
     role = RSB::Admin::Role.create!(
-      name: "Manager",
+      name: 'Manager',
       permissions: {
-        "settings" => ["index", "update"],
-        "roles" => ["index", "show", "new", "create"]
+        'settings' => %w[index update],
+        'roles' => %w[index show new create]
       }
     )
 
     get rsb_admin.role_path(role)
     assert_response :success
-    assert_match "Manager", response.body
+    assert_match 'Manager', response.body
     # Should not show raw JSON with curly braces
     refute_match(/\{.*"settings".*:.*\[/, response.body)
   end
 
-  test "show page for superadmin role shows superadmin badge" do
+  test 'show page for superadmin role shows superadmin badge' do
     role = RSB::Admin::Role.create!(
-      name: "Superadmin",
-      permissions: { "*" => ["*"] }
+      name: 'Superadmin',
+      permissions: { '*' => ['*'] }
     )
 
     get rsb_admin.role_path(role)
@@ -206,8 +208,8 @@ class RolesPermissionsTest < ActionDispatch::IntegrationTest
 
   # --- RBAC ---
 
-  test "restricted admin cannot manage roles" do
-    restricted = create_test_admin!(permissions: { "other" => ["index"] })
+  test 'restricted admin cannot manage roles' do
+    restricted = create_test_admin!(permissions: { 'other' => ['index'] })
     sign_in_admin(restricted)
 
     get rsb_admin.roles_path

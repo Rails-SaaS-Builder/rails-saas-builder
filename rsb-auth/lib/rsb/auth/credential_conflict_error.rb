@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     # Raised when restoring a revoked credential would violate the active
@@ -11,7 +13,7 @@ module RSB
     #   end
     #
     class CredentialConflictError < StandardError
-      def initialize(msg = "Cannot restore — another active credential with the same identifier exists.")
+      def initialize(msg = 'Cannot restore — another active credential with the same identifier exists.')
         super
       end
     end

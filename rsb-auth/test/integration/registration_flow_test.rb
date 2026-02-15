@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class RegistrationFlowTest < ActionDispatch::IntegrationTest
   include RSB::Auth::Engine.routes.url_helpers
@@ -10,7 +12,7 @@ class RegistrationFlowTest < ActionDispatch::IntegrationTest
     Rails.cache.clear
   end
 
-  test "GET registration/new renders form" do
+  test 'GET registration/new renders form' do
     get new_registration_path
     assert_response :success
     assert_select "input[name='identifier']"
@@ -18,13 +20,13 @@ class RegistrationFlowTest < ActionDispatch::IntegrationTest
     assert_select "input[name='password_confirmation']"
   end
 
-  test "POST registration with valid params creates identity + credential + session" do
-    with_settings("auth.verification_required" => false) do
-      assert_difference ["RSB::Auth::Identity.count", "RSB::Auth::Credential.count"], 1 do
+  test 'POST registration with valid params creates identity + credential + session' do
+    with_settings('auth.verification_required' => false) do
+      assert_difference ['RSB::Auth::Identity.count', 'RSB::Auth::Credential.count'], 1 do
         post registration_path, params: {
-          identifier: "new@example.com",
-          password: "password1234",
-          password_confirmation: "password1234"
+          identifier: 'new@example.com',
+          password: 'password1234',
+          password_confirmation: 'password1234'
         }
       end
 
@@ -33,31 +35,31 @@ class RegistrationFlowTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "POST registration with invalid params re-renders with 422" do
+  test 'POST registration with invalid params re-renders with 422' do
     post registration_path, params: {
-      identifier: "",
-      password: "short",
-      password_confirmation: "short"
+      identifier: '',
+      password: 'short',
+      password_confirmation: 'short'
     }
 
     assert_response :unprocessable_entity
   end
 
-  test "registration blocked when mode is disabled" do
-    with_settings("auth.registration_mode" => "disabled") do
+  test 'registration blocked when mode is disabled' do
+    with_settings('auth.registration_mode' => 'disabled') do
       get new_registration_path
       assert_response :redirect
     end
   end
 
-  test "registration blocked when mode is invite_only" do
-    with_settings("auth.registration_mode" => "invite_only") do
+  test 'registration blocked when mode is invite_only' do
+    with_settings('auth.registration_mode' => 'invite_only') do
       get new_registration_path
       assert_response :redirect
     end
   end
 
-  test "registration allowed when mode is open" do
+  test 'registration allowed when mode is open' do
     get new_registration_path
     assert_response :success
   end
@@ -65,6 +67,6 @@ class RegistrationFlowTest < ActionDispatch::IntegrationTest
   private
 
   def default_url_options
-    { host: "localhost" }
+    { host: 'localhost' }
   end
 end

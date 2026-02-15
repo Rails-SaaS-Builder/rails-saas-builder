@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # View helper methods for formatting values and rendering badges in admin panel views.
@@ -46,10 +48,10 @@ module RSB
       #   # => '<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-rsb-info-bg text-rsb-info-text">Unknown</span>'
       def rsb_admin_badge(text, variant: :info)
         variant_class = case variant.to_s
-                        when "success" then "bg-rsb-success-bg text-rsb-success-text"
-                        when "warning" then "bg-rsb-warning-bg text-rsb-warning-text"
-                        when "danger"  then "bg-rsb-danger-bg text-rsb-danger-text"
-                        else "bg-rsb-info-bg text-rsb-info-text"
+                        when 'success' then 'bg-rsb-success-bg text-rsb-success-text'
+                        when 'warning' then 'bg-rsb-warning-bg text-rsb-warning-text'
+                        when 'danger'  then 'bg-rsb-danger-bg text-rsb-danger-text'
+                        else 'bg-rsb-info-bg text-rsb-info-text'
                         end
         content_tag(:span, text, class: "inline-block px-2 py-0.5 rounded-full text-xs font-medium #{variant_class}")
       end
@@ -113,7 +115,7 @@ module RSB
       #   rsb_admin_format_value("<script>alert('xss')</script>", nil)
       #   # => "&lt;script&gt;alert('xss')&lt;/script&gt;"
       def rsb_admin_format_value(value, formatter, record = nil)
-        return content_tag(:span, "-", class: "text-rsb-muted") if value.nil?
+        return content_tag(:span, '-', class: 'text-rsb-muted') if value.nil?
 
         case formatter
         when :badge
@@ -121,7 +123,7 @@ module RSB
           rsb_admin_badge(value.to_s.titleize, variant: variant)
         when :datetime
           if value.respond_to?(:strftime)
-            value.strftime("%B %d, %Y at %I:%M %p")
+            value.strftime('%B %d, %Y at %I:%M %p')
           else
             value.to_s
           end
@@ -130,10 +132,10 @@ module RSB
         when :json
           if value.is_a?(Hash) || value.is_a?(Array)
             if value.empty?
-              content_tag(:span, "Empty", class: "text-rsb-muted")
+              content_tag(:span, 'Empty', class: 'text-rsb-muted')
             else
               content_tag(:pre, JSON.pretty_generate(value),
-                class: "mt-1 p-3 bg-rsb-bg rounded-rsb text-xs font-mono overflow-x-auto whitespace-pre")
+                          class: 'mt-1 p-3 bg-rsb-bg rounded-rsb text-xs font-mono overflow-x-auto whitespace-pre')
             end
           else
             value.to_s
@@ -145,9 +147,9 @@ module RSB
           # No formatter — render as-is, with special handling for known types
           if (value.is_a?(Hash) || value.is_a?(Array)) && value.any?
             content_tag(:pre, JSON.pretty_generate(value),
-              class: "mt-1 p-3 bg-rsb-bg rounded-rsb text-xs font-mono overflow-x-auto whitespace-pre")
+                        class: 'mt-1 p-3 bg-rsb-bg rounded-rsb text-xs font-mono overflow-x-auto whitespace-pre')
           elsif value.is_a?(Time)
-            value.strftime("%B %d, %Y at %I:%M %p")
+            value.strftime('%B %d, %Y at %I:%M %p')
           else
             ERB::Util.html_escape(value.to_s)
           end
@@ -188,11 +190,11 @@ module RSB
       #   auto_badge_variant("custom")     # => :info
       def auto_badge_variant(value)
         case value.to_s.downcase
-        when "active", "enabled", "confirmed", "accepted"
+        when 'active', 'enabled', 'confirmed', 'accepted'
           :success
-        when "suspended", "pending", "invited", "expiring"
+        when 'suspended', 'pending', 'invited', 'expiring'
           :warning
-        when "deactivated", "disabled", "expired", "revoked", "banned", "deleted"
+        when 'deactivated', 'disabled', 'expired', 'revoked', 'banned', 'deleted'
           :danger
         else
           :info

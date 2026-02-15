@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RailsSaasBuilder
   class InstallGenerator < Rails::Generators::Base
     desc 'Install Rails SaaS Builder: runs all sub-gem install generators.'

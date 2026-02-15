@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # RSB Admin Seed Data
 #
 # This file creates a default Superadmin role and initial admin user.

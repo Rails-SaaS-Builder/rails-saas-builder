@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     # Service for account management operations: updating identity data
@@ -50,7 +52,7 @@ module RSB
       # @return [PasswordResult] result with success status and errors
       def change_password(credential:, current_password:, new_password:, new_password_confirmation:, current_session:)
         unless credential.authenticate(current_password)
-          return PasswordResult.new(success?: false, errors: ["Current password is incorrect."])
+          return PasswordResult.new(success?: false, errors: ['Current password is incorrect.'])
         end
 
         credential.password = new_password
@@ -58,8 +60,8 @@ module RSB
 
         if credential.save
           credential.identity.sessions.active
-            .where.not(id: current_session.id)
-            .update_all(expires_at: Time.current)
+                    .where.not(id: current_session.id)
+                    .update_all(expires_at: Time.current)
           PasswordResult.new(success?: true, errors: [])
         else
           PasswordResult.new(success?: false, errors: credential.errors.full_messages)
@@ -86,21 +88,21 @@ module RSB
         unless primary
           return DeletionResult.new(
             success?: false,
-            errors: ["No active login method found. Contact support to delete your account."]
+            errors: ['No active login method found. Contact support to delete your account.']
           )
         end
 
         unless primary.authenticate(password)
           return DeletionResult.new(
             success?: false,
-            errors: ["Current password is incorrect."]
+            errors: ['Current password is incorrect.']
           )
         end
 
         ActiveRecord::Base.transaction do
           identity.sessions.active.update_all(expires_at: Time.current)
           identity.active_credentials.each(&:revoke!)
-          identity.update!(status: "deleted", deleted_at: Time.current)
+          identity.update!(status: 'deleted', deleted_at: Time.current)
         end
 
         RSB::Auth.configuration.resolve_lifecycle_handler.after_identity_deleted(identity)
@@ -125,11 +127,11 @@ module RSB
           return RestoreResult.new(
             success?: false,
             identity: identity,
-            errors: ["Identity is not in deleted status."]
+            errors: ['Identity is not in deleted status.']
           )
         end
 
-        identity.update!(status: "active", deleted_at: nil)
+        identity.update!(status: 'active', deleted_at: nil)
         RSB::Auth.configuration.resolve_lifecycle_handler.after_identity_restored(identity)
         RestoreResult.new(success?: true, identity: identity, errors: [])
       end

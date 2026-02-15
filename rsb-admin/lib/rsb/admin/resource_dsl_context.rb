@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # DSL context for defining resource columns, filters, and form fields inline.

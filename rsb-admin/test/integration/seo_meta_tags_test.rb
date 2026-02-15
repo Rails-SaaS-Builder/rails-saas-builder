@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class SeoMetaTagsTest < ActionDispatch::IntegrationTest
   include RSB::Admin::TestKit::Helpers
@@ -14,79 +16,79 @@ class SeoMetaTagsTest < ActionDispatch::IntegrationTest
     RSB::Admin::Role.delete_all
   end
 
-  test "admin login page has dynamic title" do
-    RSB::Settings.set("seo.app_name", "TestApp")
-    get "/admin/login"
+  test 'admin login page has dynamic title' do
+    RSB::Settings.set('seo.app_name', 'TestApp')
+    get '/admin/login'
     assert_response :success
-    assert_select "title", text: /Sign In.*TestApp|Admin.*Sign In/
+    assert_select 'title', text: /Sign In.*TestApp|Admin.*Sign In/
   end
 
-  test "admin login page has noindex" do
-    get "/admin/login"
+  test 'admin login page has noindex' do
+    get '/admin/login'
     assert_response :success
     assert_select 'meta[name="robots"][content="noindex, nofollow"]'
   end
 
-  test "admin login page has no OG tags" do
-    get "/admin/login"
+  test 'admin login page has no OG tags' do
+    get '/admin/login'
     assert_response :success
     assert_select 'meta[property="og:title"]', count: 0
   end
 
-  test "admin login page has no meta description" do
-    get "/admin/login"
+  test 'admin login page has no meta description' do
+    get '/admin/login'
     assert_response :success
     assert_select 'meta[name="description"]', count: 0
   end
 
-  test "admin dashboard has dynamic title" do
-    RSB::Settings.set("seo.app_name", "TestApp")
+  test 'admin dashboard has dynamic title' do
+    RSB::Settings.set('seo.app_name', 'TestApp')
     admin = create_test_admin!(superadmin: true)
     sign_in_admin(admin)
-    get "/admin"
+    get '/admin'
     assert_response :success
-    assert_select "title", text: /Dashboard.*TestApp/
+    assert_select 'title', text: /Dashboard.*TestApp/
   end
 
-  test "admin dashboard has noindex" do
+  test 'admin dashboard has noindex' do
     admin = create_test_admin!(superadmin: true)
     sign_in_admin(admin)
-    get "/admin"
+    get '/admin'
     assert_response :success
     assert_select 'meta[name="robots"][content="noindex, nofollow"]'
   end
 
-  test "admin dashboard has no canonical URL" do
+  test 'admin dashboard has no canonical URL' do
     admin = create_test_admin!(superadmin: true)
     sign_in_admin(admin)
-    get "/admin"
+    get '/admin'
     assert_response :success
     assert_select 'link[rel="canonical"]', count: 0
   end
 
-  test "admin head_tags setting is rendered" do
-    RSB::Settings.set("seo.head_tags", "<!-- admin-head-tag -->")
+  test 'admin head_tags setting is rendered' do
+    RSB::Settings.set('seo.head_tags', '<!-- admin-head-tag -->')
     admin = create_test_admin!(superadmin: true)
     sign_in_admin(admin)
-    get "/admin"
+    get '/admin'
     assert_response :success
-    assert_includes response.body, "<!-- admin-head-tag -->"
+    assert_includes response.body, '<!-- admin-head-tag -->'
   end
 
-  test "admin body_tags setting is rendered" do
-    RSB::Settings.set("seo.body_tags", "<!-- admin-body-tag -->")
+  test 'admin body_tags setting is rendered' do
+    RSB::Settings.set('seo.body_tags', '<!-- admin-body-tag -->')
     admin = create_test_admin!(superadmin: true)
     sign_in_admin(admin)
-    get "/admin"
+    get '/admin'
     assert_response :success
-    assert_includes response.body, "<!-- admin-body-tag -->"
+    assert_includes response.body, '<!-- admin-body-tag -->'
   end
 
-  test "settings page has page title" do
+  test 'settings page has page title' do
     admin = create_test_admin!(superadmin: true)
     sign_in_admin(admin)
-    get "/admin/settings"
+    get '/admin/settings'
     assert_response :success
-    assert_select "title", text: /Settings/
+    assert_select 'title', text: /Settings/
   end
 end

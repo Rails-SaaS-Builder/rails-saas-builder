@@ -1,15 +1,17 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     class DashboardController < AdminController
       before_action :authorize_dashboard, only: :index
 
       def index
-        @rsb_page_title = I18n.t("rsb.admin.dashboard.page_title", default: "Dashboard")
+        @rsb_page_title = I18n.t('rsb.admin.dashboard.page_title', default: 'Dashboard')
         dashboard_page = RSB::Admin.registry.dashboard_page
 
-        if dashboard_page
-          dispatch_to_dashboard(dashboard_page, :index)
-        end
+        return unless dashboard_page
+
+        dispatch_to_dashboard(dashboard_page, :index)
       end
 
       def dashboard_action
@@ -28,7 +30,7 @@ module RSB
           return
         end
 
-        authorize_admin_action!(resource: "dashboard", action: action_key)
+        authorize_admin_action!(resource: 'dashboard', action: action_key)
         return if performed?
 
         request.env['rsb.admin.breadcrumbs'] = @breadcrumbs
@@ -43,11 +45,11 @@ module RSB
       # @return [void]
       def build_breadcrumbs
         super
-        add_breadcrumb(I18n.t("rsb.admin.dashboard.title"))
+        add_breadcrumb(I18n.t('rsb.admin.dashboard.title'))
       end
 
       def authorize_dashboard
-        authorize_admin_action!(resource: "dashboard", action: "index")
+        authorize_admin_action!(resource: 'dashboard', action: 'index')
       end
 
       # Dispatch to a custom dashboard controller via Rack interface.

@@ -1,17 +1,19 @@
-require "active_support/inflector"
-ActiveSupport::Inflector.inflections(:en) { |inflect| inflect.acronym "RSB" }
+# frozen_string_literal: true
 
-require "rsb/settings/version"
-require "rsb/settings/engine"
-require "rsb/settings/schema"
-require "rsb/settings/registry"
-require "rsb/settings/resolver"
-require "rsb/settings/configuration"
-require "rsb/settings/validation_error"
-require "rsb/settings/locale_helper"
-require "rsb/settings/locale_middleware"
-require "rsb/settings/seo_settings_schema"
-require "rsb/settings/seo_helper"
+require 'active_support/inflector'
+ActiveSupport::Inflector.inflections(:en) { |inflect| inflect.acronym 'RSB' }
+
+require 'rsb/settings/version'
+require 'rsb/settings/engine'
+require 'rsb/settings/schema'
+require 'rsb/settings/registry'
+require 'rsb/settings/resolver'
+require 'rsb/settings/configuration'
+require 'rsb/settings/validation_error'
+require 'rsb/settings/locale_helper'
+require 'rsb/settings/locale_middleware'
+require 'rsb/settings/seo_settings_schema'
+require 'rsb/settings/seo_helper'
 
 module RSB
   module Settings
@@ -89,8 +91,9 @@ module RSB
       end
 
       def parse_key(key)
-        parts = key.to_s.split(".", 2)
+        parts = key.to_s.split('.', 2)
         raise ArgumentError, "Key must be in 'category.key' format, got: #{key}" if parts.size != 2
+
         parts
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     module TestHelper
@@ -13,14 +15,14 @@ module RSB
         end
       end
 
-      def create_test_plan(name: "Test Plan", slug: nil, **overrides)
+      def create_test_plan(name: 'Test Plan', slug: nil, **overrides)
         slug ||= "test-plan-#{SecureRandom.hex(4)}"
         RSB::Entitlements::Plan.create!({
           name: name,
           slug: slug,
-          interval: "monthly",
+          interval: 'monthly',
           price_cents: 1000,
-          currency: "usd",
+          currency: 'usd',
           features: {},
           limits: {},
           metadata: {},
@@ -28,7 +30,7 @@ module RSB
         }.merge(overrides))
       end
 
-      def grant_test_entitlement(entitleable, plan: nil, provider: "admin")
+      def grant_test_entitlement(entitleable, plan: nil, provider: 'admin')
         plan ||= create_test_plan
         entitleable.grant_entitlement(plan: plan, provider: provider)
       end
@@ -45,7 +47,7 @@ module RSB
       # @return [Class] the provider class
       def register_test_provider(
         key: :test,
-        label: "Test Provider",
+        label: 'Test Provider',
         manual_resolution: false,
         admin_actions: [],
         refundable: false,
@@ -74,7 +76,7 @@ module RSB
       # @param provider_key [String] provider key (default: "wire")
       # @param status [String] status (default: "pending")
       # @return [RSB::Entitlements::PaymentRequest]
-      def create_test_payment_request(requestable:, plan:, provider_key: "wire", status: "pending", **overrides)
+      def create_test_payment_request(requestable:, plan:, provider_key: 'wire', status: 'pending', **overrides)
         RSB::Entitlements::PaymentRequest.create!({
           requestable: requestable,
           plan: plan,
@@ -96,7 +98,8 @@ module RSB
       # @param current_value [Integer] current usage value (default: 0)
       # @param limit [Integer, nil] usage limit
       # @return [RSB::Entitlements::UsageCounter]
-      def create_test_usage_counter(countable:, metric:, plan:, period_key: "__cumulative__", current_value: 0, limit: nil)
+      def create_test_usage_counter(countable:, metric:, plan:, period_key: '__cumulative__', current_value: 0,
+                                    limit: nil)
         RSB::Entitlements::UsageCounter.create!(
           countable: countable,
           metric: metric.to_s,

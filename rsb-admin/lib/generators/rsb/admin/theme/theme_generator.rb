@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Rails generator for scaffolding custom admin themes.
@@ -14,13 +16,13 @@ module RSB
     # @example Generate a theme as a Rails engine gem
     #   rails generate rsb:admin:theme corporate --engine
     class ThemeGenerator < Rails::Generators::NamedBase
-      namespace "rsb:admin:theme"
-      source_root File.expand_path("templates", __dir__)
+      namespace 'rsb:admin:theme'
+      source_root File.expand_path('templates', __dir__)
 
-      desc "Scaffold a new RSB Admin theme."
+      desc 'Scaffold a new RSB Admin theme.'
 
       class_option :engine, type: :boolean, default: false,
-        desc: "Generate as a Rails engine gem (for distribution)"
+                            desc: 'Generate as a Rails engine gem (for distribution)'
 
       # Creates the theme scaffold based on the `--engine` option.
       #
@@ -43,26 +45,25 @@ module RSB
       #
       # @return [void]
       def print_instructions
-        say ""
+        say ''
         if options[:engine]
           say "Theme engine scaffold created at #{engine_dir}/", :green
-          say ""
-          say "Next steps:"
+          say ''
+          say 'Next steps:'
           say "  1. cd #{engine_dir}"
           say "  2. Customize the CSS variables in app/assets/stylesheets/rsb/admin/themes/#{file_name}.css"
           say "  3. Customize views in app/views/rsb/admin/themes/#{file_name}/views/"
-          say "  4. Build: bundle exec rake build"
+          say '  4. Build: bundle exec rake build'
           say "  5. Add to host app Gemfile: gem 'rsb-admin-#{file_name}-theme', path: '#{engine_dir}'"
-          say ""
         else
-          say "Theme scaffold created!", :green
-          say ""
-          say "Next steps:"
+          say 'Theme scaffold created!', :green
+          say ''
+          say 'Next steps:'
           say "  1. Customize CSS variables in app/assets/stylesheets/admin/themes/#{file_name}.css"
           say "  2. Customize views in app/views/admin/themes/#{file_name}/views/"
           say "  3. Activate via Settings page or: RSB::Admin.configure { |c| c.theme = :#{file_name} }"
-          say ""
         end
+        say ''
       end
 
       private
@@ -81,14 +82,14 @@ module RSB
       # @api private
       def create_host_app_scaffold
         # CSS with all variables
-        template "theme.css.tt",
-          "app/assets/stylesheets/admin/themes/#{file_name}.css"
+        template 'theme.css.tt',
+                 "app/assets/stylesheets/admin/themes/#{file_name}.css"
 
         # Copy default sidebar and header as starting points
-        copy_engine_view("shared/_sidebar.html.erb",
-          "app/views/admin/themes/#{file_name}/views/shared/_sidebar.html.erb")
-        copy_engine_view("shared/_header.html.erb",
-          "app/views/admin/themes/#{file_name}/views/shared/_header.html.erb")
+        copy_engine_view('shared/_sidebar.html.erb',
+                         "app/views/admin/themes/#{file_name}/views/shared/_sidebar.html.erb")
+        copy_engine_view('shared/_header.html.erb',
+                         "app/views/admin/themes/#{file_name}/views/shared/_header.html.erb")
 
         # Initializer to register the theme
         create_file "config/initializers/rsb_admin_#{file_name}_theme.rb", <<~RUBY
@@ -155,14 +156,14 @@ module RSB
         RUBY
 
         # CSS with all variables
-        template "theme.css.tt",
-          "#{engine_dir}/app/assets/stylesheets/rsb/admin/themes/#{file_name}.css"
+        template 'theme.css.tt',
+                 "#{engine_dir}/app/assets/stylesheets/rsb/admin/themes/#{file_name}.css"
 
         # Copy default sidebar and header as starting points
-        copy_engine_view("shared/_sidebar.html.erb",
-          "#{engine_dir}/app/views/rsb/admin/themes/#{file_name}/views/shared/_sidebar.html.erb")
-        copy_engine_view("shared/_header.html.erb",
-          "#{engine_dir}/app/views/rsb/admin/themes/#{file_name}/views/shared/_header.html.erb")
+        copy_engine_view('shared/_sidebar.html.erb',
+                         "#{engine_dir}/app/views/rsb/admin/themes/#{file_name}/views/shared/_sidebar.html.erb")
+        copy_engine_view('shared/_header.html.erb',
+                         "#{engine_dir}/app/views/rsb/admin/themes/#{file_name}/views/shared/_header.html.erb")
 
         # Gemfile
         create_file "#{engine_dir}/Gemfile", <<~GEMFILE
@@ -205,7 +206,7 @@ module RSB
       # @return [void]
       # @api private
       def copy_engine_view(relative_path, destination)
-        source = RSB::Admin::Engine.root.join("app", "views", "rsb", "admin", relative_path)
+        source = RSB::Admin::Engine.root.join('app', 'views', 'rsb', 'admin', relative_path)
         if File.exist?(source)
           create_file destination, File.read(source)
         else

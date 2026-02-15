@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class RegistrationsController < ApplicationController
-      layout "rsb/auth/application"
+      layout 'rsb/auth/application'
 
       include RSB::Auth::RateLimitable
       before_action :redirect_if_authenticated, only: :new
       before_action :check_registration_mode
-      before_action -> { throttle!(key: "register", limit: 5, period: 60) }, only: :create
+      before_action -> { throttle!(key: 'register', limit: 5, period: 60) }, only: :create
 
       # Renders the signup page with credential selector.
       #
@@ -14,8 +16,8 @@ module RSB
       def new
         load_credential_types(:registerable)
         resolve_selected_method
-        @rsb_page_title = t("rsb.auth.registrations.new.page_title", default: "Create Account")
-        @rsb_meta_description = t("rsb.auth.registrations.new.meta_description", default: "Create a new account")
+        @rsb_page_title = t('rsb.auth.registrations.new.page_title', default: 'Create Account')
+        @rsb_meta_description = t('rsb.auth.registrations.new.meta_description', default: 'Create a new account')
       end
 
       # Creates a new account.
@@ -26,13 +28,11 @@ module RSB
         load_credential_types(:registerable)
 
         # Validate credential_type if provided
-        if params[:credential_type].present?
-          unless valid_credential_type?(params[:credential_type], :registerable)
-            @errors = ["This registration method is not available."]
-            @selected_method = nil
-            render :new, status: :unprocessable_entity
-            return
-          end
+        if params[:credential_type].present? && !valid_credential_type?(params[:credential_type], :registerable)
+          @errors = ['This registration method is not available.']
+          @selected_method = nil
+          render :new, status: :unprocessable_entity
+          return
         end
 
         result = RSB::Auth::RegistrationService.new.call(
@@ -55,9 +55,9 @@ module RSB
             same_site: :lax
           }
           if result.identity.complete?
-            redirect_to main_app.root_path, notice: "Account created."
+            redirect_to main_app.root_path, notice: 'Account created.'
           else
-            redirect_to account_path, alert: "Please complete your profile."
+            redirect_to account_path, alert: 'Please complete your profile.'
           end
         else
           @identifier = params[:identifier]
@@ -70,11 +70,11 @@ module RSB
       private
 
       def check_registration_mode
-        mode = RSB::Settings.get("auth.registration_mode")
-        if mode.to_s == "disabled"
-          redirect_to new_session_path, alert: "Registration is disabled."
-        elsif mode.to_s == "invite_only"
-          redirect_to new_session_path, alert: "Registration is invite-only. You need an invitation."
+        mode = RSB::Settings.get('auth.registration_mode')
+        if mode.to_s == 'disabled'
+          redirect_to new_session_path, alert: 'Registration is disabled.'
+        elsif mode.to_s == 'invite_only'
+          redirect_to new_session_path, alert: 'Registration is invite-only. You need an invitation.'
         end
       end
 
@@ -88,16 +88,14 @@ module RSB
       end
 
       def resolve_selected_method
-        if params[:method].present?
-          @selected_method = @credential_types.find { |d| d.key.to_s == params[:method].to_s }
-        end
+        @selected_method = @credential_types.find { |d| d.key.to_s == params[:method].to_s } if params[:method].present?
 
-        if @selected_method.nil? && @credential_types.size == 1
-          @selected_method = @credential_types.first
-        end
+        return unless @selected_method.nil? && @credential_types.size == 1
+
+        @selected_method = @credential_types.first
       end
 
-      def valid_credential_type?(key, capability)
+      def valid_credential_type?(key, _capability)
         defn = @credential_types.find { |d| d.key.to_s == key.to_s }
         defn.present?
       end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     module Stripe
@@ -6,17 +8,17 @@ module RSB
 
         # Register the Stripe provider after rsb-entitlements is ready.
         # This triggers settings registration via the provider's settings_schema.
-        initializer "rsb_entitlements_stripe.register_provider", after: "rsb_entitlements.ready" do
+        initializer 'rsb_entitlements_stripe.register_provider', after: 'rsb_entitlements.ready' do
           RSB::Entitlements.providers.register(RSB::Entitlements::Stripe::PaymentProvider)
         end
 
-        initializer "rsb_entitlements_stripe.middleware" do |app|
+        initializer 'rsb_entitlements_stripe.middleware' do |app|
           app.middleware.use RSB::Entitlements::Stripe::WebhookMiddleware
         end
 
         # Admin integration — register Stripe-specific UI hooks if rsb-admin is present.
         # This is a no-op if rsb-admin is not installed.
-        initializer "rsb_entitlements_stripe.admin_hooks" do
+        initializer 'rsb_entitlements_stripe.admin_hooks' do
           ActiveSupport.on_load(:rsb_admin) do |admin_registry|
             # No additional resources to register — Stripe uses the existing
             # PaymentRequest resource in the "Billing" category (registered by rsb-entitlements).

@@ -1,77 +1,83 @@
-require "test_helper"
+# frozen_string_literal: true
 
-class RSB::Auth::CredentialRegistryTest < ActiveSupport::TestCase
-  setup do
-    @registry = RSB::Auth::CredentialRegistry.new
-  end
+require 'test_helper'
 
-  test "register stores a definition by key" do
-    defn = RSB::Auth::CredentialDefinition.new(key: :email_password, class_name: "TestClass")
-    @registry.register(defn)
+module RSB
+  module Auth
+    class CredentialRegistryTest < ActiveSupport::TestCase
+      setup do
+        @registry = RSB::Auth::CredentialRegistry.new
+      end
 
-    assert_equal 1, @registry.all.size
-    assert_equal defn, @registry.find(:email_password)
-  end
+      test 'register stores a definition by key' do
+        defn = RSB::Auth::CredentialDefinition.new(key: :email_password, class_name: 'TestClass')
+        @registry.register(defn)
 
-  test "register raises ArgumentError for non-CredentialDefinition" do
-    assert_raises(ArgumentError) { @registry.register("not a definition") }
-    assert_raises(ArgumentError) { @registry.register(42) }
-  end
+        assert_equal 1, @registry.all.size
+        assert_equal defn, @registry.find(:email_password)
+      end
 
-  test "find returns definition by key" do
-    defn = RSB::Auth::CredentialDefinition.new(key: :oauth, class_name: "OAuthClass")
-    @registry.register(defn)
+      test 'register raises ArgumentError for non-CredentialDefinition' do
+        assert_raises(ArgumentError) { @registry.register('not a definition') }
+        assert_raises(ArgumentError) { @registry.register(42) }
+      end
 
-    found = @registry.find(:oauth)
-    assert_equal :oauth, found.key
-  end
+      test 'find returns definition by key' do
+        defn = RSB::Auth::CredentialDefinition.new(key: :oauth, class_name: 'OAuthClass')
+        @registry.register(defn)
 
-  test "find returns nil for unknown key" do
-    assert_nil @registry.find(:nonexistent)
-  end
+        found = @registry.find(:oauth)
+        assert_equal :oauth, found.key
+      end
 
-  test "all returns all registered definitions" do
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: "A"))
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: "B"))
+      test 'find returns nil for unknown key' do
+        assert_nil @registry.find(:nonexistent)
+      end
 
-    assert_equal 2, @registry.all.size
-  end
+      test 'all returns all registered definitions' do
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: 'A'))
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: 'B'))
 
-  test "authenticatable returns only authenticatable definitions" do
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: "A", authenticatable: true))
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: "B", authenticatable: false))
+        assert_equal 2, @registry.all.size
+      end
 
-    result = @registry.authenticatable
-    assert_equal 1, result.size
-    assert_equal :a, result.first.key
-  end
+      test 'authenticatable returns only authenticatable definitions' do
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: 'A', authenticatable: true))
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: 'B', authenticatable: false))
 
-  test "registerable returns only registerable definitions" do
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: "A", registerable: true))
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: "B", registerable: false))
+        result = @registry.authenticatable
+        assert_equal 1, result.size
+        assert_equal :a, result.first.key
+      end
 
-    result = @registry.registerable
-    assert_equal 1, result.size
-    assert_equal :a, result.first.key
-  end
+      test 'registerable returns only registerable definitions' do
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: 'A', registerable: true))
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: 'B', registerable: false))
 
-  test "for_identifier returns definition matching identifier_password pattern" do
-    defn = RSB::Auth::CredentialDefinition.new(key: :email_password, class_name: "EmailPasswordClass")
-    @registry.register(defn)
+        result = @registry.registerable
+        assert_equal 1, result.size
+        assert_equal :a, result.first.key
+      end
 
-    found = @registry.for_identifier("email")
-    assert_equal :email_password, found.key
-    assert_equal "EmailPasswordClass", found.class_name
-  end
+      test 'for_identifier returns definition matching identifier_password pattern' do
+        defn = RSB::Auth::CredentialDefinition.new(key: :email_password, class_name: 'EmailPasswordClass')
+        @registry.register(defn)
 
-  test "for_identifier returns nil for unregistered identifier" do
-    assert_nil @registry.for_identifier("unknown")
-  end
+        found = @registry.for_identifier('email')
+        assert_equal :email_password, found.key
+        assert_equal 'EmailPasswordClass', found.class_name
+      end
 
-  test "keys returns all registered keys" do
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: "A"))
-    @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: "B"))
+      test 'for_identifier returns nil for unregistered identifier' do
+        assert_nil @registry.for_identifier('unknown')
+      end
 
-    assert_equal [:a, :b], @registry.keys
+      test 'keys returns all registered keys' do
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :a, class_name: 'A'))
+        @registry.register(RSB::Auth::CredentialDefinition.new(key: :b, class_name: 'B'))
+
+        assert_equal %i[a b], @registry.keys
+      end
+    end
   end
 end

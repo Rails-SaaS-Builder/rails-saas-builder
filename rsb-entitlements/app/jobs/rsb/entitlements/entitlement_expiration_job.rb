@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Entitlements
     class EntitlementExpirationJob < ApplicationJob
@@ -5,7 +7,7 @@ module RSB
 
       def perform
         Entitlement.active
-                   .where("expires_at <= ?", Time.current)
+                   .where('expires_at <= ?', Time.current)
                    .find_each(&:expire!)
       end
     end

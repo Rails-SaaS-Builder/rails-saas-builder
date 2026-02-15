@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Represents an active admin session with device and location tracking.
@@ -33,27 +35,27 @@ module RSB
         ua = user_agent.to_s
 
         browser = case ua
-                  when /Edg\//i then "Edge"
-                  when /OPR\//i, /Opera/i then "Opera"
-                  when /Chrome/i then "Chrome"
-                  when /Firefox/i then "Firefox"
-                  when /Safari/i then "Safari"
-                  else "Unknown"
+                  when %r{Edg/}i then 'Edge'
+                  when %r{OPR/}i, /Opera/i then 'Opera'
+                  when /Chrome/i then 'Chrome'
+                  when /Firefox/i then 'Firefox'
+                  when /Safari/i then 'Safari'
+                  else 'Unknown'
                   end
 
         os = case ua
-             when /Windows/i then "Windows"
-             when /iPhone|iPad/i then "iOS"
-             when /Android/i then "Android"
-             when /Macintosh|Mac OS/i then "macOS"
-             when /Linux/i then "Linux"
-             else "Unknown"
+             when /Windows/i then 'Windows'
+             when /iPhone|iPad/i then 'iOS'
+             when /Android/i then 'Android'
+             when /Macintosh|Mac OS/i then 'macOS'
+             when /Linux/i then 'Linux'
+             else 'Unknown'
              end
 
         device_type = case ua
-                      when /Mobile|iPhone|Android.*Mobile/i then "mobile"
-                      when /iPad|Tablet|Android(?!.*Mobile)/i then "tablet"
-                      else "desktop"
+                      when /Mobile|iPhone|Android.*Mobile/i then 'mobile'
+                      when /iPad|Tablet|Android(?!.*Mobile)/i then 'tablet'
+                      else 'desktop'
                       end
 
         { browser: browser, os: os, device_type: device_type }

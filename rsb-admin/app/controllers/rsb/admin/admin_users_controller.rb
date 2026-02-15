@@ -7,12 +7,12 @@ module RSB
     # and deleting admin users, with self-deletion protection.
     class AdminUsersController < AdminController
       before_action :authorize_admin_users
-      before_action :set_admin_user, only: [:show, :edit, :update, :destroy]
+      before_action :set_admin_user, only: %i[show edit update destroy]
 
       # GET /admin/admin_users
       # Lists all admin users ordered by email, eagerly loading roles.
       def index
-        @rsb_page_title = I18n.t("rsb.admin.admin_users.index.page_title", default: "Admin Users")
+        @rsb_page_title = I18n.t('rsb.admin.admin_users.index.page_title', default: 'Admin Users')
         @admin_users = AdminUser.includes(:role).order(:email)
       end
 
@@ -32,7 +32,7 @@ module RSB
       def create
         @admin_user = AdminUser.new(admin_user_params)
         if @admin_user.save
-          redirect_to rsb_admin.admin_user_path(@admin_user), notice: "Admin user created."
+          redirect_to rsb_admin.admin_user_path(@admin_user), notice: 'Admin user created.'
         else
           render :new, status: :unprocessable_entity
         end
@@ -53,7 +53,7 @@ module RSB
         end
 
         if @admin_user.update(update_params)
-          redirect_to rsb_admin.admin_user_path(@admin_user), notice: "Admin user updated."
+          redirect_to rsb_admin.admin_user_path(@admin_user), notice: 'Admin user updated.'
         else
           render :edit, status: :unprocessable_entity
         end
@@ -63,12 +63,12 @@ module RSB
       # Deletes an admin user. Self-deletion is prevented.
       def destroy
         if @admin_user == current_admin_user
-          redirect_to rsb_admin.admin_users_path, alert: "You cannot delete your own account."
+          redirect_to rsb_admin.admin_users_path, alert: 'You cannot delete your own account.'
           return
         end
 
         @admin_user.destroy!
-        redirect_to rsb_admin.admin_users_path, notice: "Admin user deleted."
+        redirect_to rsb_admin.admin_users_path, notice: 'Admin user deleted.'
       end
 
       private
@@ -79,17 +79,13 @@ module RSB
       # @return [void]
       def build_breadcrumbs
         super
-        add_breadcrumb(I18n.t("rsb.admin.shared.system"))
-        add_breadcrumb(I18n.t("rsb.admin.admin_users.title"), rsb_admin.admin_users_path)
-        if params[:id].present?
-          add_breadcrumb("##{params[:id]}", rsb_admin.admin_user_path(params[:id]))
-        end
-        if action_name.in?(%w[new create])
-          add_breadcrumb(I18n.t("rsb.admin.shared.new", resource: "Admin User"))
-        end
-        if action_name.in?(%w[edit update])
-          add_breadcrumb(I18n.t("rsb.admin.shared.edit"))
-        end
+        add_breadcrumb(I18n.t('rsb.admin.shared.system'))
+        add_breadcrumb(I18n.t('rsb.admin.admin_users.title'), rsb_admin.admin_users_path)
+        add_breadcrumb("##{params[:id]}", rsb_admin.admin_user_path(params[:id])) if params[:id].present?
+        add_breadcrumb(I18n.t('rsb.admin.shared.new', resource: 'Admin User')) if action_name.in?(%w[new create])
+        return unless action_name.in?(%w[edit update])
+
+        add_breadcrumb(I18n.t('rsb.admin.shared.edit'))
       end
 
       # Finds the admin user by ID from the URL params.
@@ -107,7 +103,7 @@ module RSB
       # Authorizes the current admin user for admin_users actions.
       # @return [void]
       def authorize_admin_users
-        authorize_admin_action!(resource: "admin_users", action: action_name)
+        authorize_admin_action!(resource: 'admin_users', action: action_name)
       end
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateRSBAuthCredentials < ActiveRecord::Migration[8.1]
   def change
     create_table :rsb_auth_credentials do |t|
@@ -13,6 +15,6 @@ class CreateRSBAuthCredentials < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :rsb_auth_credentials, [:type, :identifier], unique: true
+    add_index :rsb_auth_credentials, %i[type identifier], unique: true
   end
 end

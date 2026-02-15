@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     module Admin
@@ -17,8 +19,11 @@ module RSB
       #   PATCH /admin/identities/123/suspend
       class IdentitiesController < RSB::Admin::AdminController
         before_action :authorize_identities
-        before_action :set_identity, only: [:show, :suspend, :activate, :deactivate, :revoke_credential, :restore_credential, :restore, :new_credential, :add_credential, :verify_credential, :resend_verification]
-        before_action :set_credential, only: [:revoke_credential, :restore_credential, :verify_credential, :resend_verification]
+        before_action :set_identity,
+                      only: %i[show suspend activate deactivate revoke_credential restore_credential restore new_credential add_credential
+                               verify_credential resend_verification]
+        before_action :set_credential,
+                      only: %i[revoke_credential restore_credential verify_credential resend_verification]
 
         # Display paginated list of identities with their credentials.
         #
@@ -88,14 +93,14 @@ module RSB
           credential_def = RSB::Auth.credentials.find(params[:credential_type]&.to_sym)
 
           unless credential_def&.admin_form_partial
-            redirect_to identity_index_path, alert: "Invalid credential type."
+            redirect_to identity_index_path, alert: 'Invalid credential type.'
             return
           end
 
           @selected_type = credential_def
 
           ActiveRecord::Base.transaction do
-            @identity = RSB::Auth::Identity.new(status: "active")
+            @identity = RSB::Auth::Identity.new(status: 'active')
             @credential = credential_def.credential_class.new(
               identity: @identity,
               identifier: params[:identifier],
@@ -108,7 +113,7 @@ module RSB
             @credential.save!
           end
 
-          redirect_to identity_show_path, notice: I18n.t("rsb.auth.admin.identities.created")
+          redirect_to identity_show_path, notice: I18n.t('rsb.auth.admin.identities.created')
         rescue ActiveRecord::RecordInvalid
           render :new, status: :unprocessable_entity
         end
@@ -121,16 +126,16 @@ module RSB
         # @return [void]
         def new_credential
           unless @identity.active?
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.admin.identities.identity_not_active")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.admin.identities.identity_not_active')
             return
           end
 
           @credential_types = available_credential_types
           @selected_type = if params[:type].present?
-            RSB::Auth.credentials.find(params[:type].to_sym)
-          else
-            @credential_types.first
-          end
+                             RSB::Auth.credentials.find(params[:type].to_sym)
+                           else
+                             @credential_types.first
+                           end
           @credential = @selected_type&.credential_class&.new
         end
 
@@ -142,14 +147,14 @@ module RSB
         # @return [void]
         def add_credential
           unless @identity.active?
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.admin.identities.identity_not_active")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.admin.identities.identity_not_active')
             return
           end
 
           credential_def = RSB::Auth.credentials.find(params[:credential_type]&.to_sym)
 
           unless credential_def&.admin_form_partial
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.admin.identities.invalid_credential_type")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.admin.identities.invalid_credential_type')
             return
           end
 
@@ -163,7 +168,7 @@ module RSB
           )
 
           if @credential.save
-            redirect_to identity_show_path, notice: I18n.t("rsb.auth.admin.identities.credential_added")
+            redirect_to identity_show_path, notice: I18n.t('rsb.auth.admin.identities.credential_added')
           else
             @credential_types = available_credential_types
             render :new_credential, status: :unprocessable_entity
@@ -178,10 +183,10 @@ module RSB
         # @return [void]
         def suspend
           if @identity.suspended?
-            redirect_to identity_show_path, alert: "Identity is already suspended."
+            redirect_to identity_show_path, alert: 'Identity is already suspended.'
           else
-            @identity.update!(status: "suspended")
-            redirect_to identity_show_path, notice: "Identity suspended."
+            @identity.update!(status: 'suspended')
+            redirect_to identity_show_path, notice: 'Identity suspended.'
           end
         end
 
@@ -193,10 +198,10 @@ module RSB
         # @return [void]
         def activate
           if @identity.active?
-            redirect_to identity_show_path, alert: "Identity is already active."
+            redirect_to identity_show_path, alert: 'Identity is already active.'
           else
-            @identity.update!(status: "active")
-            redirect_to identity_show_path, notice: "Identity activated."
+            @identity.update!(status: 'active')
+            redirect_to identity_show_path, notice: 'Identity activated.'
           end
         end
 
@@ -208,10 +213,10 @@ module RSB
         # @return [void]
         def deactivate
           if @identity.deactivated?
-            redirect_to identity_show_path, alert: "Identity is already deactivated."
+            redirect_to identity_show_path, alert: 'Identity is already deactivated.'
           else
-            @identity.update!(status: "deactivated")
-            redirect_to identity_show_path, notice: "Identity deactivated."
+            @identity.update!(status: 'deactivated')
+            redirect_to identity_show_path, notice: 'Identity deactivated.'
           end
         end
 
@@ -227,15 +232,15 @@ module RSB
         # @return [void]
         def restore
           unless @identity.deleted?
-            redirect_to identity_show_path, alert: "Identity is not in deleted status."
+            redirect_to identity_show_path, alert: 'Identity is not in deleted status.'
             return
           end
 
           result = RSB::Auth::AccountService.new.restore_account(identity: @identity)
           if result.success?
-            redirect_to identity_show_path, notice: "Identity restored."
+            redirect_to identity_show_path, notice: 'Identity restored.'
           else
-            redirect_to identity_show_path, alert: result.errors.join(", ")
+            redirect_to identity_show_path, alert: result.errors.join(', ')
           end
         end
 
@@ -247,10 +252,10 @@ module RSB
         # @return [void]
         def revoke_credential
           if @credential.revoked?
-            redirect_to identity_show_path, alert: "Credential is already revoked."
+            redirect_to identity_show_path, alert: 'Credential is already revoked.'
           else
             @credential.revoke!
-            redirect_to identity_show_path, notice: I18n.t("rsb.auth.credentials.revoked_notice")
+            redirect_to identity_show_path, notice: I18n.t('rsb.auth.credentials.revoked_notice')
           end
         end
 
@@ -262,9 +267,9 @@ module RSB
         # @return [void]
         def restore_credential
           @credential.restore!
-          redirect_to identity_show_path, notice: I18n.t("rsb.auth.credentials.restored_notice")
+          redirect_to identity_show_path, notice: I18n.t('rsb.auth.credentials.restored_notice')
         rescue RSB::Auth::CredentialConflictError
-          redirect_to identity_show_path, alert: I18n.t("rsb.auth.credentials.restore_conflict")
+          redirect_to identity_show_path, alert: I18n.t('rsb.auth.credentials.restore_conflict')
         end
 
         # Manually verify an unverified credential.
@@ -277,17 +282,17 @@ module RSB
         # @return [void]
         def verify_credential
           if @credential.revoked?
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.credentials.revoked")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.credentials.revoked')
             return
           end
 
           if @credential.verified?
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.admin.identities.already_verified")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.admin.identities.already_verified')
             return
           end
 
           @credential.verify!
-          redirect_to identity_show_path, notice: I18n.t("rsb.auth.admin.identities.credential_verified")
+          redirect_to identity_show_path, notice: I18n.t('rsb.auth.admin.identities.credential_verified')
         end
 
         # Resend the verification email for an unverified email-type credential.
@@ -300,29 +305,29 @@ module RSB
         # @return [void]
         def resend_verification
           if @credential.revoked?
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.credentials.revoked")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.credentials.revoked')
             return
           end
 
           if @credential.verified?
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.admin.identities.already_verified")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.admin.identities.already_verified')
             return
           end
 
           unless @credential.is_a?(RSB::Auth::Credential::EmailPassword)
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.admin.identities.invalid_credential_type")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.admin.identities.invalid_credential_type')
             return
           end
 
           if @credential.verification_sent_at.present? && @credential.verification_sent_at > 1.minute.ago
-            redirect_to identity_show_path, alert: I18n.t("rsb.auth.admin.identities.resend_rate_limited")
+            redirect_to identity_show_path, alert: I18n.t('rsb.auth.admin.identities.resend_rate_limited')
             return
           end
 
           @credential.send_verification!
 
           redirect_to identity_show_path,
-            notice: I18n.t("rsb.auth.admin.identities.verification_sent", identifier: @credential.identifier)
+                      notice: I18n.t('rsb.auth.admin.identities.verification_sent', identifier: @credential.identifier)
         end
 
         private
@@ -371,7 +376,7 @@ module RSB
         # Path to the identities index page.
         # @return [String]
         def identity_index_path
-          "/admin/identities"
+          '/admin/identities'
         end
 
         # Get the path to the identity show page.
@@ -389,7 +394,7 @@ module RSB
         # @return [void]
         # @raise [ActionController::Forbidden] if the user lacks permission
         def authorize_identities
-          authorize_admin_action!(resource: "identities", action: action_name)
+          authorize_admin_action!(resource: 'identities', action: action_name)
         end
       end
     end

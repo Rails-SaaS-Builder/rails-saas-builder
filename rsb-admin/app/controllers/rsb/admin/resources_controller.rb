@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     class ResourcesController < AdminController
@@ -261,7 +263,10 @@ module RSB
         if @registration
           add_breadcrumb(@registration.category_name)
           add_breadcrumb(@registration.label, rsb_admin_resource_path(@registration.route_key))
-          add_breadcrumb("##{params[:id]}", rsb_admin_resource_show_path(@registration.route_key, params[:id])) if params[:id].present?
+          if params[:id].present?
+            add_breadcrumb("##{params[:id]}",
+                           rsb_admin_resource_show_path(@registration.route_key, params[:id]))
+          end
           if action_name.in?(%w[new create])
             add_breadcrumb(I18n.t('rsb.admin.shared.new', resource: @registration.label.singularize))
           end
@@ -285,7 +290,7 @@ module RSB
       def build_page_action_breadcrumbs
         @breadcrumbs = [
           RSB::Admin::BreadcrumbItem.new(
-            label: RSB::Settings.get("admin.app_name").to_s.presence || RSB::Admin.configuration.app_name,
+            label: RSB::Settings.get('admin.app_name').to_s.presence || RSB::Admin.configuration.app_name,
             path: rsb_admin.dashboard_path
           )
         ]
@@ -305,10 +310,10 @@ module RSB
       def authorize_resource
         resource_name = @page ? @page.key.to_s : params[:resource_key]
         action = if action_name == 'custom_action' && params[:custom_action].present?
-          params[:custom_action]
-        else
-          action_name
-        end
+                   params[:custom_action]
+                 else
+                   action_name
+                 end
         authorize_admin_action!(resource: resource_name, action: action)
       end
 
@@ -370,12 +375,11 @@ module RSB
       def resource_params
         if @registration.form_fields
           permitted_keys = @registration.form_fields.map(&:key)
-          params.require(@registration.model_class.model_name.param_key).permit(*permitted_keys)
         else
           # Fallback: auto-detect (existing behavior)
           permitted_keys = @registration.model_class.column_names - ResourceRegistration::SENSITIVE_COLUMNS - ResourceRegistration::SKIP_FORM_COLUMNS
-          params.require(@registration.model_class.model_name.param_key).permit(*permitted_keys)
         end
+        params.require(@registration.model_class.model_name.param_key).permit(*permitted_keys)
       end
     end
   end

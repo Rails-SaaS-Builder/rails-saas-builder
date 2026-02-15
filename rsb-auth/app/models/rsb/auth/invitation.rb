@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class Invitation < ApplicationRecord
@@ -11,9 +13,9 @@ module RSB
 
       normalizes :email, with: ->(e) { e.strip.downcase }
 
-      scope :pending, -> { where(accepted_at: nil, revoked_at: nil).where("expires_at > ?", Time.current) }
+      scope :pending, -> { where(accepted_at: nil, revoked_at: nil).where('expires_at > ?', Time.current) }
       scope :accepted, -> { where.not(accepted_at: nil) }
-      scope :expired, -> { where(accepted_at: nil).where("expires_at <= ?", Time.current) }
+      scope :expired, -> { where(accepted_at: nil).where('expires_at <= ?', Time.current) }
 
       def pending?
         accepted_at.nil? && revoked_at.nil? && expires_at > Time.current

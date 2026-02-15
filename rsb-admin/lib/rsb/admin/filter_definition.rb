@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSB
   module Admin
     # Represents a filter definition for admin resource queries.
@@ -23,13 +25,13 @@ module RSB
     #   filter.type #=> :text
     #
     # @example Building a select filter with options
-    #   filter = FilterDefinition.build(:status, 
-    #     type: :select, 
+    #   filter = FilterDefinition.build(:status,
+    #     type: :select,
     #     options: %w[active suspended banned]
     #   )
     #
     # @example Building a filter with custom scope
-    #   filter = FilterDefinition.build(:search, 
+    #   filter = FilterDefinition.build(:search,
     #     scope: ->(rel, val) { rel.where("name LIKE ? OR email LIKE ?", "%#{val}%", "%#{val}%") }
     #   )
     FilterDefinition = Data.define(
@@ -105,13 +107,15 @@ module RSB
         when :select, :boolean
           relation.where(key => value)
         when :date_range
-          from, to = value[:from], value[:to]
+          from = value[:from]
+          to = value[:to]
           scope = relation
           scope = scope.where("#{key} >= ?", from) if from.present?
           scope = scope.where("#{key} <= ?", to) if to.present?
           scope
         when :number_range
-          min, max = value[:min], value[:max]
+          min = value[:min]
+          max = value[:max]
           scope = relation
           scope = scope.where("#{key} >= ?", min) if min.present?
           scope = scope.where("#{key} <= ?", max) if max.present?

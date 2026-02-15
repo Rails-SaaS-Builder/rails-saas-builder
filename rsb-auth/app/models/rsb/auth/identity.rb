@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 module RSB
   module Auth
     class Identity < ApplicationRecord
       has_many :credentials, dependent: :destroy
       has_many :sessions, dependent: :destroy
 
-      enum :status, { active: "active", suspended: "suspended", deactivated: "deactivated", deleted: "deleted" }
+      enum :status, { active: 'active', suspended: 'suspended', deactivated: 'deactivated', deleted: 'deleted' }
 
-      # Note: the `active` scope is already defined by the enum above
+      # NOTE: the `active` scope is already defined by the enum above
 
       after_commit :fire_created_callback, on: :create
 

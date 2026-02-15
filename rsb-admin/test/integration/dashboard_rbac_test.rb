@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class DashboardRbacTest < ActionDispatch::IntegrationTest
   include RSB::Admin::TestKit::Helpers
@@ -10,20 +12,20 @@ class DashboardRbacTest < ActionDispatch::IntegrationTest
 
   # --- Form Rendering ---
 
-  test "role form shows only index checkbox when no dashboard override" do
+  test 'role form shows only index checkbox when no dashboard override' do
     get rsb_admin.new_role_path
     assert_response :success
     assert_select "input[name='role[permissions_checkboxes][dashboard][]'][value='index']"
     assert_select "input[name='role[permissions_checkboxes][dashboard][]']", count: 1
   end
 
-  test "role form shows dashboard action checkboxes when override with actions registered" do
+  test 'role form shows dashboard action checkboxes when override with actions registered' do
     with_fresh_admin_registry do
       RSB::Admin.registry.register_dashboard(
-        controller: "test_dashboard",
+        controller: 'test_dashboard',
         actions: [
-          { key: :index, label: "Overview" },
-          { key: :metrics, label: "Metrics" }
+          { key: :index, label: 'Overview' },
+          { key: :metrics, label: 'Metrics' }
         ]
       )
 
@@ -35,9 +37,9 @@ class DashboardRbacTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "role form shows only index when override registered without actions" do
+  test 'role form shows only index when override registered without actions' do
     with_fresh_admin_registry do
-      RSB::Admin.registry.register_dashboard(controller: "test_dashboard")
+      RSB::Admin.registry.register_dashboard(controller: 'test_dashboard')
 
       get rsb_admin.new_role_path
       assert_response :success
@@ -48,13 +50,13 @@ class DashboardRbacTest < ActionDispatch::IntegrationTest
 
   # --- Persistence ---
 
-  test "saving role with dashboard action permissions persists correctly" do
+  test 'saving role with dashboard action permissions persists correctly' do
     with_fresh_admin_registry do
       RSB::Admin.registry.register_dashboard(
-        controller: "test_dashboard",
+        controller: 'test_dashboard',
         actions: [
-          { key: :index, label: "Overview" },
-          { key: :metrics, label: "Metrics" }
+          { key: :index, label: 'Overview' },
+          { key: :metrics, label: 'Metrics' }
         ]
       )
 
@@ -62,23 +64,23 @@ class DashboardRbacTest < ActionDispatch::IntegrationTest
         role: {
           name: "Dashboard Multi #{SecureRandom.hex(4)}",
           permissions_checkboxes: {
-            "dashboard" => ["index", "metrics"]
+            'dashboard' => %w[index metrics]
           }
         }
       }
 
       role = RSB::Admin::Role.last
-      assert_equal ["index", "metrics"], role.permissions["dashboard"]
+      assert_equal %w[index metrics], role.permissions['dashboard']
     end
   end
 
-  test "saving role with partial dashboard permissions persists only selected" do
+  test 'saving role with partial dashboard permissions persists only selected' do
     with_fresh_admin_registry do
       RSB::Admin.registry.register_dashboard(
-        controller: "test_dashboard",
+        controller: 'test_dashboard',
         actions: [
-          { key: :index, label: "Overview" },
-          { key: :metrics, label: "Metrics" }
+          { key: :index, label: 'Overview' },
+          { key: :metrics, label: 'Metrics' }
         ]
       )
 
@@ -86,13 +88,13 @@ class DashboardRbacTest < ActionDispatch::IntegrationTest
         role: {
           name: "Dashboard Partial #{SecureRandom.hex(4)}",
           permissions_checkboxes: {
-            "dashboard" => ["index"]
+            'dashboard' => ['index']
           }
         }
       }
 
       role = RSB::Admin::Role.last
-      assert_equal ["index"], role.permissions["dashboard"]
+      assert_equal ['index'], role.permissions['dashboard']
     end
   end
 end
