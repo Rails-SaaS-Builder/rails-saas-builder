@@ -17,8 +17,8 @@ class CredentialSelectorSignupTest < ActionDispatch::IntegrationTest
   test 'signup page shows selector when multiple credential types are enabled' do
     get new_registration_path
     assert_response :success
-    assert_match 'Email &amp; Password', response.body
-    assert_match 'Username &amp; Password', response.body
+    assert_match 'Email', response.body
+    assert_match 'Username', response.body
   end
 
   test 'signup page renders form directly when only one type is enabled' do

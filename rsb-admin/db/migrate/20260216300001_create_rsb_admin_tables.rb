@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-class CreateRSBAdminTables < ActiveRecord::Migration[8.0]
+class CreateRSBAdminTables < ActiveRecord::Migration[8.1]
   def change
     create_table :rsb_admin_roles do |t|
       t.string :name, null: false
       t.json :permissions, null: false, default: {}
       t.boolean :built_in, default: false
+
       t.timestamps
     end
 
@@ -20,6 +21,10 @@ class CreateRSBAdminTables < ActiveRecord::Migration[8.0]
       t.string :pending_email
       t.string :email_verification_token
       t.datetime :email_verification_sent_at
+      t.string :otp_secret
+      t.boolean :otp_required, null: false, default: false
+      t.text :otp_backup_codes
+
       t.timestamps
     end
 
@@ -35,6 +40,7 @@ class CreateRSBAdminTables < ActiveRecord::Migration[8.0]
       t.string :os
       t.string :device_type
       t.datetime :last_active_at, null: false
+
       t.timestamps
     end
 

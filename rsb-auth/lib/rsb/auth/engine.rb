@@ -28,7 +28,7 @@ module RSB
             class_name: 'RSB::Auth::Credential::EmailPassword',
             authenticatable: true,
             registerable: true,
-            label: 'Email & Password',
+            label: 'Email',
             icon: 'mail',
             form_partial: 'rsb/auth/credentials/email_password',
             admin_form_partial: 'rsb/auth/admin/credentials/email_password'
@@ -41,7 +41,7 @@ module RSB
             class_name: 'RSB::Auth::Credential::UsernamePassword',
             authenticatable: true,
             registerable: true,
-            label: 'Username & Password',
+            label: 'Username',
             icon: 'user',
             form_partial: 'rsb/auth/credentials/username_password',
             admin_form_partial: 'rsb/auth/admin/credentials/username_password'

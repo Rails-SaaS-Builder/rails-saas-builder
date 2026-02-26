@@ -28,8 +28,8 @@ class CredentialSelectorLoginTest < ActionDispatch::IntegrationTest
   test 'login page shows selector when multiple credential types are enabled' do
     get new_session_path
     assert_response :success
-    assert_match 'Email &amp; Password', response.body
-    assert_match 'Username &amp; Password', response.body
+    assert_match 'Email', response.body
+    assert_match 'Username', response.body
   end
 
   test 'login page renders form directly when only one type is enabled' do
@@ -42,7 +42,7 @@ class CredentialSelectorLoginTest < ActionDispatch::IntegrationTest
       assert_select "input[name='identifier']"
       assert_select "input[name='password']"
       # Should NOT show the selector buttons
-      refute_match 'Username &amp; Password', response.body
+      refute_match 'Username', response.body
     end
   end
 
@@ -66,7 +66,7 @@ class CredentialSelectorLoginTest < ActionDispatch::IntegrationTest
     get new_session_path(method: 'nonexistent')
     assert_response :success
     # Should show selector, not a form
-    assert_match 'Email &amp; Password', response.body
+    assert_match 'Email', response.body
   end
 
   test 'login page with disabled ?method= falls back to remaining enabled type' do

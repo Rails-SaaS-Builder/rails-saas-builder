@@ -84,6 +84,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, 
 
 To report a security vulnerability, please see [SECURITY.md](SECURITY.md). Do not open public issues for security concerns.
 
+## Related Projects
+
+- [Rails SaaS Builder Pro](../rails-saas-builder-pro/) — Premium features gem extending the OSS core
+- [RSB Website](../website/) — Project marketing & documentation site
+
 ## License
 
 Rails SaaS Builder is licensed under the [GNU Lesser General Public License v3.0](LICENSE).

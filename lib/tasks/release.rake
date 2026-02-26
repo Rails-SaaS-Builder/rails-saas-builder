@@ -94,6 +94,48 @@ module ReleaseHelper
     puts "\nPushing gems to RubyGems.org..."
     gem_paths.each { |path| push_gem(path) }
   end
+
+  # --- Extension gem helpers ---
+
+  def resolve_extension(gem_name)
+    gem_dir = File.join(root, gem_name)
+    unless File.directory?(gem_dir)
+      abort "Unknown extension gem: #{gem_name}. Directory '#{gem_dir}' not found."
+    end
+
+    gemspec = "#{gem_name}.gemspec"
+    unless File.exist?(File.join(gem_dir, gemspec))
+      abort "Cannot find gemspec: #{File.join(gem_dir, gemspec)}"
+    end
+
+    version_files = Dir.glob(File.join(gem_dir, 'lib', '**', 'version.rb'))
+    if version_files.empty?
+      abort "Cannot find version.rb for #{gem_name} in #{gem_dir}/lib/"
+    end
+
+    { dir: gem_dir, gemspec: gemspec, version_file: version_files.first }
+  end
+
+  def read_version(version_file)
+    content = File.read(version_file)
+    match = content.match(/VERSION\s*=\s*['"]([^'"]+)['"]/)
+    abort "Cannot extract VERSION from #{version_file}" unless match
+    match[1]
+  end
+
+  def update_version(version_file, new_version)
+    content = File.read(version_file)
+    updated = content.gsub(/VERSION\s*=\s*['"][^'"]+['"]/, "VERSION = '#{new_version}'")
+    File.write(version_file, updated)
+    puts "  Updated #{version_file} → #{new_version}"
+  end
+
+  def ensure_gem_tests_pass!(gem_dir)
+    puts "Running tests for #{File.basename(gem_dir)}..."
+    return if system('bundle exec rake test', chdir: gem_dir)
+
+    abort 'Aborting: tests failed.'
+  end
 end
 
 desc 'Build and push all gems to RubyGems.org (no version bump)'
@@ -144,5 +186,66 @@ task :release, [:bump] do |_t, args|
   puts "Released v#{new_version} successfully!"
   puts "  - #{PUBLISH_ORDER.size} gems pushed to RubyGems.org"
   puts "  - Tagged v#{new_version} and pushed to origin"
+  puts '=' * 60
+end
+
+desc 'Build and push an extension gem (no version bump): rake publish_ext[rsb-entitlements-stripe]'
+task :publish_ext, [:gem_name] do |_t, args|
+  gem_name = args[:gem_name] || abort('Usage: rake publish_ext[gem_name]')
+  ext = ReleaseHelper.resolve_extension(gem_name)
+  version = ReleaseHelper.read_version(ext[:version_file])
+
+  puts "Publishing #{gem_name} v#{version}..."
+
+  gem_info = { name: gem_name, dir: gem_name, gemspec: ext[:gemspec] }
+  gem_path = ReleaseHelper.build_gem(gem_info)
+  ReleaseHelper.push_gem(gem_path)
+
+  puts "\nPublished #{gem_name} v#{version} successfully!"
+end
+
+desc 'Bump, build, push, tag extension gem: rake release_ext[rsb-entitlements-stripe,patch]'
+task :release_ext, [:gem_name, :bump] do |_t, args|
+  gem_name = args[:gem_name] || abort('Usage: rake release_ext[gem_name,bump]')
+  bump = args[:bump] || 'patch'
+  ext = ReleaseHelper.resolve_extension(gem_name)
+  current = ReleaseHelper.read_version(ext[:version_file])
+  new_version = ReleaseHelper.next_version(current, bump)
+
+  puts "Release: #{gem_name} #{current} → #{new_version} (#{bump} bump)\n\n"
+
+  # Safety checks
+  ReleaseHelper.ensure_clean_git!
+  ReleaseHelper.ensure_on_master!
+  ReleaseHelper.ensure_gem_tests_pass!(ext[:dir])
+
+  # Bump version
+  puts "\nBumping version..."
+  ReleaseHelper.update_version(ext[:version_file], new_version)
+
+  # Git commit and tag
+  root = ReleaseHelper.root
+  relative_version_file = Pathname.new(ext[:version_file]).relative_path_from(Pathname.new(root)).to_s
+  tag = "#{gem_name}-v#{new_version}"
+
+  puts "\nCommitting version bump..."
+  system("git -C #{root} add #{relative_version_file}")
+  system("git -C #{root} commit -m 'Release #{gem_name} v#{new_version}'")
+  system("git -C #{root} tag -a #{tag} -m 'Release #{gem_name} v#{new_version}'")
+
+  # Build and push gem
+  gem_info = { name: gem_name, dir: gem_name, gemspec: ext[:gemspec] }
+  gem_path = ReleaseHelper.build_gem(gem_info)
+  ReleaseHelper.push_gem(gem_path)
+
+  # Push git
+  puts "\nPushing to origin..."
+  system("git -C #{root} push origin master")
+  system("git -C #{root} push origin #{tag}")
+
+  puts "\n#{'=' * 60}"
+  puts "Released #{gem_name} v#{new_version} successfully!"
+  puts "  - Gem pushed to RubyGems.org"
+  puts "  - Tagged #{tag} and pushed to origin"
   puts '=' * 60
 end

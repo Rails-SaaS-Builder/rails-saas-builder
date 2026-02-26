@@ -31,9 +31,9 @@ class AdminAddCredentialTest < ActionDispatch::IntegrationTest
     get "/admin/identities/#{@identity.id}/new_credential"
     assert_response :success
     # Identity already has EmailPassword, so it should be excluded
-    refute_match '>Email &amp; Password</a>', response.body
+    refute_match '>Email</a>', response.body
     # But other types should be available
-    assert_match 'Username &amp; Password', response.body
+    assert_match 'Username', response.body
   end
 
   test "new_credential with ?type= renders selected type's form" do

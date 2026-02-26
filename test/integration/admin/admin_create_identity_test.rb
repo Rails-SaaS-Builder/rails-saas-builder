@@ -22,8 +22,8 @@ class AdminCreateIdentityTest < ActionDispatch::IntegrationTest
   test 'new shows credential type selector with enabled types that have admin_form_partial' do
     get '/admin/identities/new'
     assert_response :success
-    assert_match 'Email &amp; Password', response.body
-    assert_match 'Username &amp; Password', response.body
+    assert_match 'Email', response.body
+    assert_match 'Username', response.body
   end
 
   test 'new renders email_password form fields by default' do
