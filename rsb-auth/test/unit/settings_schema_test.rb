@@ -22,7 +22,7 @@ module RSB
           registration_mode login_identifier password_min_length
           session_duration max_sessions lockout_threshold
           lockout_duration verification_required account_enabled
-          account_deletion_enabled
+          account_deletion_enabled generic_error_messages
         ]
         assert_equal expected_keys, schema.keys
       end
@@ -41,6 +41,7 @@ module RSB
         assert_equal true, defaults[:verification_required]
         assert_equal true, defaults[:account_enabled]
         assert_equal true, defaults[:account_deletion_enabled]
+        assert_equal false, defaults[:generic_error_messages]
       end
 
       test 'has correct types' do
@@ -56,6 +57,7 @@ module RSB
         assert_equal :boolean, schema.find(:verification_required).type
         assert_equal :boolean, schema.find(:account_enabled).type
         assert_equal :boolean, schema.find(:account_deletion_enabled).type
+        assert_equal :boolean, schema.find(:generic_error_messages).type
       end
 
       test 'RSB::Auth.settings_schema returns the schema' do
@@ -82,6 +84,9 @@ module RSB
         # Features group
         assert_equal 'Features', schema.find(:account_enabled).group
         assert_equal 'Features', schema.find(:account_deletion_enabled).group
+
+        # Security group
+        assert_equal 'Security', schema.find(:generic_error_messages).group
       end
 
       test 'account_deletion_enabled depends_on account_enabled' do

@@ -51,7 +51,8 @@ module RSB
           cookies.signed[:rsb_session_token] = {
             value: session_record.token,
             httponly: true,
-            same_site: :lax
+            same_site: :lax,
+            secure: Rails.env.production?
           }
           if result.identity.complete?
             redirect_to main_app.root_path, notice: 'Signed in.'

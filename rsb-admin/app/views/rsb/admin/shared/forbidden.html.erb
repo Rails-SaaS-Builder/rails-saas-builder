@@ -1,6 +1,6 @@
 <div class="flex items-center justify-center min-h-[60vh]">
   <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-8 max-w-md w-full text-center">
-    <div class="mb-4 text-rsb-muted">
+    <div class="mb-4 text-rsb-muted flex justify-center">
       <%= rsb_admin_icon("lock", size: 48) %>
     </div>
     <h1 class="text-2xl font-bold mb-2"><%= rsb_admin_t("shared.access_denied") %></h1>
@@ -12,11 +12,10 @@
           <%= rsb_admin_t("shared.go_to_dashboard") %>
         </a>
       <% end %>
-      <a href="<%= rsb_admin.logout_path %>"
-         class="text-sm text-rsb-muted hover:text-rsb-text"
-         data-turbo-method="delete">
+      <%= button_to rsb_admin.logout_path, method: :delete,
+            class: "text-sm text-rsb-muted hover:text-rsb-text" do %>
         <%= rsb_admin_t("shared.sign_out_and_try") %>
-      </a>
+      <% end %>
     </div>
   </div>
 </div>

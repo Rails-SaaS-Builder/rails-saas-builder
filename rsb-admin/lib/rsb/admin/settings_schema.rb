@@ -53,6 +53,12 @@ module RSB
                   default: false,
                   group: 'Security',
                   description: 'Require all admin users to enable two-factor authentication'
+
+          setting :session_idle_timeout,
+                  type: :integer,
+                  default: 0,
+                  group: 'Security',
+                  description: 'Admin session idle timeout in seconds. When greater than 0, admin sessions inactive for this duration are expired. 0 = no idle timeout (default).'
         end
       end
     end

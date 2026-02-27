@@ -24,6 +24,7 @@ module RSB
       before_action :set_seo_context
       before_action :check_admin_enabled
       before_action :require_admin_authentication
+      before_action :check_session_idle_timeout
       before_action :enforce_two_factor_enrollment
       before_action :build_breadcrumbs
       before_action :track_session_activity
@@ -46,6 +47,21 @@ module RSB
         return if current_admin_user
 
         redirect_to rsb_admin.login_path, alert: 'Please sign in.'
+      end
+
+      # Checks if the current admin session has been idle longer than the configured timeout.
+      def check_session_idle_timeout
+        timeout = RSB::Settings.get('admin.session_idle_timeout').to_i
+        return if timeout <= 0
+        return unless current_admin_session
+
+        if current_admin_session.last_active_at < timeout.seconds.ago
+          current_admin_session.destroy
+          session.delete(:rsb_admin_session_token)
+          @current_admin_user = nil
+          @current_admin_session = nil
+          redirect_to rsb_admin.login_path, alert: 'Session expired due to inactivity.'
+        end
       end
 
       def enforce_two_factor_enrollment

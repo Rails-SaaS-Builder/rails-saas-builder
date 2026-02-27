@@ -26,6 +26,12 @@ Rake::TestTask.new(:test_integration) do |t|
   t.verbose = false
 end
 
+Rake::TestTask.new(:test_security) do |t|
+  t.libs << 'test'
+  t.pattern = 'test/security/**/*_test.rb'
+  t.verbose = false
+end
+
 desc 'Run tests for a single sub-gem: rake test_gem GEM=rsb-admin [TEST=path] [SEED=1234]'
 task :test_gem do
   gem_name = ENV['GEM'] || abort('Usage: rake test_gem GEM=rsb-admin')
@@ -46,6 +52,6 @@ task :test_gem do
 end
 
 desc 'Run all tests (sub-gems + integration)'
-task test: %i[test_subgems test_integration]
+task test: %i[test_subgems test_integration test_security]
 
 task default: :test

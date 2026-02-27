@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
+require 'bcrypt'
+
 module RSB
   module Auth
     class AuthenticationService
       Result = Data.define(:success?, :identity, :credential, :error, :unverified)
+
+      # Cached bcrypt digest for timing attack prevention.
+      DUMMY_DIGEST = BCrypt::Password.create('dummy_password_for_timing')
 
       # Authenticates by identifier and password. Only active (non-revoked) credentials
       # are considered. Also checks that the credential's type is currently enabled
@@ -13,24 +18,29 @@ module RSB
       # @param password [String] password
       # @return [Result] success? with identity/credential, or error message
       def call(identifier:, password:)
-        credential = RSB::Auth::Credential.active.find_by(
-          identifier: identifier.strip.downcase
-        )
+        normalized = identifier.strip.downcase
+        credential = RSB::Auth::Credential.active.find_by(identifier: normalized)
 
-        return failure('Invalid credentials.') unless credential
+        unless credential
+          # Perform a dummy bcrypt comparison to equalize response timing
+          DUMMY_DIGEST.is_password?(password)
+          return Result.new(success?: false, identity: nil, credential: nil, error: 'Invalid credentials.',
+                            unverified: false)
+        end
+
         return failure('Invalid credentials.') if credential.identity.deleted?
 
         # Check credential type is enabled
         credential_type_key = derive_credential_type_key(credential)
         unless RSB::Auth.credentials.enabled?(credential_type_key)
-          return failure('This sign-in method is not available.')
+          return failure(error_message('This sign-in method is not available.'))
         end
 
-        return failure('Account is locked. Try again later.') if credential.locked?
-        return failure('Account is suspended.') if credential.identity.suspended?
+        return failure(error_message('Account is locked. Try again later.')) if credential.locked?
+        return failure(error_message('Account is suspended.')) if credential.identity.suspended?
 
         if credential.authenticate(password)
-          credential.update_columns(failed_attempts: 0)
+          credential.update_columns(failed_attempts: 0) if credential.failed_attempts > 0
 
           # Per-credential verification check
           verif_required = ActiveModel::Type::Boolean.new.cast(
@@ -59,6 +69,14 @@ module RSB
       end
 
       private
+
+      def error_message(specific_message)
+        if RSB::Settings.get('auth.generic_error_messages')
+          'Invalid credentials.'
+        else
+          specific_message
+        end
+      end
 
       # Derives the credential type key from a credential's STI type.
       # E.g., "RSB::Auth::Credential::EmailPassword" -> :email_password

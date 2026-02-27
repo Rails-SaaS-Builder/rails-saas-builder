@@ -18,8 +18,17 @@ module RSB
         value
       end
 
+      # Persists a setting value to the database.
+      #
+      # @param category [String] the setting category
+      # @param key [String] the setting key within the category
+      # @param value [Object] the value to persist
+      # @raise [RSB::Settings::LockedSettingError] if the key is locked via configuration
+      # @return [void]
       def set(category, key, value)
         full_key = "#{category}.#{key}"
+        raise RSB::Settings::LockedSettingError, "Setting '#{full_key}' is locked" if @configuration.locked?(full_key)
+
         old_value = get(category, key)
         new_value = value
 

@@ -67,6 +67,12 @@ module RSB
                   group: 'Features',
                   depends_on: 'auth.account_enabled',
                   description: 'Enable self-service account deletion'
+
+          setting :generic_error_messages,
+                  type: :boolean,
+                  default: false,
+                  group: 'Security',
+                  description: 'When enabled, all login failures return "Invalid credentials" regardless of the actual reason (locked, suspended, disabled). Prevents account enumeration via error message differentiation.'
         end
       end
     end
