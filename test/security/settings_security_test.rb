@@ -45,14 +45,14 @@ class SettingsSecurityTest < ActionDispatch::IntegrationTest
     }
 
     assert_equal original, RSB::Settings.get('admin.app_name'),
-      'Locked setting must not change via admin batch update'
+                 'Locked setting must not change via admin batch update'
   end
 
   # --- US-021: Encryption verification ---
 
   test 'Setting model uses ActiveRecord encryption on value column' do
     assert RSB::Settings::Setting.encrypted_attributes.include?(:value),
-      'Setting.value must use ActiveRecord encryption'
+           'Setting.value must use ActiveRecord encryption'
   end
 
   # --- US-021: Cache invalidation ---
@@ -83,7 +83,7 @@ class SettingsSecurityTest < ActionDispatch::IntegrationTest
     }
 
     assert_equal original_auth_mode, RSB::Settings.get('auth.registration_mode'),
-      'Settings from other categories must be ignored'
+                 'Settings from other categories must be ignored'
   end
 
   test 'unknown setting keys are silently ignored' do

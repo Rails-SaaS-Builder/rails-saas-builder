@@ -33,7 +33,7 @@ class AuthCsrfTest < ActionDispatch::IntegrationTest
     # ActionController::Base includes CSRF protection; API controllers do not.
     # This verifies rsb-auth uses the correct base class.
     assert RSB::Auth::ApplicationController.ancestors.include?(ActionController::Base),
-      'Auth ApplicationController must inherit from ActionController::Base for CSRF protection'
+           'Auth ApplicationController must inherit from ActionController::Base for CSRF protection'
   end
 
   test 'no auth controller skips forgery protection via skip_forgery_protection' do
@@ -50,7 +50,7 @@ class AuthCsrfTest < ActionDispatch::IntegrationTest
       # (inherited default from ActionController::Base applies — CSRF is on)
       # The absence of explicit skip means protection is active.
       assert_not_nil controller_class.forgery_protection_strategy,
-        "#{controller_class} must have forgery protection strategy set (not skipped)"
+                     "#{controller_class} must have forgery protection strategy set (not skipped)"
     end
   end
 

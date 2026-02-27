@@ -42,9 +42,9 @@ class AdminRbacTest < ActionDispatch::IntegrationTest
 
   test 'read-only admin cannot perform write operations via POST' do
     read_only_admin = create_test_admin!(permissions: {
-      'dashboard' => ['index'],
-      'identities' => %w[index show]
-    })
+                                           'dashboard' => ['index'],
+                                           'identities' => %w[index show]
+                                         })
     sign_in_admin(read_only_admin)
 
     # Can view dashboard
@@ -58,8 +58,8 @@ class AdminRbacTest < ActionDispatch::IntegrationTest
 
   test 'limited admin cannot access resources outside their permissions' do
     limited_admin = create_test_admin!(permissions: {
-      'dashboard' => ['index']
-    })
+                                         'dashboard' => ['index']
+                                       })
     sign_in_admin(limited_admin)
 
     # Dashboard works
@@ -107,8 +107,8 @@ class AdminRbacTest < ActionDispatch::IntegrationTest
 
   test 'settings update requires write permissions' do
     read_only_admin = create_test_admin!(permissions: {
-      'settings' => ['index']
-    })
+                                           'settings' => ['index']
+                                         })
     sign_in_admin(read_only_admin)
 
     # Can view settings

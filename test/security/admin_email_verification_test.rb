@@ -63,7 +63,7 @@ class AdminEmailVerificationTest < ActionDispatch::IntegrationTest
       @admin.reload
       # Email should NOT have changed
       assert_not_equal 'expired@example.com', @admin.email,
-        'Expired token must not verify the email'
+                       'Expired token must not verify the email'
     end
   end
 

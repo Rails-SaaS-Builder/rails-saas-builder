@@ -48,7 +48,7 @@ class AuthAccountDeletionTest < ActionDispatch::IntegrationTest
 
     assert result.success?
     assert_equal 0, @identity.sessions.active.count,
-      'All sessions must be revoked after account deletion'
+                 'All sessions must be revoked after account deletion'
   end
 
   test 'account deletion revokes all credentials' do
@@ -60,7 +60,7 @@ class AuthAccountDeletionTest < ActionDispatch::IntegrationTest
 
     assert result.success?
     assert_equal 0, @identity.credentials.active.count,
-      'All credentials must be revoked after deletion'
+                 'All credentials must be revoked after deletion'
   end
 
   test 'account deletion sets identity status to deleted' do

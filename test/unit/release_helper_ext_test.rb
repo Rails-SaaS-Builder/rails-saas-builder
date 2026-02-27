@@ -7,7 +7,7 @@ require 'rake'
 load File.expand_path('../../lib/tasks/release.rake', __dir__)
 
 class ReleaseHelperExtTest < ActiveSupport::TestCase
-  test "resolve_extension returns metadata for known gem" do
+  test 'resolve_extension returns metadata for known gem' do
     result = ReleaseHelper.resolve_extension('rsb-entitlements-stripe')
 
     assert_equal File.join(ReleaseHelper.root, 'rsb-entitlements-stripe'), result[:dir]
@@ -16,13 +16,13 @@ class ReleaseHelperExtTest < ActiveSupport::TestCase
     assert File.exist?(result[:version_file])
   end
 
-  test "resolve_extension aborts for unknown gem" do
+  test 'resolve_extension aborts for unknown gem' do
     assert_raises(SystemExit) do
       ReleaseHelper.resolve_extension('rsb-nonexistent-gem')
     end
   end
 
-  test "read_version extracts version from file" do
+  test 'read_version extracts version from file' do
     ext = ReleaseHelper.resolve_extension('rsb-entitlements-stripe')
     version = ReleaseHelper.read_version(ext[:version_file])
 
@@ -30,11 +30,11 @@ class ReleaseHelperExtTest < ActiveSupport::TestCase
     assert_match(/\A\d+\.\d+\.\d+/, version)
   end
 
-  test "read_version aborts for file without VERSION constant" do
+  test 'read_version aborts for file without VERSION constant' do
     # Create a temp file without VERSION
     require 'tempfile'
     tmpfile = Tempfile.new(['no_version', '.rb'])
-    tmpfile.write("module Foo; end")
+    tmpfile.write('module Foo; end')
     tmpfile.rewind
 
     assert_raises(SystemExit) do
@@ -45,15 +45,15 @@ class ReleaseHelperExtTest < ActiveSupport::TestCase
     tmpfile&.unlink
   end
 
-  test "next_version computes patch bump" do
+  test 'next_version computes patch bump' do
     assert_equal '1.0.1', ReleaseHelper.next_version('1.0.0', 'patch')
   end
 
-  test "next_version computes minor bump" do
+  test 'next_version computes minor bump' do
     assert_equal '1.1.0', ReleaseHelper.next_version('1.0.0', 'minor')
   end
 
-  test "next_version computes major bump" do
+  test 'next_version computes major bump' do
     assert_equal '2.0.0', ReleaseHelper.next_version('1.0.0', 'major')
   end
 end

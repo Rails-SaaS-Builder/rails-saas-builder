@@ -58,7 +58,7 @@ class PasswordHashingTest < ActiveSupport::TestCase
     # In test env, cost is typically 4 for speed
     # In production, Rails default BCrypt cost is 12
     assert BCrypt::Engine.cost >= 4,
-      "BCrypt cost #{BCrypt::Engine.cost} is too low (minimum 4)"
+           "BCrypt cost #{BCrypt::Engine.cost} is too low (minimum 4)"
   end
 
   # --- Password minimum length enforcement ---

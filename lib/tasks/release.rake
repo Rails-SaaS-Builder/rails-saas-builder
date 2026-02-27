@@ -245,7 +245,7 @@ task :release_ext, [:gem_name, :bump] do |_t, args|
 
   puts "\n#{'=' * 60}"
   puts "Released #{gem_name} v#{new_version} successfully!"
-  puts "  - Gem pushed to RubyGems.org"
+  puts '  - Gem pushed to RubyGems.org'
   puts "  - Tagged #{tag} and pushed to origin"
   puts '=' * 60
 end

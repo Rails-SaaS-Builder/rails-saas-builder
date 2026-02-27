@@ -22,38 +22,42 @@ class SettingsOpenRedirectTest < ActionDispatch::IntegrationTest
 
   test 'locale middleware rejects redirect to external URL' do
     post '/rsb/locale', params: { locale: 'es' },
-         headers: { 'HTTP_REFERER' => 'https://evil.com/phishing' }
+                        headers: { 'HTTP_REFERER' => 'https://evil.com/phishing' }
 
     # Should redirect to root or relative path, NOT to evil.com
     if response.redirect?
       location = response.headers['Location']
-      refute_match %r{evil\.com}, location,
-        "Redirect location must not go to external site: #{location}"
+      refute_match(/evil\.com/, location,
+                   "Redirect location must not go to external site: #{location}")
     end
   end
 
   test 'locale middleware rejects protocol-relative URL redirect' do
     post '/rsb/locale', params: { locale: 'es' },
-         headers: { 'HTTP_REFERER' => '//evil.com/phishing' }
+                        headers: { 'HTTP_REFERER' => '//evil.com/phishing' }
 
     if response.redirect?
       location = response.headers['Location']
-      refute_match %r{evil\.com}, location,
-        "Must not redirect to protocol-relative external URL: #{location}"
+      refute_match(/evil\.com/, location,
+                   "Must not redirect to protocol-relative external URL: #{location}")
     end
   end
 
   test 'locale middleware allows relative path redirect' do
     post '/rsb/locale', params: { locale: 'es' },
-         headers: { 'HTTP_REFERER' => 'http://localhost/some/page' }
+                        headers: { 'HTTP_REFERER' => 'http://localhost/some/page' }
 
     if response.redirect?
       location = response.headers['Location']
       # Should be a relative path or same-host URL
-      parsed = URI.parse(location) rescue nil
+      parsed = begin
+        URI.parse(location)
+      rescue StandardError
+        nil
+      end
       if parsed&.host
         assert_equal 'localhost', parsed.host,
-          "Redirect must stay on same host: #{location}"
+                     "Redirect must stay on same host: #{location}"
       end
     end
   end
@@ -71,8 +75,8 @@ class SettingsOpenRedirectTest < ActionDispatch::IntegrationTest
 
     if response.redirect?
       location = response.headers['Location']
-      refute_match %r{evil\.com}, location,
-        "Tab redirect must not go to external site: #{location}"
+      refute_match(/evil\.com/, location,
+                   "Tab redirect must not go to external site: #{location}")
     end
   end
 

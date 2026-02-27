@@ -28,7 +28,7 @@ class AdminSessionSecurityTest < ActionDispatch::IntegrationTest
     )
     # urlsafe_base64(32) produces ~43 characters
     assert session.session_token.length >= 32,
-      "Admin session token length #{session.session_token.length} is insufficient"
+           "Admin session token length #{session.session_token.length} is insufficient"
   end
 
   test 'admin session is stored in signed Rails session (not plain cookie)' do
@@ -48,7 +48,7 @@ class AdminSessionSecurityTest < ActionDispatch::IntegrationTest
 
     # The session record should be destroyed
     assert_nil RSB::Admin::AdminSession.find_by(session_token: token),
-      'AdminSession record must be destroyed after logout'
+               'AdminSession record must be destroyed after logout'
   end
 
   test 'touch_activity! updates last_active_at on every request' do
@@ -62,7 +62,7 @@ class AdminSessionSecurityTest < ActionDispatch::IntegrationTest
 
     admin_session.reload
     assert admin_session.last_active_at > old_time,
-      'last_active_at must be refreshed on each request'
+           'last_active_at must be refreshed on each request'
   end
 
   test 'idle timeout expires session when configured' do

@@ -101,7 +101,7 @@ class AuthTokenSecurityTest < ActionDispatch::IntegrationTest
     }
 
     assert_equal 0, @identity.sessions.active.count,
-      'All sessions must be revoked after password reset'
+                 'All sessions must be revoked after password reset'
   end
 
   # --- US-005: Verification Token Security ---
@@ -128,7 +128,7 @@ class AuthTokenSecurityTest < ActionDispatch::IntegrationTest
 
     travel 25.hours do
       assert_not @credential.verification_token_valid?,
-        'Verification token must be invalid after 24 hours'
+                 'Verification token must be invalid after 24 hours'
     end
   end
 

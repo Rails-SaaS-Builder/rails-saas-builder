@@ -43,7 +43,7 @@ class CreateRSBEntitlementsTables < ActiveRecord::Migration[8.1]
       t.string   :metric,        null: false
       t.integer  :current_value, null: false, default: 0
       t.integer  :limit
-      t.string   :period_key,    null: false
+      t.string   :period_key, null: false
       t.references :plan, null: false, foreign_key: { to_table: :rsb_entitlements_plans }
 
       t.timestamps

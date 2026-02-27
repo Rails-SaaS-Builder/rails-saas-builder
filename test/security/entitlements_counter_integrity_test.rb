@@ -58,7 +58,7 @@ class EntitlementsCounterIntegrityTest < ActiveSupport::TestCase
 
     @counter.reload
     assert_equal 10, @counter.current_value,
-      "Expected 10 after 10 concurrent increments, got #{@counter.current_value}"
+                 "Expected 10 after 10 concurrent increments, got #{@counter.current_value}"
   end
 
   test 'unique constraint prevents duplicate counters' do

@@ -92,7 +92,7 @@ class AuthBruteForceTest < ActionDispatch::IntegrationTest
     assert result.success?
     @credential.reload
     assert_equal 0, @credential.failed_attempts,
-      'failed_attempts must reset to 0 on successful login'
+                 'failed_attempts must reset to 0 on successful login'
   end
 
   test 'rate limiting on login endpoint rejects excessive requests' do
@@ -102,7 +102,7 @@ class AuthBruteForceTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :too_many_requests,
-      'Login endpoint must return 429 after rate limit exceeded'
+                    'Login endpoint must return 429 after rate limit exceeded'
   end
 
   private

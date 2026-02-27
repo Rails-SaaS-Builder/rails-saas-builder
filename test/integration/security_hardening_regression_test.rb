@@ -80,13 +80,13 @@ class SecurityHardeningRegressionTest < ActionDispatch::IntegrationTest
     get rsb_admin.settings_path(tab: 'auth')
     assert_response :success
     assert_match(/generic_error_messages/i, response.body,
-      'auth.generic_error_messages must appear on auth settings tab')
+                 'auth.generic_error_messages must appear on auth settings tab')
 
     # Check admin tab for session_idle_timeout
     get rsb_admin.settings_path(tab: 'admin')
     assert_response :success
     assert_match(/session_idle_timeout/i, response.body,
-      'admin.session_idle_timeout must appear on admin settings tab')
+                 'admin.session_idle_timeout must appear on admin settings tab')
   end
 
   # --- Full login flow with generic errors enabled ---

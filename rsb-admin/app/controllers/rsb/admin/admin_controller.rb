@@ -55,13 +55,13 @@ module RSB
         return if timeout <= 0
         return unless current_admin_session
 
-        if current_admin_session.last_active_at < timeout.seconds.ago
-          current_admin_session.destroy
-          session.delete(:rsb_admin_session_token)
-          @current_admin_user = nil
-          @current_admin_session = nil
-          redirect_to rsb_admin.login_path, alert: 'Session expired due to inactivity.'
-        end
+        return unless current_admin_session.last_active_at < timeout.seconds.ago
+
+        current_admin_session.destroy
+        session.delete(:rsb_admin_session_token)
+        @current_admin_user = nil
+        @current_admin_session = nil
+        redirect_to rsb_admin.login_path, alert: 'Session expired due to inactivity.'
       end
 
       def enforce_two_factor_enrollment

@@ -46,21 +46,21 @@ class EntitlementsTamperingTest < ActionDispatch::IntegrationTest
 
     # No entitlement should have been granted
     assert_equal entitlements_before, RSB::Entitlements::Entitlement.count,
-      'No auth route must be able to grant entitlements'
+                 'No auth route must be able to grant entitlements'
   end
 
   test 'entitlement-related actions not exposed via auth routes' do
     # Verify no controller action in rsb-auth exposes entitlement granting
-    auth_controller_actions = RSB::Auth::Engine.routes.routes.map { |r|
+    auth_controller_actions = RSB::Auth::Engine.routes.routes.map do |r|
       r.defaults[:action]
-    }.compact.uniq
+    end.compact.uniq
 
-    entitlement_related = auth_controller_actions.select { |a|
+    entitlement_related = auth_controller_actions.select do |a|
       a.include?('entitlement') || a.include?('grant') || a.include?('plan')
-    }
+    end
 
     assert_empty entitlement_related,
-      "Auth routes must not expose entitlement-related actions: #{entitlement_related}"
+                 "Auth routes must not expose entitlement-related actions: #{entitlement_related}"
   end
 
   # --- US-018: Payment request state guards ---
@@ -78,7 +78,7 @@ class EntitlementsTamperingTest < ActionDispatch::IntegrationTest
 
     # Try to approve again — must not be actionable
     assert_not request.reload.actionable?,
-      'Completed payment request must not be actionable'
+               'Completed payment request must not be actionable'
   end
 
   # --- US-018: Duplicate payment request prevention ---
@@ -111,8 +111,8 @@ class EntitlementsTamperingTest < ActionDispatch::IntegrationTest
 
   test 'admin with only show permission cannot grant entitlements' do
     read_only_admin = create_test_admin!(permissions: {
-      'entitlements' => %w[index show]
-    })
+                                           'entitlements' => %w[index show]
+                                         })
     sign_in_admin(read_only_admin)
 
     entitlement = RSB::Entitlements::Entitlement.create!(
@@ -129,8 +129,8 @@ class EntitlementsTamperingTest < ActionDispatch::IntegrationTest
 
   test 'admin with only show permission cannot approve payment requests' do
     read_only_admin = create_test_admin!(permissions: {
-      'payment_requests' => %w[index show]
-    })
+                                           'payment_requests' => %w[index show]
+                                         })
     sign_in_admin(read_only_admin)
 
     request = create_test_payment_request(

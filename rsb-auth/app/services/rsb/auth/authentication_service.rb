@@ -40,7 +40,7 @@ module RSB
         return failure(error_message('Account is suspended.')) if credential.identity.suspended?
 
         if credential.authenticate(password)
-          credential.update_columns(failed_attempts: 0) if credential.failed_attempts > 0
+          credential.update_columns(failed_attempts: 0) if credential.failed_attempts.positive?
 
           # Per-credential verification check
           verif_required = ActiveModel::Type::Boolean.new.cast(

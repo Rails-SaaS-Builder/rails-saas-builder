@@ -75,7 +75,7 @@ class AuthEnumerationTest < ActionDispatch::IntegrationTest
 
     # Both should return the same response (redirect or success)
     assert_equal existing_status, missing_status,
-      'Password reset must return same status for existing and non-existing identifiers'
+                 'Password reset must return same status for existing and non-existing identifiers'
   end
 
   # --- Timing consistency ---
@@ -104,8 +104,8 @@ class AuthEnumerationTest < ActionDispatch::IntegrationTest
     # In test env (bcrypt cost 4), delta should be very small.
     # Allow up to 200ms to account for test environment variability.
     assert delta < 0.2,
-      "Timing delta between existing (#{avg_existing.round(3)}s) and non-existing (#{avg_missing.round(3)}s) " \
-      "identifiers is #{delta.round(3)}s — should be < 0.2s"
+           "Timing delta between existing (#{avg_existing.round(3)}s) and non-existing (#{avg_missing.round(3)}s) " \
+           "identifiers is #{delta.round(3)}s — should be < 0.2s"
   end
 
   private
