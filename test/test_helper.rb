@@ -11,6 +11,7 @@ require 'rsb/auth/test_helper'
 require 'rsb/entitlements/test_helper'
 require 'rsb/entitlements/stripe/test_helper'
 require 'rsb/admin/test_kit/helpers'
+require 'rsb/auth/google/test_helper'
 
 # Run all migrations from all sub-gems + dummy app
 ActiveRecord::MigrationContext.new(
@@ -27,6 +28,7 @@ module ActiveSupport
     include RSB::Auth::TestHelper
     include RSB::Entitlements::TestHelper
     include RSB::Entitlements::Stripe::TestHelper
+    include RSB::Auth::Google::TestHelper
 
     # Re-register all settings schemas (needed after reset! clears registries between tests)
     def register_all_settings
@@ -34,6 +36,7 @@ module ActiveSupport
       RSB::Settings.registry.register(RSB::Auth.settings_schema)
       RSB::Settings.registry.register(RSB::Entitlements.settings_schema)
       RSB::Settings.registry.register(RSB::Admin.settings_schema)
+      RSB::Settings.registry.register(RSB::Auth::Google::SettingsSchema.build)
     end
 
     # Re-register all built-in credential types, per-credential enabled settings,
@@ -208,5 +211,6 @@ module ActionDispatch
     include RSB::Entitlements::TestHelper
     include RSB::Entitlements::Stripe::TestHelper
     include RSB::Admin::TestKit::Helpers
+    include RSB::Auth::Google::TestHelper
   end
 end

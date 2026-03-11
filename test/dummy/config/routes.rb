@@ -2,6 +2,7 @@
 
 Rails.application.routes.draw do
   mount RSB::Auth::Engine => '/auth'
+  mount RSB::Auth::Google::Engine => '/auth/oauth/google'
   mount RSB::Admin::Engine => '/admin'
 
   # Letter Opener Web for email preview in development

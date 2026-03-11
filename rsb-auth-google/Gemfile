@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gemspec
+
+gem 'rsb-auth', path: '../rsb-auth'
+gem 'rsb-settings', path: '../rsb-settings'
+gem 'sqlite3'
+
+group :test do
+  gem 'rack-test'
+  gem 'webmock'
+end

@@ -19,6 +19,7 @@ require 'rsb/auth'
 require 'rsb/entitlements'
 require 'rsb-entitlements-stripe'
 require 'rsb/admin'
+require 'rsb-auth-google'
 
 module Dummy
   class Application < Rails::Application
@@ -33,6 +34,7 @@ module Dummy
     config.paths['db/migrate'] << File.expand_path('../../../rsb-auth/db/migrate', __dir__)
     config.paths['db/migrate'] << File.expand_path('../../../rsb-entitlements/db/migrate', __dir__)
     config.paths['db/migrate'] << File.expand_path('../../../rsb-admin/db/migrate', __dir__)
+    config.paths['db/migrate'] << File.expand_path('../../../rsb-auth-google/db/migrate', __dir__)
 
     # Add engine asset paths to Propshaft
     config.assets.paths << File.expand_path('../../../rsb-admin/app/assets/stylesheets', __dir__)

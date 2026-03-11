@@ -5,7 +5,7 @@ require 'rake/testtask'
 
 load File.expand_path('lib/tasks/release.rake', __dir__)
 
-SUB_GEMS = %w[rsb-settings rsb-auth rsb-entitlements rsb-entitlements-stripe rsb-admin].freeze
+SUB_GEMS = %w[rsb-settings rsb-auth rsb-entitlements rsb-entitlements-stripe rsb-admin rsb-auth-google].freeze
 
 desc 'Run tests for all sub-gems'
 task :test_subgems do
