@@ -63,12 +63,12 @@ module RSB
 
           uri = URI(GOOGLE_TOKEN_URI)
           response = Net::HTTP.post_form(uri, {
-            'code' => code,
-            'client_id' => client_id,
-            'client_secret' => client_secret,
-            'redirect_uri' => redirect_uri,
-            'grant_type' => 'authorization_code'
-          })
+                                           'code' => code,
+                                           'client_id' => client_id,
+                                           'client_secret' => client_secret,
+                                           'redirect_uri' => redirect_uri,
+                                           'grant_type' => 'authorization_code'
+                                         })
 
           unless response.is_a?(Net::HTTPSuccess)
             Rails.logger.error { "#{LOG_TAG} Google token exchange failed: HTTP #{response.code} — #{response.body}" }

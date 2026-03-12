@@ -20,9 +20,9 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 3.2'
 
+  spec.add_dependency 'jwt', '~> 2.9'
   spec.add_dependency 'rails', '>= 8.0'
   spec.add_dependency 'rsb-auth', '>= 0.9.0'
-  spec.add_dependency 'jwt', '~> 2.9'
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     Dir['{app,config,db,lib}/**/*', 'LICENSE', 'Rakefile', 'README.md']

@@ -6,9 +6,9 @@ gemspec
 
 gem 'rsb-admin',         path: 'rsb-admin'
 gem 'rsb-auth',          path: 'rsb-auth'
-gem 'rsb-entitlements',  path: 'rsb-entitlements'
+gem 'rsb-auth-google', path: 'rsb-auth-google'
+gem 'rsb-entitlements', path: 'rsb-entitlements'
 gem 'rsb-entitlements-stripe', path: 'rsb-entitlements-stripe'
-gem 'rsb-auth-google',        path: 'rsb-auth-google'
 gem 'rsb-settings', path: 'rsb-settings'
 
 group :development, :test do

@@ -121,7 +121,7 @@ module RSB
         # @param email [String] Google email
         # @param google_uid [String] Google user ID
         # @return [ActionDispatch::Response] the callback response
-        def simulate_google_link(identity:, email:, google_uid:)
+        def simulate_google_link(identity:, email:, google_uid:) # rubocop:disable Lint/UnusedMethodArgument
           stub_google_oauth(email: email, google_uid: google_uid)
 
           # Step 1: GET redirect endpoint with mode=link

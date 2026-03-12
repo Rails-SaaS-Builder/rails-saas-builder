@@ -85,6 +85,7 @@ Naming/FileName:
   Exclude:
     - 'Rakefile.rb'
     - 'rsb-entitlements-stripe/lib/rsb-entitlements-stripe.rb'
+    - 'rsb-auth-google/lib/rsb-auth-google.rb'
 
 # Offense count: 1
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.

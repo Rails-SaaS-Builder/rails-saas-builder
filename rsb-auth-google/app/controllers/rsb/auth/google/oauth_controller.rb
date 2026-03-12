@@ -143,7 +143,7 @@ module RSB
             )
         end
 
-        def handle_success(result, mode)
+        def handle_success(result, _mode)
           case result.action
           when :linked, :already_linked
             flash_msg = result.action == :linked ? 'Google account linked successfully.' : 'Google account is already linked.'

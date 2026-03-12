@@ -87,11 +87,10 @@ module RSB
           # Check if this Google account is already linked
           existing = find_active_credential_by_uid(google_uid)
           if existing
-            if existing.identity_id == current_identity.id
-              return success(identity: current_identity, credential: existing, action: :already_linked)
-            else
-              return failure('This Google account is already linked to another account.')
-            end
+            return success(identity: current_identity, credential: existing, action: :already_linked) if existing.identity_id == current_identity.id
+
+            return failure('This Google account is already linked to another account.')
+
           end
 
           # Check if email is linked to different identity via Google credential
@@ -198,7 +197,7 @@ module RSB
 
         def registration_allowed?
           mode = RSB::Settings.get('auth.registration_mode').to_s
-          return false if mode == 'disabled' || mode == 'invite_only'
+          return false if %w[disabled invite_only].include?(mode)
 
           registerable = RSB::Settings.get('auth.credentials.google.registerable')
           ActiveModel::Type::Boolean.new.cast(registerable)
