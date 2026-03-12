@@ -42,6 +42,7 @@ RSB is composed of focused sub-gems. Use them all via `gem "rails-saas-builder"`
 | Gem | Purpose |
 |-----|---------|
 | [rsb-entitlements-stripe](rsb-entitlements-stripe/) | Stripe payment provider for rsb-entitlements |
+| [rsb-auth-google](rsb-auth-google/) | Google OAuth authentication for rsb-auth |
 
 ## Requirements
 
@@ -83,11 +84,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, 
 ## Security
 
 To report a security vulnerability, please see [SECURITY.md](SECURITY.md). Do not open public issues for security concerns.
-
-## Related Projects
-
-- [Rails SaaS Builder Pro](../rails-saas-builder-pro/) — Premium features gem extending the OSS core
-- [RSB Website](../website/) — Project marketing & documentation site
 
 ## License
 
