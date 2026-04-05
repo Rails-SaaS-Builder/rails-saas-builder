@@ -16,6 +16,27 @@ module RSB
         )
       end
 
+      test 'uses default mailer_from setting' do
+        @credential.update_columns(
+          verification_token: 'test-token',
+          verification_sent_at: Time.current
+        )
+        email = RSB::Auth::AuthMailer.verification(@credential)
+        assert_equal ['noreply@example.com'], email.from
+      end
+
+      test 'uses custom mailer_from setting' do
+        @credential.update_columns(
+          verification_token: 'test-token',
+          verification_sent_at: Time.current
+        )
+        RSB::Settings.set('auth.mailer_from', 'hello@myapp.com')
+        email = RSB::Auth::AuthMailer.verification(@credential)
+        assert_equal ['hello@myapp.com'], email.from
+      ensure
+        RSB::Settings.set('auth.mailer_from', 'noreply@example.com')
+      end
+
       test 'verification email' do
         @credential.update_columns(
           verification_token: 'test-verification-token',

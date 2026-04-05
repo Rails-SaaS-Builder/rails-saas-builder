@@ -3,7 +3,7 @@
 module RSB
   module Auth
     class ApplicationMailer < ActionMailer::Base
-      default from: 'noreply@example.com'
+      default from: -> { RSB::Settings.get('auth.mailer_from') }
       layout 'mailer'
     end
   end

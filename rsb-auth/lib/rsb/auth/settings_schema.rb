@@ -73,6 +73,12 @@ module RSB
                   default: false,
                   group: 'Security',
                   description: 'When enabled, all login failures return "Invalid credentials" regardless of the actual reason (locked, suspended, disabled). Prevents account enumeration via error message differentiation.'
+
+          setting :mailer_from,
+                  type: :string,
+                  default: 'noreply@example.com',
+                  group: 'Email',
+                  description: 'Sender address for transactional emails (verification, password reset, invitations)'
         end
       end
     end
