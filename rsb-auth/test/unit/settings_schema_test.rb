@@ -22,7 +22,7 @@ module RSB
           registration_mode login_identifier password_min_length
           session_duration max_sessions lockout_threshold
           lockout_duration verification_required account_enabled
-          account_deletion_enabled generic_error_messages
+          account_deletion_enabled generic_error_messages mailer_from
         ]
         assert_equal expected_keys, schema.keys
       end
@@ -42,6 +42,7 @@ module RSB
         assert_equal true, defaults[:account_enabled]
         assert_equal true, defaults[:account_deletion_enabled]
         assert_equal false, defaults[:generic_error_messages]
+        assert_equal 'noreply@example.com', defaults[:mailer_from]
       end
 
       test 'has correct types' do
@@ -58,6 +59,7 @@ module RSB
         assert_equal :boolean, schema.find(:account_enabled).type
         assert_equal :boolean, schema.find(:account_deletion_enabled).type
         assert_equal :boolean, schema.find(:generic_error_messages).type
+        assert_equal :string, schema.find(:mailer_from).type
       end
 
       test 'RSB::Auth.settings_schema returns the schema' do
@@ -87,6 +89,9 @@ module RSB
 
         # Security group
         assert_equal 'Security', schema.find(:generic_error_messages).group
+
+        # Email group
+        assert_equal 'Email', schema.find(:mailer_from).group
       end
 
       test 'account_deletion_enabled depends_on account_enabled' do
