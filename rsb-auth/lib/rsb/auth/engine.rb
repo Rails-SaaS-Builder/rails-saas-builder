@@ -150,7 +150,7 @@ module RSB
 
             resource RSB::Auth::Invitation,
                      icon: 'mail',
-                     actions: %i[index new create revoke] do
+                     actions: %i[index show new create revoke] do
               column :id, link: true
               column :email
               column :token, visible_on: [:show]
