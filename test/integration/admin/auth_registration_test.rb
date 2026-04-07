@@ -54,6 +54,12 @@ class AuthAdminRegistrationTest < ActiveSupport::TestCase
     assert_equal({ column: :created_at, direction: :desc }, reg.default_sort)
   end
 
+  test 'Invitation resource has show action' do
+    reg = RSB::Admin.registry.find_resource(RSB::Auth::Invitation)
+    assert reg, 'Invitation not registered'
+    assert reg.action?(:show), 'Invitation should have :show action'
+  end
+
   test 'Invitation resource has columns, filters, and form fields' do
     reg = RSB::Admin.registry.find_resource(RSB::Auth::Invitation)
     assert reg, 'Invitation not registered'
