@@ -148,13 +148,14 @@ module RSB
           assert_match(/registration.*disabled/i, result.error)
         end
 
-        test 'signup mode: fails when registration mode is invite_only' do
+        test 'signup mode: fails when registration mode is invite_only without token' do
           RSB::Settings.set('auth.registration_mode', 'invite_only')
+          RSB::Settings.set('auth.credentials.google.registerable', true)
 
           result = call_service(email: 'newuser@gmail.com', google_uid: 'new-uid', mode: 'signup')
 
           assert_not result.success?
-          assert_match(/registration.*disabled/i, result.error)
+          assert_match(/invitation/i, result.error)
         end
 
         test 'signup mode: fails when google credential registerable is false' do
@@ -375,14 +376,112 @@ module RSB
           assert_equal identity, result.identity
         end
 
+        # --- register_external delegation ---
+
+        test 'signup mode with new email delegates to RegistrationService#register_external' do
+          RSB::Settings.set('auth.registration_mode', 'open')
+          RSB::Settings.set('auth.credentials.google.registerable', true)
+
+          result = call_service(
+            email: 'new@example.com',
+            google_uid: 'google-uid-new',
+            mode: :signup
+          )
+
+          assert result.success?
+          assert_equal :registered, result.action
+          identity = result.identity
+          assert identity.persisted?
+
+          credential = identity.credentials.first
+          assert_equal 'RSB::Auth::Google::Credential', credential.type
+          assert_equal 'new@example.com', credential.identifier
+          assert credential.verified_at.present?
+        end
+
+        test 'signup mode with invite_token in invite_only mode creates identity' do
+          RSB::Settings.set('auth.registration_mode', 'invite_only')
+          RSB::Settings.set('auth.credentials.google.registerable', true)
+          invitation = create_test_invitation
+
+          result = call_service(
+            email: 'invited@example.com',
+            google_uid: 'google-uid-invited',
+            mode: :signup,
+            invite_token: invitation.token
+          )
+
+          assert result.success?
+          assert_equal :registered, result.action
+          invitation.reload
+          assert_equal 1, invitation.uses_count
+          assert_equal invitation.id, result.identity.metadata['invitation_id']
+        end
+
+        test 'signup mode without invite_token in invite_only mode fails' do
+          RSB::Settings.set('auth.registration_mode', 'invite_only')
+          RSB::Settings.set('auth.credentials.google.registerable', true)
+
+          result = call_service(
+            email: 'noinvite@example.com',
+            google_uid: 'google-uid-noinvite',
+            mode: :signup
+          )
+
+          refute result.success?
+          assert_match(/invitation/i, result.error)
+        end
+
+        test 'login mode auto-register with invite_token in invite_only mode' do
+          RSB::Settings.set('auth.registration_mode', 'invite_only')
+          RSB::Settings.set('auth.credentials.google.registerable', true)
+          invitation = create_test_invitation
+
+          result = call_service(
+            email: 'autoreginvite@example.com',
+            google_uid: 'google-uid-autoreg',
+            mode: :login,
+            invite_token: invitation.token
+          )
+
+          assert result.success?
+          invitation.reload
+          assert_equal 1, invitation.uses_count
+        end
+
+        test 'login mode with existing identity ignores invite_token' do
+          identity = create_test_identity
+          RSB::Auth::Google::Credential.create!(
+            identity: identity,
+            identifier: 'existing@example.com',
+            provider_uid: 'google-uid-existing',
+            verified_at: Time.current
+          )
+
+          invitation = create_test_invitation
+
+          result = call_service(
+            email: 'existing@example.com',
+            google_uid: 'google-uid-existing',
+            mode: :login,
+            invite_token: invitation.token
+          )
+
+          assert result.success?
+          assert_equal :logged_in, result.action
+          invitation.reload
+          assert_equal 0, invitation.uses_count # Not used — existing identity
+        end
+
         private
 
-        def call_service(email:, google_uid:, mode:, current_identity: nil)
+        def call_service(email:, google_uid:, mode:, current_identity: nil, invite_token: nil)
           RSB::Auth::Google::CallbackService.new.call(
             email: email,
             google_uid: google_uid,
             mode: mode,
-            current_identity: current_identity
+            current_identity: current_identity,
+            invite_token: invite_token
           )
         end
 

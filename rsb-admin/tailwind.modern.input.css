@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Scan other gems' admin view templates so their Tailwind classes get compiled */
+@source "../rsb-auth/app/views/**/admin/**/*.html.erb";
+@source "../rsb-entitlements/app/views/**/admin/**/*.html.erb";
+
 /* Safelist rsb theme color utilities so other gems' custom admin views can use them */
 @source inline("bg-rsb-success text-rsb-success border-rsb-success bg-rsb-success-bg text-rsb-success-text border-rsb-success-bg bg-rsb-danger text-rsb-danger border-rsb-danger bg-rsb-danger-bg text-rsb-danger-text border-rsb-danger-bg bg-rsb-warning text-rsb-warning border-rsb-warning bg-rsb-warning-bg text-rsb-warning-text border-rsb-warning-bg bg-rsb-info text-rsb-info border-rsb-info bg-rsb-info-bg text-rsb-info-text border-rsb-info-bg");
 

@@ -14,7 +14,7 @@ module RSB
     class Configuration
       # @return [String, nil] fully-qualified class name of the lifecycle handler.
       #   When nil, the base {LifecycleHandler} null object is used.
-      attr_accessor :lifecycle_handler
+      attr_accessor :lifecycle_handler, :invitation_token_generator, :invitation_token_masker
 
       # @return [Array<Module>] concern modules to include into Identity model.
       #   Applied in order during Rails +to_prepare+ block.
@@ -36,6 +36,8 @@ module RSB
         @identity_concerns = []
         @credential_concerns = []
         @permitted_account_params = [:metadata]
+        @invitation_token_generator = nil
+        @invitation_token_masker = nil
       end
 
       # Resolves and instantiates the lifecycle handler.

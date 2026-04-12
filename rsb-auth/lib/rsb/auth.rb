@@ -8,6 +8,9 @@ require 'rsb/auth/lifecycle_handler'
 require 'rsb/auth/credential_conflict_error'
 require 'rsb/auth/credential_definition'
 require 'rsb/auth/credential_registry'
+require 'rsb/auth/notifier_registry'
+require 'rsb/auth/invitation_notifier/base'
+require 'rsb/auth/invitation_notifier/email'
 require 'rsb/auth/credential_settings_registrar'
 require 'rsb/auth/credential_deprecation_bridge'
 require 'rsb/auth/settings_schema'
@@ -19,6 +22,12 @@ module RSB
 
       def credentials
         @credentials ||= CredentialRegistry.new
+      end
+
+      # --- Notifier Registry ---
+
+      def notifiers
+        @notifiers ||= NotifierRegistry.new
       end
 
       # --- Configuration (lifecycle handler) ---
@@ -41,6 +50,7 @@ module RSB
 
       def reset!
         @credentials = CredentialRegistry.new
+        @notifiers = NotifierRegistry.new
         @configuration = Configuration.new
         @settings_schema = nil
       end

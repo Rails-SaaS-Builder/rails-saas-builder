@@ -41,10 +41,16 @@ module RSB
             return
           end
 
-          state = SecureRandom.urlsafe_base64(32)
           nonce = SecureRandom.urlsafe_base64(32)
-          session[:google_oauth_state] = state
-          session[:google_oauth_nonce] = nonce
+          oauth_nonce = SecureRandom.urlsafe_base64(32)
+
+          state_payload = { 'nonce' => nonce }
+          invite_token = session[:rsb_invite_token]
+          state_payload['invite_token'] = invite_token if invite_token.present?
+          state = Base64.urlsafe_encode64(JSON.generate(state_payload))
+
+          session[:google_oauth_state] = nonce
+          session[:google_oauth_nonce] = oauth_nonce
           session[:google_oauth_mode] = mode
 
           Rails.logger.info { "#{LOG_TAG} Initiating Google OAuth for mode=#{mode}" }
@@ -55,7 +61,7 @@ module RSB
             response_type: 'code',
             scope: 'openid email',
             state: state,
-            nonce: nonce
+            nonce: oauth_nonce
           }
 
           login_hint = sanitize_login_hint(params[:login_hint])
@@ -104,11 +110,14 @@ module RSB
           end
 
           mode = session[:google_oauth_mode] || 'login'
+          decoded_state = decode_state_param
+          invite_token = decoded_state['invite_token'] || session[:rsb_invite_token]
           callback_result = CallbackService.new.call(
             email: oauth_result.email,
             google_uid: oauth_result.google_uid,
             mode: mode,
-            current_identity: current_identity
+            current_identity: current_identity,
+            invite_token: invite_token
           )
 
           clear_oauth_session
@@ -134,11 +143,20 @@ module RSB
           client_id.present? && client_secret.present?
         end
 
+        def decode_state_param
+          return {} unless params[:state].present?
+
+          JSON.parse(Base64.urlsafe_decode64(params[:state]))
+        rescue JSON::ParserError, ArgumentError
+          {}
+        end
+
         def valid_state?
-          params[:state].present? &&
+          decoded = decode_state_param
+          decoded['nonce'].present? &&
             session[:google_oauth_state].present? &&
             ActiveSupport::SecurityUtils.secure_compare(
-              params[:state].to_s,
+              decoded['nonce'].to_s,
               session[:google_oauth_state].to_s
             )
         end
@@ -181,6 +199,7 @@ module RSB
           session.delete(:google_oauth_state)
           session.delete(:google_oauth_nonce)
           session.delete(:google_oauth_mode)
+          session.delete(:rsb_invite_token)
         end
 
         def sanitize_login_hint(hint)

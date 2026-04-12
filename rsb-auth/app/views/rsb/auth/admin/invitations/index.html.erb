@@ -1,0 +1,83 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Invitations</h1>
+  <% if rsb_admin_can?("invitations", "new") %>
+    <a href="/admin/invitations/new"
+       class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+      New Invitation
+    </a>
+  <% end %>
+</div>
+
+<%# Filters (always visible) %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-4 mb-4">
+  <form method="get" action="/admin/invitations" class="flex gap-3 items-end flex-wrap">
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1">Status</label>
+      <select name="q[status]" class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm">
+        <option value="">Any</option>
+        <% %w[pending exhausted expired revoked].each do |s| %>
+          <option value="<%= s %>" <%= "selected" if params.dig(:q, :status) == s %>><%= s.capitalize %></option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1">Label</label>
+      <input type="text" name="q[label]" value="<%= params.dig(:q, :label) %>" placeholder="Search..."
+             class="border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-48" />
+    </div>
+    <button type="submit" class="px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm">Filter</button>
+    <a href="/admin/invitations" class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Clear</a>
+  </form>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @invitations.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">ID</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Label</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Uses</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Expires</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">Created</th>
+            <th class="px-4 py-3 bg-rsb-bg border-b border-rsb-border"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @invitations.each do |invitation| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm">
+                <a href="/admin/invitations/<%= invitation.id %>" class="text-rsb-primary hover:underline">#<%= invitation.id %></a>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= invitation.label.presence || "-" %></td>
+              <td class="px-4 py-3 text-sm">
+                <% status = invitation.status %>
+                <% badge_class = case status
+                                  when 'pending'   then 'bg-rsb-warning-bg text-rsb-warning-text'
+                                  when 'exhausted' then 'bg-rsb-info-bg text-rsb-info-text'
+                                  when 'expired'   then 'bg-rsb-bg text-rsb-muted'
+                                  when 'revoked'   then 'bg-rsb-danger-bg text-rsb-danger-text'
+                                  else 'bg-rsb-bg text-rsb-muted'
+                                  end %>
+                <span class="inline-block px-2.5 py-0.5 rounded-rsb text-xs font-medium <%= badge_class %>"><%= status %></span>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= invitation.uses %></td>
+              <td class="px-4 py-3 text-sm"><%= invitation.expires_at&.strftime("%b %d, %Y") || "Never" %></td>
+              <td class="px-4 py-3 text-sm"><%= invitation.created_at.strftime("%b %d, %Y") %></td>
+              <td class="px-4 py-3 text-sm text-right">
+                <a href="/admin/invitations/<%= invitation.id %>"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">View</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-rsb-muted text-sm">No invitations found.</p>
+    </div>
+  <% end %>
+</div>

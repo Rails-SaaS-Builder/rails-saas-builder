@@ -27,14 +27,18 @@
       </div>
     <% end %>
 
-    <% if @credential_types.empty? %>
+    <% if @invite_only_no_token %>
+      <div class="rounded-md bg-yellow-50 p-4">
+        <p class="text-sm text-yellow-800"><%= t('rsb.auth.registrations.invite_required', default: 'Registration requires an invitation.') %></p>
+      </div>
+    <% elsif @credential_types.empty? %>
       <div class="rounded-md bg-yellow-50 p-4">
         <p class="text-sm text-yellow-800">No registration methods are currently available. Please contact an administrator.</p>
       </div>
     <% elsif @selected_method %>
       <% if @credential_types.size > 1 %>
         <div>
-          <%= link_to new_registration_path, class: "inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500" do %>
+          <%= link_to new_registration_path(invite_token: @invite_token.presence), class: "inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500" do %>
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>

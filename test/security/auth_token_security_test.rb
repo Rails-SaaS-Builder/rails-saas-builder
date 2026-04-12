@@ -136,71 +136,71 @@ class AuthTokenSecurityTest < ActionDispatch::IntegrationTest
 
   test 'invitation token has sufficient entropy' do
     invitation = RSB::Auth::Invitation.create!(
-      email: 'invited@example.com',
-      token: SecureRandom.urlsafe_base64(32),
       expires_at: 7.days.from_now,
       invited_by: @identity
     )
     assert invitation.token.length >= 32
   end
 
-  test 'accepted invitation cannot be re-accepted' do
+  test 'used-up invitation cannot be re-used' do
+    RSB::Settings.set('auth.registration_mode', 'invite_only')
     invitation = RSB::Auth::Invitation.create!(
-      email: 'invited2@example.com',
-      token: SecureRandom.urlsafe_base64(32),
       expires_at: 7.days.from_now,
+      max_uses: 1,
       invited_by: @identity
     )
 
-    # Accept the invitation
-    result = RSB::Auth::InvitationService.new.accept(
-      token: invitation.token,
+    # Use the invitation
+    result = RSB::Auth::RegistrationService.new.call(
+      identifier: 'user1@example.com',
       password: 'password1234',
-      password_confirmation: 'password1234'
+      password_confirmation: 'password1234',
+      invite_token: invitation.token
     )
-    assert result.success?
+    assert result.success?, "First registration should succeed: #{result.errors}"
 
-    # Try to re-accept
-    result2 = RSB::Auth::InvitationService.new.accept(
-      token: invitation.token,
+    # Try to re-use the exhausted invitation
+    result2 = RSB::Auth::RegistrationService.new.call(
+      identifier: 'user2@example.com',
       password: 'password1234',
-      password_confirmation: 'password1234'
+      password_confirmation: 'password1234',
+      invite_token: invitation.token
     )
-    assert_not result2.success?, 'Re-accepting an accepted invitation must fail'
+    assert_not result2.success?, 'Re-using an exhausted invitation must fail'
   end
 
-  test 'revoked invitation cannot be accepted' do
+  test 'revoked invitation cannot be used' do
+    RSB::Settings.set('auth.registration_mode', 'invite_only')
     invitation = RSB::Auth::Invitation.create!(
-      email: 'revoked@example.com',
-      token: SecureRandom.urlsafe_base64(32),
       expires_at: 7.days.from_now,
       invited_by: @identity
     )
-    invitation.update!(revoked_at: Time.current)
+    invitation.revoke!
 
-    result = RSB::Auth::InvitationService.new.accept(
-      token: invitation.token,
+    result = RSB::Auth::RegistrationService.new.call(
+      identifier: 'revoked@example.com',
       password: 'password1234',
-      password_confirmation: 'password1234'
+      password_confirmation: 'password1234',
+      invite_token: invitation.token
     )
-    assert_not result.success?, 'Revoked invitation must not be acceptable'
+    assert_not result.success?, 'Revoked invitation must not be usable'
   end
 
-  test 'expired invitation cannot be accepted' do
+  test 'expired invitation cannot be used' do
+    RSB::Settings.set('auth.registration_mode', 'invite_only')
     invitation = RSB::Auth::Invitation.create!(
-      email: 'expired@example.com',
-      token: SecureRandom.urlsafe_base64(32),
       expires_at: 7.days.from_now,
       invited_by: @identity
     )
 
     travel 8.days do
-      result = RSB::Auth::InvitationService.new.accept(
-        token: invitation.token,
+      result = RSB::Auth::RegistrationService.new.call(
+        identifier: 'expired@example.com',
         password: 'password1234',
-        password_confirmation: 'password1234'
+        password_confirmation: 'password1234',
+        invite_token: invitation.token
       )
-      assert_not result.success?, 'Expired invitation must not be acceptable'
+      assert_not result.success?, 'Expired invitation must not be usable'
     end
   end
 

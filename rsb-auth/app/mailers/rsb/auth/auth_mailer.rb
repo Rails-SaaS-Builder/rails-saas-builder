@@ -15,10 +15,12 @@ module RSB
         mail(to: credential.deliverable_email, subject: 'Reset your password')
       end
 
-      def invitation(invitation)
+      def invitation(invitation, recipient, subject: nil, message: nil)
         @invitation = invitation
         @accept_url = engine_url_for(:accept_invitation_url, token: invitation.token)
-        mail(to: invitation.email, subject: "You've been invited")
+        @custom_message = message
+        resolved_subject = subject.presence || t('rsb.auth.mailers.invitation.subject', default: "You've been invited")
+        mail(to: recipient, subject: resolved_subject)
       end
 
       private

@@ -64,17 +64,30 @@ class CreateRSBAuthTables < ActiveRecord::Migration[8.1]
     add_index :rsb_auth_password_reset_tokens, :token, unique: true
 
     create_table :rsb_auth_invitations do |t|
-      t.string :email, null: false
+      t.string :label
       t.string :token, null: false
       t.references :invited_by, polymorphic: true, null: true
-      t.datetime :accepted_at
-      t.datetime :expires_at, null: false
+      t.integer :max_uses
+      t.integer :uses_count, null: false, default: 0
+      t.json :metadata, default: {}
+      t.datetime :expires_at
       t.datetime :revoked_at
 
       t.timestamps
     end
 
     add_index :rsb_auth_invitations, :token, unique: true
-    add_index :rsb_auth_invitations, :email
+
+    create_table :rsb_auth_invitation_deliveries do |t|
+      t.references :invitation, null: false,
+                                foreign_key: { to_table: :rsb_auth_invitations }
+      t.string :recipient, null: false
+      t.string :channel, null: false
+      t.datetime :delivered_at, null: false
+    end
+
+    add_index :rsb_auth_invitation_deliveries,
+              %i[invitation_id recipient channel delivered_at],
+              name: 'idx_deliveries_rate_limit'
   end
 end

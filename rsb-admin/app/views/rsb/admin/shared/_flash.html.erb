@@ -3,13 +3,13 @@
     type_str = type.to_s
     config = case type_str
              when "notice"
-               { bg: "bg-rsb-success-bg", text: "text-rsb-success-text", border: "border-green-200", icon: "check-circle" }
+               { bg: "bg-rsb-success-bg", text: "text-rsb-success-text", border: "border-rsb-success-bg", icon: "check-circle" }
              when "alert"
-               { bg: "bg-rsb-danger-bg", text: "text-rsb-danger-text", border: "border-red-200", icon: "alert-circle" }
+               { bg: "bg-rsb-danger-bg", text: "text-rsb-danger-text", border: "border-rsb-danger-bg", icon: "alert-circle" }
              when "warning"
-               { bg: "bg-rsb-warning-bg", text: "text-rsb-warning-text", border: "border-amber-200", icon: "alert-triangle" }
+               { bg: "bg-rsb-warning-bg", text: "text-rsb-warning-text", border: "border-rsb-warning-bg", icon: "alert-triangle" }
              else
-               { bg: "bg-rsb-info-bg", text: "text-rsb-info-text", border: "border-blue-200", icon: "info" }
+               { bg: "bg-rsb-info-bg", text: "text-rsb-info-text", border: "border-rsb-info-bg", icon: "info" }
              end
   %>
   <div class="<%= config[:bg] %> <%= config[:text] %> border <%= config[:border] %> px-4 py-3 rounded-rsb mb-4 text-sm flex items-center gap-3">

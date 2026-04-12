@@ -66,33 +66,38 @@ class AuthAdminRegistrationTest < ActiveSupport::TestCase
 
     # Test columns
     assert reg.columns, 'Invitation should have explicit columns'
-    assert_equal 7, reg.columns.size, 'Invitation should have 7 columns'
+    assert_equal 12, reg.columns.size, 'Invitation should have 12 columns'
 
     column_keys = reg.columns.map(&:key)
     assert_includes column_keys, :id
-    assert_includes column_keys, :email
-    assert_includes column_keys, :token
+    assert_includes column_keys, :label
     assert_includes column_keys, :status
+    assert_includes column_keys, :uses
+    assert_includes column_keys, :token
+    assert_includes column_keys, :max_uses
+    assert_includes column_keys, :uses_count
+    assert_includes column_keys, :metadata
     assert_includes column_keys, :invited_by_type
     assert_includes column_keys, :expires_at
-    assert_includes column_keys, :accepted_at
+    assert_includes column_keys, :revoked_at
 
     # Test filters
     assert reg.filters, 'Invitation should have filters'
     assert_equal 2, reg.filters.size, 'Invitation should have 2 filters'
 
     filter_keys = reg.filters.map(&:key)
-    assert_includes filter_keys, :email
     assert_includes filter_keys, :status
+    assert_includes filter_keys, :label
 
     # Test form fields
     assert reg.form_fields, 'Invitation should have form fields'
-    assert_equal 1, reg.form_fields.size, 'Invitation should have 1 form field'
+    assert_equal 4, reg.form_fields.size, 'Invitation should have 4 form fields'
 
-    email_field = reg.form_fields.first
-    assert_equal :email, email_field.key
-    assert_equal :email, email_field.type
-    assert email_field.required, 'Email field should be required'
+    form_keys = reg.form_fields.map(&:key)
+    assert_includes form_keys, :label
+    assert_includes form_keys, :max_uses
+    assert_includes form_keys, :expires_in_hours
+    assert_includes form_keys, :metadata
   end
 
   test 'Sessions management page has actions' do

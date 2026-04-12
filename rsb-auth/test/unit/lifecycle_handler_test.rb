@@ -77,6 +77,33 @@ module RSB
         assert_equal 'my_identity', custom.called_with
       end
 
+      test 'after_invitation_used is a no-op by default' do
+        handler = RSB::Auth::LifecycleHandler.new
+        invitation = RSB::Auth::Invitation.create!(expires_at: 7.days.from_now)
+        identity = RSB::Auth::Identity.create!(status: :active)
+
+        # Should not raise
+        assert_nil handler.after_invitation_used(invitation, identity)
+      end
+
+      test 'after_invitation_used can be overridden in subclass' do
+        custom_handler = Class.new(RSB::Auth::LifecycleHandler) do
+          attr_reader :called_with
+
+          def after_invitation_used(invitation, identity)
+            @called_with = { invitation: invitation, identity: identity }
+          end
+        end
+
+        handler = custom_handler.new
+        invitation = RSB::Auth::Invitation.create!(expires_at: 7.days.from_now)
+        identity = RSB::Auth::Identity.create!(status: :active)
+
+        handler.after_invitation_used(invitation, identity)
+        assert_equal invitation, handler.called_with[:invitation]
+        assert_equal identity, handler.called_with[:identity]
+      end
+
       test 'exceptions in handler methods propagate' do
         custom = Class.new(RSB::Auth::LifecycleHandler) do
           def after_identity_created(_identity)

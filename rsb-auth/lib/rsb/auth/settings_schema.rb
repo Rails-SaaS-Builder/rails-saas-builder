@@ -79,6 +79,18 @@ module RSB
                   default: 'noreply@example.com',
                   group: 'Email',
                   description: 'Sender address for transactional emails (verification, password reset, invitations)'
+
+          setting :invitation_expiry_hours,
+                  type: :integer,
+                  default: 168,
+                  group: 'Invitations',
+                  description: 'Default invitation expiry in hours'
+
+          setting :invitation_default_max_uses,
+                  type: :integer,
+                  default: 1,
+                  group: 'Invitations',
+                  description: 'Default max uses for new invitations. 0 = unlimited'
         end
       end
     end

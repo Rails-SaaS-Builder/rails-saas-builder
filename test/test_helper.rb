@@ -86,19 +86,28 @@ module ActiveSupport
 
         resource RSB::Auth::Invitation,
                  icon: 'mail',
-                 actions: %i[index new create revoke] do
+                 controller: 'rsb/auth/admin/invitations',
+                 actions: %i[index show new create revoke deliver redeliver extend_expiry] do
           column :id, link: true
-          column :email
-          column :token, visible_on: [:show]
-          column :status, formatter: :badge, visible_on: [:index]
-          column :invited_by_type, label: 'Invited By', visible_on: [:show]
+          column :label
+          column :status, formatter: :badge
+          column :uses, visible_on: %i[index show]
+          column :created_at, formatter: :datetime
           column :expires_at, formatter: :datetime
-          column :accepted_at, formatter: :datetime, visible_on: [:show]
+          column :token, visible_on: [:show]
+          column :max_uses, visible_on: [:show]
+          column :uses_count, visible_on: [:show]
+          column :metadata, visible_on: [:show]
+          column :invited_by_type, label: 'Invited By', visible_on: [:show]
+          column :revoked_at, formatter: :datetime, visible_on: [:show]
 
-          filter :email, type: :text
-          filter :status, type: :select, options: %w[pending accepted expired revoked]
+          filter :status, type: :select, options: %w[pending exhausted expired revoked]
+          filter :label, type: :text
 
-          form_field :email, type: :email, required: true
+          form_field :label, type: :text
+          form_field :max_uses, type: :number, label: 'Max uses (0 = unlimited)'
+          form_field :expires_in_hours, type: :number, label: 'Expires in (hours)'
+          form_field :metadata, type: :textarea, label: 'Metadata (JSON)'
         end
 
         page :sessions_management,

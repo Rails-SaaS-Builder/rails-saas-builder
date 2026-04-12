@@ -28,29 +28,52 @@
     <%= hidden_field_tag "settings[category]", @active_tab %>
     <%= hidden_field_tag "settings[tab]", @active_tab %>
 
-    <% @groups.each do |group_name, definitions| %>
-      <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
-        <h2 class="text-base font-semibold text-rsb-text mb-4 pb-2 border-b border-rsb-border">
-          <%= group_name %>
-        </h2>
+    <div class="flex gap-6">
+      <%# Left: group navigation (desktop only) %>
+      <% if @groups.size > 1 %>
+        <nav class="hidden md:block w-48 shrink-0">
+          <div class="sticky top-4">
+            <ul class="space-y-0.5 text-sm">
+              <% @groups.each do |group_name, _| %>
+                <li>
+                  <a href="#group-<%= group_name.parameterize %>"
+                     class="block px-3 py-1.5 rounded-rsb text-rsb-muted hover:text-rsb-text hover:bg-rsb-bg transition-colors">
+                    <%= group_name %>
+                  </a>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </nav>
+      <% end %>
 
-        <div class="space-y-5">
-          <% definitions.each do |defn| %>
-            <%= render partial: rsb_admin_partial("settings/field"), locals: {
-              defn: defn,
-              category: @active_tab,
-              value: @current_values[defn.key],
-              state: @field_states[defn.key],
-              f: f
-            } %>
-          <% end %>
+      <%# Right: settings cards %>
+      <div class="flex-1 min-w-0">
+        <% @groups.each do |group_name, definitions| %>
+          <div id="group-<%= group_name.parameterize %>" class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4 scroll-mt-4">
+            <h2 class="text-base font-semibold text-rsb-text mb-4 pb-2 border-b border-rsb-border">
+              <%= group_name %>
+            </h2>
+
+            <div class="space-y-5">
+              <% definitions.each do |defn| %>
+                <%= render partial: rsb_admin_partial("settings/field"), locals: {
+                  defn: defn,
+                  category: @active_tab,
+                  value: @current_values[defn.key],
+                  state: @field_states[defn.key],
+                  f: f
+                } %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="flex justify-end mt-4">
+          <%= f.submit rsb_admin_t("settings.save", default: "Save Settings"),
+            class: "px-5 py-2.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover cursor-pointer transition-colors" %>
         </div>
       </div>
-    <% end %>
-
-    <div class="flex justify-end mt-4">
-      <%= f.submit rsb_admin_t("settings.save", default: "Save Settings"),
-        class: "px-5 py-2.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover cursor-pointer transition-colors" %>
     </div>
   <% end %>
 

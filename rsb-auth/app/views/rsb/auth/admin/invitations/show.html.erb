@@ -1,0 +1,333 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">Invitation #<%= @invitation.id %></h1>
+  <a href="/admin/invitations"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+</div>
+
+<%# Card 1: Details — matches resources/show.html.erb per-row grid pattern %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+  <% badge_class = case @invitation.status
+                    when 'pending'   then 'bg-rsb-warning-bg text-rsb-warning-text'
+                    when 'exhausted' then 'bg-rsb-info-bg text-rsb-info-text'
+                    when 'expired'   then 'bg-rsb-bg text-rsb-muted'
+                    when 'revoked'   then 'bg-rsb-danger-bg text-rsb-danger-text'
+                    else 'bg-rsb-bg text-rsb-muted'
+                    end %>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Status</strong>
+    <div><span class="inline-block px-2.5 py-0.5 rounded-rsb text-xs font-medium <%= badge_class %>"><%= @invitation.status %></span></div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Label</strong>
+    <div class="text-sm"><%= @invitation.label.presence || "-" %></div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Token</strong>
+    <div class="flex items-center gap-2">
+      <code class="font-mono text-sm text-rsb-text"><%= @invitation.masked_token %></code>
+      <button type="button" data-token="<%= @invitation.token %>"
+              class="inline-flex items-center gap-1 px-2 py-1 text-xs border border-rsb-border rounded-rsb hover:bg-rsb-bg transition-colors text-rsb-muted"
+              onclick="copyToken(this)">
+        <%= rsb_admin_icon("copy", size: 14) rescue nil %>
+        <span>Copy</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Uses</strong>
+    <div class="text-sm"><%= @invitation.uses %></div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Invited By</strong>
+    <div class="text-sm">
+      <% if @invitation.invited_by.present? %>
+        <% inviter = @invitation.invited_by %>
+        <% if inviter.is_a?(RSB::Admin::AdminUser) %>
+          <a href="/admin/admin_users/<%= inviter.id %>" class="text-rsb-primary hover:underline"><%= inviter.email %></a>
+        <% elsif inviter.is_a?(RSB::Auth::Identity) %>
+          <a href="/admin/identities/<%= inviter.id %>" class="text-rsb-primary hover:underline">Identity #<%= inviter.id %></a>
+        <% else %>
+          <%= inviter.class.name.demodulize %> #<%= inviter.id %>
+        <% end %>
+      <% else %>
+        <span class="text-rsb-muted">-</span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Created</strong>
+    <div class="text-sm"><%= @invitation.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted">Expires</strong>
+    <div class="text-sm">
+      <% if @invitation.expires_at.nil? %>
+        <span class="text-rsb-muted">Never</span>
+      <% else %>
+        <%= @invitation.expires_at.strftime("%B %d, %Y at %I:%M %p") %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @invitation.revoked_at.present? %>
+    <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+      <strong class="text-sm text-rsb-muted">Revoked At</strong>
+      <div class="text-sm"><%= @invitation.revoked_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3">
+    <strong class="text-sm text-rsb-muted">Metadata</strong>
+    <div>
+      <% if @invitation.metadata.blank? || @invitation.metadata.empty? %>
+        <span class="text-sm text-rsb-muted">-</span>
+      <% else %>
+        <table class="text-sm">
+          <% @invitation.metadata.each do |key, value| %>
+            <tr>
+              <td class="pr-4 py-0.5 text-rsb-muted font-mono"><%= key %></td>
+              <td class="py-0.5">
+                <% if value.is_a?(Hash) || value.is_a?(Array) %>
+                  <pre class="text-xs font-mono bg-rsb-bg rounded-rsb p-2 overflow-x-auto"><%= JSON.pretty_generate(value) %></pre>
+                <% else %>
+                  <span class="font-mono"><%= value %></span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </table>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%# Card 2: Actions (only if pending) %>
+<% if @invitation.pending? %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+    <h3 class="text-base font-semibold mb-4">Actions</h3>
+    <div class="space-y-4">
+      <% if rsb_admin_can?("invitations", "revoke") %>
+        <div class="flex items-center gap-3">
+          <%= button_to "Revoke Invitation", "/admin/invitations/#{@invitation.id}/revoke",
+                method: :post,
+                class: "inline-flex items-center px-4 py-2 bg-rsb-danger text-white rounded-rsb text-sm font-medium hover:opacity-90 transition-opacity" %>
+          <span class="text-xs text-rsb-muted">Permanently prevents this invitation from being used</span>
+        </div>
+      <% end %>
+
+      <% if rsb_admin_can?("invitations", "deliver") && @notifiers.any? %>
+        <div class="border-t border-rsb-border pt-4">
+          <h4 class="text-sm font-medium mb-2">Send Notification</h4>
+          <form method="post" action="/admin/invitations/<%= @invitation.id %>/deliver"
+                id="deliver-form" class="space-y-3">
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+            <%# Channel selector (only shown if more than one notifier is registered) %>
+            <% if @notifiers.size > 1 %>
+              <div>
+                <label class="block text-xs text-rsb-muted mb-1">Channel</label>
+                <select name="channel" id="notifier-channel-select"
+                        class="border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-64">
+                  <% @notifiers.each do |notifier| %>
+                    <option value="<%= notifier.channel_key %>"
+                            data-fields="<%= ERB::Util.html_escape(notifier.form_fields.to_json) %>">
+                      <%= notifier.label %>
+                    </option>
+                  <% end %>
+                </select>
+              </div>
+            <% else %>
+              <input type="hidden" name="channel" value="<%= @notifiers.first.channel_key %>">
+            <% end %>
+
+            <%# Dynamic fields container — populated by JS based on selected notifier %>
+            <div id="notifier-fields">
+              <%# Render fields for the first (default) notifier server-side %>
+              <% @notifiers.first.form_fields.each do |field| %>
+                <div class="notifier-field">
+                  <label class="block text-xs text-rsb-muted mb-1"><%= field[:label] %></label>
+                  <% case field[:type] %>
+                  <% when :textarea %>
+                    <textarea name="<%= field[:key] %>"
+                              placeholder="<%= field[:placeholder] %>"
+                              <%= 'required' if field[:required] %>
+                              class="border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-full max-w-md"
+                              rows="3"><%= field[:default] %></textarea>
+                  <% when :select %>
+                    <select name="<%= field[:key] %>"
+                            <%= 'required' if field[:required] %>
+                            class="border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-64">
+                      <% (field[:options] || []).each do |opt| %>
+                        <option value="<%= opt %>" <%= 'selected' if opt == field[:default] %>><%= opt %></option>
+                      <% end %>
+                    </select>
+                  <% else %>
+                    <input type="<%= field[:type] || 'text' %>"
+                           name="<%= field[:key] %>"
+                           placeholder="<%= field[:placeholder] %>"
+                           value="<%= field[:default] %>"
+                           <%= 'required' if field[:required] %>
+                           class="border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-64" />
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+
+            <div>
+              <button type="submit"
+                      class="px-4 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium">
+                Send
+              </button>
+            </div>
+          </form>
+        </div>
+      <% end %>
+
+      <% if rsb_admin_can?("invitations", "extend_expiry") && @invitation.expires_at.present? %>
+        <div class="border-t border-rsb-border pt-4">
+          <h4 class="text-sm font-medium mb-2">Extend Expiry</h4>
+          <form method="post" action="/admin/invitations/<%= @invitation.id %>/extend_expiry" class="flex gap-2 items-end">
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+            <div>
+              <label class="block text-xs text-rsb-muted mb-1">Add Hours</label>
+              <input type="number" name="hours" value="24" min="1"
+                     class="border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-32" />
+            </div>
+            <button type="submit" class="px-4 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium">Extend</button>
+          </form>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# Card 3: Delivery History %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+  <h3 class="text-base font-semibold mb-4">Delivery History</h3>
+  <% if @deliveries.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted">Recipient</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted">Channel</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted">Sent At</th>
+            <% if rsb_admin_can?("invitations", "redeliver") && @invitation.pending? %>
+              <th class="px-4 py-2"></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @deliveries.each do |delivery| %>
+            <tr class="border-t border-rsb-border">
+              <td class="px-4 py-2 text-sm"><%= delivery.recipient %></td>
+              <td class="px-4 py-2 text-sm"><%= delivery.channel %></td>
+              <td class="px-4 py-2 text-sm"><%= delivery.delivered_at.strftime("%b %d, %Y %I:%M %p") %></td>
+              <% if rsb_admin_can?("invitations", "redeliver") && @invitation.pending? %>
+                <td class="px-4 py-2 text-sm text-right">
+                  <%= button_to "Resend",
+                        "/admin/invitations/#{@invitation.id}/redeliver",
+                        method: :post,
+                        params: { delivery_id: delivery.id },
+                        class: "text-xs px-2 py-1 border border-rsb-border rounded-rsb hover:bg-rsb-bg" %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="text-rsb-muted text-sm">No deliveries yet.</p>
+  <% end %>
+</div>
+
+<%# Card 4: Registered Identities %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+  <h3 class="text-base font-semibold mb-4">Registered via this Invitation</h3>
+  <% identities = @invitation.registered_identities %>
+  <% if identities.any? %>
+    <ul class="space-y-1">
+      <% identities.each do |identity| %>
+        <li class="text-sm">
+          <a href="/admin/identities/<%= identity.id %>" class="text-rsb-primary hover:underline">Identity #<%= identity.id %></a>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-rsb-muted text-sm">No registrations yet.</p>
+  <% end %>
+</div>
+
+<script>
+  function copyToken(button) {
+    var token = button.getAttribute('data-token');
+    var label = button.querySelector('span');
+    var originalText = label.textContent;
+    navigator.clipboard.writeText(token).then(function() {
+      label.textContent = 'Copied!';
+      setTimeout(function() { label.textContent = originalText; }, 2000);
+    });
+  }
+</script>
+
+<script>
+  (function() {
+    var select = document.getElementById('notifier-channel-select');
+    if (!select) return; // Only one notifier registered — no dropdown
+
+    select.addEventListener('change', function() {
+      var option = select.options[select.selectedIndex];
+      var fields = JSON.parse(option.getAttribute('data-fields'));
+      var container = document.getElementById('notifier-fields');
+      container.innerHTML = '';
+
+      fields.forEach(function(field) {
+        var wrapper = document.createElement('div');
+        wrapper.className = 'notifier-field';
+
+        var label = document.createElement('label');
+        label.className = 'block text-xs text-rsb-muted mb-1';
+        label.textContent = field.label;
+        wrapper.appendChild(label);
+
+        var input;
+        if (field.type === 'textarea') {
+          input = document.createElement('textarea');
+          input.className = 'border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-full max-w-md';
+          input.rows = 3;
+          if (field.default) input.textContent = field.default;
+        } else if (field.type === 'select') {
+          input = document.createElement('select');
+          input.className = 'border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-64';
+          (field.options || []).forEach(function(opt) {
+            var optEl = document.createElement('option');
+            optEl.value = opt;
+            optEl.textContent = opt;
+            if (opt === field.default) optEl.selected = true;
+            input.appendChild(optEl);
+          });
+        } else {
+          input = document.createElement('input');
+          input.type = field.type || 'text';
+          input.className = 'border border-rsb-border rounded-rsb px-3 py-1.5 text-sm w-64';
+          if (field.default) input.value = field.default;
+        }
+
+        input.name = field.key;
+        if (field.placeholder) input.placeholder = field.placeholder;
+        if (field.required) input.required = true;
+
+        wrapper.appendChild(input);
+        container.appendChild(wrapper);
+      });
+    });
+  })();
+</script>

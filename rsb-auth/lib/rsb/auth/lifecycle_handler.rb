@@ -66,6 +66,15 @@ module RSB
       # @param identity [RSB::Auth::Identity] the restored identity
       # @return [void]
       def after_identity_restored(identity); end
+
+      # Called after an invitation token is used during registration.
+      # Fires inside RegistrationService after identity+credential creation
+      # and invitation.use!, still within the same transaction.
+      # If this method raises, the entire transaction rolls back.
+      #
+      # @param invitation [RSB::Auth::Invitation] the invitation that was used
+      # @param identity [RSB::Auth::Identity] the newly created identity
+      def after_invitation_used(invitation, identity); end
     end
   end
 end

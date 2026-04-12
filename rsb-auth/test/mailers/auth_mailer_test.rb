@@ -59,9 +59,9 @@ module RSB
       end
 
       test 'invitation email' do
-        invitation = RSB::Auth::Invitation.create!(email: 'invited@example.com')
+        invitation = RSB::Auth::Invitation.create!(expires_at: 7.days.from_now)
 
-        email = RSB::Auth::AuthMailer.invitation(invitation)
+        email = RSB::Auth::AuthMailer.invitation(invitation, 'invited@example.com')
         assert_equal ['invited@example.com'], email.to
         assert_equal "You've been invited", email.subject
         assert_match invitation.token, email.body.encoded

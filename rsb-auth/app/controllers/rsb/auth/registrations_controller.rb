@@ -14,6 +14,15 @@ module RSB
       #
       # @route GET /auth/registration/new
       def new
+        @invite_token = params[:invite_token]
+        session[:rsb_invite_token] = @invite_token if @invite_token.present?
+
+        mode = RSB::Settings.get('auth.registration_mode')
+        if mode.to_s == 'invite_only'
+          token = @invite_token || session[:rsb_invite_token]
+          @invite_only_no_token = token.blank?
+        end
+
         load_credential_types(:registerable)
         resolve_selected_method
         @rsb_page_title = t('rsb.auth.registrations.new.page_title', default: 'Create Account')
@@ -35,15 +44,19 @@ module RSB
           return
         end
 
+        invite_token = params[:invite_token].presence || session[:rsb_invite_token]
+
         result = RSB::Auth::RegistrationService.new.call(
           identifier: params[:identifier],
           password: params[:password],
           password_confirmation: params[:password_confirmation],
           credential_type: params[:credential_type]&.to_sym,
-          recovery_email: params[:recovery_email]
+          recovery_email: params[:recovery_email],
+          invite_token: invite_token
         )
 
         if result.success?
+          session.delete(:rsb_invite_token)
           session_record = RSB::Auth::SessionService.new.create(
             identity: result.identity,
             ip_address: request.remote_ip,
@@ -60,6 +73,7 @@ module RSB
             redirect_to account_path, alert: 'Please complete your profile.'
           end
         else
+          @invite_token = invite_token
           @identifier = params[:identifier]
           @errors = result.errors
           @selected_method = @credential_types.find { |d| d.key.to_s == params[:credential_type].to_s }
@@ -71,11 +85,9 @@ module RSB
 
       def check_registration_mode
         mode = RSB::Settings.get('auth.registration_mode')
-        if mode.to_s == 'disabled'
-          redirect_to new_session_path, alert: 'Registration is disabled.'
-        elsif mode.to_s == 'invite_only'
-          redirect_to new_session_path, alert: 'Registration is invite-only. You need an invitation.'
-        end
+        return unless mode.to_s == 'disabled'
+
+        redirect_to new_session_path, alert: 'Registration is disabled.'
       end
 
       def load_credential_types(capability)

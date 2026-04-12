@@ -13,11 +13,23 @@ module RSB
       # @param credential_type [Symbol, String, nil] explicit credential type key.
       #   When nil, falls back to `auth.login_identifier` setting (backward compat).
       # @param recovery_email [String, nil] optional recovery email for username credentials
+      # @param invite_token [String, nil] invitation token (validated when mode is invite_only)
       # @return [Result]
-      def call(identifier:, password:, password_confirmation:, credential_type: nil, recovery_email: nil)
-        registration_mode = RSB::Settings.get('auth.registration_mode')
-        return failure('Registration is disabled.') if registration_mode.to_s == 'disabled'
-        return failure('Registration is invite-only.') if registration_mode.to_s == 'invite_only'
+      def call(identifier:, password:, password_confirmation:, credential_type: nil, recovery_email: nil,
+               invite_token: nil)
+        mode = RSB::Settings.get('auth.registration_mode')
+        return failure('Registration is disabled.') if mode.to_s == 'disabled'
+
+        invitation = nil
+        if mode.to_s == 'invite_only'
+          return failure('Registration requires an invitation') if invite_token.blank?
+
+          invitation = RSB::Auth::Invitation.pending.find_by(token: invite_token)
+          return failure('Invalid or expired invitation') unless invitation
+        elsif invite_token.present?
+          # Open mode: track invitation if valid, silently ignore if not
+          invitation = RSB::Auth::Invitation.pending.find_by(token: invite_token)
+        end
 
         resolved = resolve_credential_type(credential_type)
         return failure('This registration method is not available.') unless resolved
@@ -60,10 +72,65 @@ module RSB
             credential.send_verification!
           end
 
+          if invitation
+            invitation.use!
+            identity.update!(metadata: (identity.metadata || {}).merge('invitation_id' => invitation.id))
+            RSB::Auth.configuration.resolve_lifecycle_handler.after_invitation_used(invitation, identity)
+          end
+
           Result.new(success?: true, identity: identity, credential: credential, errors: [])
         end
       rescue ActiveRecord::RecordInvalid => e
         failure(e.record.errors.full_messages)
+      end
+
+      # Creates identity + credential for OAuth/external registration.
+      # Used by OAuth callback services to delegate identity creation.
+      #
+      # @param credential_class [String] fully-qualified STI class name
+      # @param identifier [String] email or other identifier from the OAuth provider
+      # @param invite_token [String, nil] invitation token (validated when mode is invite_only)
+      # @param credential_attrs [Hash] additional credential attributes (e.g., provider_uid)
+      # @return [Result]
+      def register_external(credential_class:, identifier:, invite_token: nil, **credential_attrs)
+        mode = RSB::Settings.get('auth.registration_mode')
+        return failure('Registration is currently disabled.') if mode.to_s == 'disabled'
+
+        invitation = nil
+        if mode.to_s == 'invite_only'
+          return failure('Registration requires an invitation') if invite_token.blank?
+
+          invitation = RSB::Auth::Invitation.pending.find_by(token: invite_token)
+          return failure('Invalid or expired invitation') unless invitation
+        elsif invite_token.present?
+          invitation = RSB::Auth::Invitation.pending.find_by(token: invite_token)
+        end
+
+        identity = nil
+        credential = nil
+
+        ActiveRecord::Base.transaction do
+          identity = RSB::Auth::Identity.create!(status: :active)
+
+          credential = credential_class.constantize.create!(
+            identity: identity,
+            identifier: identifier,
+            verified_at: Time.current,
+            **credential_attrs
+          )
+
+          if invitation
+            invitation.use!
+            identity.update!(metadata: (identity.metadata || {}).merge('invitation_id' => invitation.id))
+            RSB::Auth.configuration.resolve_lifecycle_handler.after_invitation_used(invitation, identity)
+          end
+        end
+
+        Result.new(success?: true, identity: identity, credential: credential, errors: [])
+      rescue ActiveRecord::RecordInvalid => e
+        Result.new(success?: false, identity: nil, credential: nil, errors: e.record.errors.full_messages)
+      rescue RuntimeError => e
+        Result.new(success?: false, identity: nil, credential: nil, errors: [e.message])
       end
 
       private

@@ -43,6 +43,35 @@ module RSB
         RSB::Settings.registry.register(RSB::Auth.settings_schema)
       end
 
+      # Registers the built-in Email notifier into the notifier registry.
+      # Call this in test setup when testing notifier/delivery features.
+      def register_notifiers
+        RSB::Auth.notifiers.register(RSB::Auth::InvitationNotifier::Email)
+      end
+
+      # Registers invitation settings into RSB::Settings.
+      # Call this in test setup when testing invitation features.
+      # Invitation settings are part of the auth schema, so this delegates to register_auth_settings.
+      def register_invitation_settings
+        register_auth_settings
+      end
+
+      # Creates a test invitation with sensible defaults.
+      #
+      # @param label [String, nil] optional label
+      # @param max_uses [Integer, nil] max uses (default: 1)
+      # @param expires_in [ActiveSupport::Duration] expiry duration (default: 7.days)
+      # @param metadata [Hash] arbitrary metadata (default: {})
+      # @return [RSB::Auth::Invitation]
+      def create_test_invitation(label: nil, max_uses: 1, expires_in: 7.days, metadata: {})
+        RSB::Auth::Invitation.create!(
+          label: label,
+          max_uses: max_uses,
+          expires_at: expires_in.from_now,
+          metadata: metadata
+        )
+      end
+
       def register_auth_credentials
         RSB::Auth.credentials.register(
           RSB::Auth::CredentialDefinition.new(
