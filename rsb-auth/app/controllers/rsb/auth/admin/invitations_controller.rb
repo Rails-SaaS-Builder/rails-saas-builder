@@ -3,6 +3,9 @@
 module RSB
   module Auth
     module Admin
+      # Custom admin controller for invitation management.
+      # Handles CRUD, delivery via notifier registry, redelivery,
+      # expiry extension, and revocation. All actions are RBAC-gated.
       class InvitationsController < ::RSB::Admin::AdminController
         before_action :authorize_invitations
         before_action :set_invitation, only: %i[show revoke deliver redeliver extend_expiry]

@@ -14,7 +14,20 @@ module RSB
     class Configuration
       # @return [String, nil] fully-qualified class name of the lifecycle handler.
       #   When nil, the base {LifecycleHandler} null object is used.
-      attr_accessor :lifecycle_handler, :invitation_token_generator, :invitation_token_masker
+      attr_accessor :lifecycle_handler
+
+      # @return [Proc, nil] callable that generates invitation tokens.
+      #   When nil, defaults to +SecureRandom.urlsafe_base64(32)+.
+      # @example Custom short tokens
+      #   config.invitation_token_generator = -> { SecureRandom.hex(8).upcase }
+      attr_accessor :invitation_token_generator
+
+      # @return [Proc, nil] callable that masks tokens for admin display.
+      #   Receives the full token string, returns the masked version.
+      #   When nil, defaults to first 8 chars + asterisks + last 4 chars.
+      # @example Custom masking
+      #   config.invitation_token_masker = ->(t) { "INV-#{t[-6..]}" }
+      attr_accessor :invitation_token_masker
 
       # @return [Array<Module>] concern modules to include into Identity model.
       #   Applied in order during Rails +to_prepare+ block.

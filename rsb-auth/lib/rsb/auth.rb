@@ -18,36 +18,38 @@ require 'rsb/auth/settings_schema'
 module RSB
   module Auth
     class << self
-      # --- Credential Registry ---
-
+      # Returns the credential registry singleton.
+      # @return [CredentialRegistry]
       def credentials
         @credentials ||= CredentialRegistry.new
       end
 
-      # --- Notifier Registry ---
-
+      # Returns the invitation notifier registry singleton.
+      # @return [NotifierRegistry]
       def notifiers
         @notifiers ||= NotifierRegistry.new
       end
 
-      # --- Configuration (lifecycle handler) ---
-
+      # Yields the configuration for block-style setup.
+      # @yield [Configuration] the configuration instance
       def configure
         yield(configuration)
       end
 
+      # Returns the configuration singleton.
+      # @return [Configuration]
       def configuration
         @configuration ||= Configuration.new
       end
 
-      # --- Settings Schema (pure data) ---
-
+      # Returns the settings schema for registration with RSB::Settings.
+      # @return [RSB::Settings::Schema]
       def settings_schema
         @settings_schema ||= SettingsSchema.build
       end
 
-      # --- Test support ---
-
+      # Resets all registries and configuration. Used in tests.
+      # @return [void]
       def reset!
         @credentials = CredentialRegistry.new
         @notifiers = NotifierRegistry.new

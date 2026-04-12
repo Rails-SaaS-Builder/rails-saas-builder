@@ -2,6 +2,12 @@
 
 module RSB
   module Auth
+    # Invitation token for gating registration. Supports multi-use tokens,
+    # configurable expiry (including no-expiry), metadata, and pluggable delivery
+    # via {InvitationNotifier::Base} subclasses.
+    #
+    # Invitations are pure tokens — delivery (email, SMS, etc.) is tracked
+    # separately via {InvitationDelivery}.
     class Invitation < ApplicationRecord
       self.table_name = 'rsb_auth_invitations'
 
@@ -37,22 +43,27 @@ module RSB
 
       # --- Predicates ---
 
+      # @return [Boolean] true if invitation can still be used (not revoked, expired, or exhausted)
       def pending?
         !revoked? && !expired? && !exhausted?
       end
 
+      # @return [Boolean] true when max_uses is set and uses_count has reached it
       def exhausted?
         max_uses.present? && uses_count >= max_uses
       end
 
+      # @return [Boolean] true when expires_at is set and in the past. Nil expires_at = never expires.
       def expired?
         expires_at.present? && expires_at <= Time.current
       end
 
+      # @return [Boolean] true when revoked_at is present
       def revoked?
         revoked_at.present?
       end
 
+      # @return [String] computed status: 'pending', 'revoked', 'expired', or 'exhausted'
       def status
         return 'revoked' if revoked?
         return 'expired' if expired?
@@ -63,6 +74,11 @@ module RSB
 
       # --- State mutations ---
 
+      # Atomically increments uses_count. Raises if invitation is not pending.
+      # Uses SQL-level WHERE to prevent race conditions on concurrent use.
+      #
+      # @raise [RuntimeError] if invitation is no longer valid
+      # @return [self] reloaded invitation
       def use!
         rows = self.class.where(id: id)
                    .where(revoked_at: nil)
@@ -75,12 +91,17 @@ module RSB
         reload
       end
 
+      # Soft-revokes the invitation by setting revoked_at.
+      # @return [Boolean]
       def revoke!
         update!(revoked_at: Time.current)
       end
 
-      # Returns a masked version of the token for display.
-      # Uses the configured masker or a default that shows first 8 + asterisks + last 4.
+      # Returns a masked version of the token for admin display.
+      # Uses {Configuration#invitation_token_masker} if set, otherwise
+      # shows first 8 chars + 8 asterisks + last 4 chars.
+      #
+      # @return [String] masked token
       def masked_token
         masker = RSB::Auth.configuration.invitation_token_masker
         if masker
@@ -99,6 +120,11 @@ module RSB
 
       # --- Convenience ---
 
+      # Returns identities that were created using this invitation token.
+      # Queries via identity metadata rather than storing IDs on the invitation
+      # (avoids JSON read-modify-write race on concurrent multi-use tokens).
+      #
+      # @return [ActiveRecord::Relation<RSB::Auth::Identity>]
       def registered_identities
         RSB::Auth::Identity.where("CAST(metadata->>'invitation_id' AS TEXT) = ?", id.to_s)
       end

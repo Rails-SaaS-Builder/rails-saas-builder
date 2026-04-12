@@ -2,9 +2,42 @@
 
 module RSB
   module Auth
+    # Service for invitation token CRUD and notification delivery.
+    # Creates tokens without sending, delivers via pluggable notifiers
+    # (resolved from {NotifierRegistry}), supports redelivery with rate
+    # limiting, and expiry extension.
+    #
+    # @example Create and deliver an invitation
+    #   service = RSB::Auth::InvitationService.new
+    #   result = service.create_and_deliver(
+    #     channel: 'email',
+    #     fields: { recipient: 'user@example.com', subject: 'Welcome!' }
+    #   )
     class InvitationService
+      # @!attribute [r] success?
+      #   @return [Boolean]
+      # @!attribute [r] invitation
+      #   @return [Invitation, nil]
+      # @!attribute [r] error
+      #   @return [String, nil]
       CreateResult = Data.define(:success?, :invitation, :error)
+
+      # @!attribute [r] success?
+      #   @return [Boolean]
+      # @!attribute [r] delivery
+      #   @return [InvitationDelivery, nil]
+      # @!attribute [r] error
+      #   @return [String, nil]
       DeliverResult = Data.define(:success?, :delivery, :error)
+
+      # @!attribute [r] success?
+      #   @return [Boolean]
+      # @!attribute [r] invitation
+      #   @return [Invitation, nil]
+      # @!attribute [r] delivery
+      #   @return [InvitationDelivery, nil]
+      # @!attribute [r] error
+      #   @return [String, nil]
       CreateAndDeliverResult = Data.define(:success?, :invitation, :delivery, :error)
 
       # Creates an invitation token. Does NOT send any notification.

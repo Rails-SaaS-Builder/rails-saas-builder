@@ -2,6 +2,12 @@
 
 module RSB
   module Auth
+    # Registry of invitation notifier classes, keyed by channel.
+    # Follows the same pattern as {CredentialRegistry}.
+    # Accessed via {RSB::Auth.notifiers}.
+    #
+    # @example Register a custom notifier
+    #   RSB::Auth.notifiers.register(MyApp::TelegramNotifier)
     class NotifierRegistry
       def initialize
         @notifiers = {}
