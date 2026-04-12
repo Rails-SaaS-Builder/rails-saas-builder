@@ -23,6 +23,7 @@ module RSB
           session_duration max_sessions lockout_threshold
           lockout_duration verification_required account_enabled
           account_deletion_enabled generic_error_messages mailer_from
+          invitation_expiry_hours invitation_default_max_uses
         ]
         assert_equal expected_keys, schema.keys
       end

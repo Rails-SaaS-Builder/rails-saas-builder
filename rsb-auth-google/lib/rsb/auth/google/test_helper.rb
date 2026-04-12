@@ -100,17 +100,21 @@ module RSB
         # @param google_uid [String] Google user ID
         # @param mode [String] "login" or "signup" (default: "login")
         # @return [ActionDispatch::Response] the callback response
-        def simulate_google_login(email:, google_uid:, mode: 'login')
+        def simulate_google_login(email:, google_uid:, mode: 'login', invite_token: nil)
           stub_google_oauth(email: email, google_uid: google_uid)
 
-          # Step 1: GET redirect endpoint (stores state in session)
-          get "/auth/oauth/google?mode=#{mode}"
+          # Step 1: GET redirect endpoint (stores nonce in session, full state in redirect URL)
+          url = "/auth/oauth/google?mode=#{mode}"
+          url += "&invite_token=#{invite_token}" if invite_token
+          get url
+          assert_response :redirect
 
-          # Extract state from session
-          state = session[:google_oauth_state]
+          # Extract state from redirect URL (session now stores only the nonce)
+          redirect_url = response.location
+          state_param = CGI.parse(URI.parse(redirect_url).query)['state']&.first
 
           # Step 2: GET callback with code + state
-          get "/auth/oauth/google/callback?code=test-auth-code&state=#{state}"
+          get "/auth/oauth/google/callback?code=test-auth-code&state=#{state_param}"
 
           response
         end
@@ -124,14 +128,16 @@ module RSB
         def simulate_google_link(identity:, email:, google_uid:) # rubocop:disable Lint/UnusedMethodArgument
           stub_google_oauth(email: email, google_uid: google_uid)
 
-          # Step 1: GET redirect endpoint with mode=link
+          # Step 1: GET redirect endpoint with mode=link (full state in redirect URL)
           get '/auth/oauth/google?mode=link'
+          assert_response :redirect
 
-          # Extract state from session
-          state = session[:google_oauth_state]
+          # Extract state from redirect URL
+          redirect_url = response.location
+          state_param = CGI.parse(URI.parse(redirect_url).query)['state']&.first
 
           # Step 2: GET callback
-          get "/auth/oauth/google/callback?code=test-auth-code&state=#{state}"
+          get "/auth/oauth/google/callback?code=test-auth-code&state=#{state_param}"
 
           response
         end

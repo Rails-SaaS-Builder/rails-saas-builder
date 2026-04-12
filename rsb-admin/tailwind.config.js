@@ -3,6 +3,8 @@ module.exports = {
     "./app/views/**/*.html.erb",
     "./app/helpers/**/*.rb",
     "./lib/rsb/admin/icons.rb",
+    "../rsb-auth/app/views/**/admin/**/*.html.erb",
+    "../rsb-entitlements/app/views/**/admin/**/*.html.erb",
   ],
   theme: {
     extend: {

@@ -29,6 +29,5 @@ RSB::Auth::Engine.routes.draw do
     end
   end
 
-  get   'invitations/:token', to: 'invitations#show', as: :accept_invitation
-  patch 'invitations/:token', to: 'invitations#update'
+  get 'invitations/:token', to: 'invitations#show', as: :accept_invitation
 end

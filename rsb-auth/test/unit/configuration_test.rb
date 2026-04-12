@@ -101,5 +101,34 @@ module RSB
         assert_not_respond_to @config, :after_identity_verified
       end
     end
+
+    class ConfigurationTokenGeneratorTest < ActiveSupport::TestCase
+      setup do
+        @original_generator = RSB::Auth.configuration.invitation_token_generator
+      end
+
+      teardown do
+        RSB::Auth.configuration.invitation_token_generator = @original_generator
+      end
+
+      test 'invitation_token_generator defaults to nil (uses SecureRandom fallback)' do
+        RSB::Auth.configuration.invitation_token_generator = nil
+        assert_nil RSB::Auth.configuration.invitation_token_generator
+      end
+
+      test 'invitation_token_generator accepts a callable' do
+        custom = -> { 'CUSTOM-TOKEN-123' }
+        RSB::Auth.configuration.invitation_token_generator = custom
+        assert_equal 'CUSTOM-TOKEN-123', RSB::Auth.configuration.invitation_token_generator.call
+      end
+
+      test 'Invitation model uses custom token generator when set' do
+        RSB::Auth.configuration.invitation_token_generator = -> { "CUSTOM-#{SecureRandom.hex(4)}" }
+        invitation = RSB::Auth::Invitation.create!(expires_at: 7.days.from_now)
+        assert invitation.token.start_with?('CUSTOM-')
+      ensure
+        RSB::Auth.configuration.invitation_token_generator = nil
+      end
+    end
   end
 end

@@ -1,0 +1,132 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">New Invitation</h1>
+  <a href="/admin/invitations"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <form method="post" action="/admin/invitations" id="invitation-form">
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-rsb-text mb-1">Label <span class="text-rsb-muted text-xs font-normal">(admin-only note)</span></label>
+        <input type="text" name="label" value="<%= params[:label] %>"
+               class="w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-rsb-text mb-1">Max Uses <span class="text-rsb-muted text-xs font-normal">(0 = unlimited)</span></label>
+        <input type="number" name="max_uses" value="<%= params[:max_uses] || 1 %>" min="0"
+               class="w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-rsb-text mb-1">Expiry</label>
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-2 text-sm cursor-pointer">
+            <input type="checkbox" id="no-expiry-cb" name="no_expiry" value="1"
+                   class="rounded border-rsb-border"
+                   onchange="toggleExpiryField(this.checked)">
+            <span>No expiry (never expires)</span>
+          </label>
+        </div>
+        <div id="expiry-field" class="mt-2">
+          <input type="number" name="expires_in_hours" id="expires-in-hours" value="<%= params[:expires_in_hours] || 168 %>" min="1"
+                 class="w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm" />
+          <p class="text-xs text-rsb-muted mt-1">Hours from now. Default: 168 (7 days)</p>
+        </div>
+      </div>
+
+      <%# Metadata key-value editor %>
+      <div>
+        <label class="block text-sm font-medium text-rsb-text mb-1">Metadata</label>
+        <div id="metadata-editor">
+          <div id="metadata-rows" class="space-y-2">
+            <%# JS will populate rows; fallback textarea below %>
+          </div>
+          <button type="button" onclick="addMetadataRow()" id="add-meta-btn"
+                  class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 text-xs border border-rsb-border rounded-rsb hover:bg-rsb-bg transition-colors text-rsb-muted">
+            + Add field
+          </button>
+        </div>
+        <%# Hidden textarea holds the JSON for form submission %>
+        <textarea name="metadata" id="metadata-json" rows="3"
+                  class="hidden w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm font-mono"
+                  placeholder='{"plan":"pro"}'><%= params[:metadata] %></textarea>
+        <noscript>
+          <%# Show raw textarea if JS is disabled %>
+          <style>#metadata-editor { display: none; } #metadata-json { display: block !important; }</style>
+        </noscript>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <button type="submit"
+              class="inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+        Create Invitation
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // --- Expiry toggle ---
+  function toggleExpiryField(noExpiry) {
+    var field = document.getElementById('expiry-field');
+    var input = document.getElementById('expires-in-hours');
+    if (noExpiry) {
+      field.style.display = 'none';
+      input.disabled = true;
+      input.value = '0';
+    } else {
+      field.style.display = 'block';
+      input.disabled = false;
+      if (input.value === '0') input.value = '168';
+    }
+  }
+
+  // --- Metadata key-value editor ---
+  var metaContainer = document.getElementById('metadata-rows');
+  var metaJson = document.getElementById('metadata-json');
+
+  function addMetadataRow(key, value) {
+    var row = document.createElement('div');
+    row.className = 'flex gap-2 items-center';
+    row.innerHTML =
+      '<input type="text" placeholder="Key" value="' + (key || '') + '" class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm w-40 meta-key" />' +
+      '<input type="text" placeholder="Value" value="' + (value || '') + '" class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm flex-1 meta-val" />' +
+      '<button type="button" onclick="this.parentElement.remove(); syncMetadata();" class="text-rsb-muted hover:text-rsb-danger text-sm px-1">&times;</button>';
+    metaContainer.appendChild(row);
+  }
+
+  function syncMetadata() {
+    var obj = {};
+    metaContainer.querySelectorAll('.meta-key').forEach(function(keyEl, i) {
+      var valEl = metaContainer.querySelectorAll('.meta-val')[i];
+      var k = keyEl.value.trim();
+      if (k) obj[k] = valEl.value;
+    });
+    metaJson.value = Object.keys(obj).length > 0 ? JSON.stringify(obj) : '';
+  }
+
+  // Sync on form submit
+  document.getElementById('invitation-form').addEventListener('submit', function() { syncMetadata(); });
+
+  // Initialize from existing JSON (e.g., after validation error re-render)
+  (function() {
+    var existing = metaJson.value.trim();
+    if (existing) {
+      try {
+        var data = JSON.parse(existing);
+        Object.keys(data).forEach(function(k) {
+          addMetadataRow(k, typeof data[k] === 'object' ? JSON.stringify(data[k]) : String(data[k]));
+        });
+      } catch(e) {
+        // Invalid JSON — show raw textarea instead
+        metaJson.className = metaJson.className.replace('hidden', '');
+        document.getElementById('metadata-editor').style.display = 'none';
+      }
+    }
+  })();
+</script>

@@ -40,10 +40,10 @@ module RSB
           assert_match(/nonce=/, location)
         end
 
-        test 'GET /auth/oauth/google stores state and nonce in session' do
+        test 'GET /auth/oauth/google stores nonce and mode in session' do
           get '/auth/oauth/google'
 
-          assert_not_nil session[:google_oauth_state]
+          assert_not_nil session[:google_oauth_state] # now stores the nonce
           assert_not_nil session[:google_oauth_nonce]
           assert_not_nil session[:google_oauth_mode]
         end
@@ -109,7 +109,7 @@ module RSB
           rsa_key, kid = generate_test_key
 
           get '/auth/oauth/google'
-          stored_state = session[:google_oauth_state]
+          state_from_redirect = extract_state_from_redirect(response.location)
           stored_nonce = session[:google_oauth_nonce]
 
           id_token = build_signed_id_token(
@@ -124,7 +124,7 @@ module RSB
           RSB::Settings.set('auth.registration_mode', 'open')
           RSB::Settings.set('auth.credentials.google.registerable', true)
 
-          get '/auth/oauth/google/callback', params: { code: 'auth-code', state: stored_state }
+          get '/auth/oauth/google/callback', params: { code: 'auth-code', state: state_from_redirect }
 
           assert_response :redirect
           assert_not_nil cookies[:rsb_session_token]
@@ -153,7 +153,7 @@ module RSB
         test 'GET /auth/oauth/google/callback clears session OAuth keys after processing' do
           rsa_key, kid = generate_test_key
           get '/auth/oauth/google'
-          stored_state = session[:google_oauth_state]
+          state_from_redirect = extract_state_from_redirect(response.location)
           stored_nonce = session[:google_oauth_nonce]
 
           id_token = build_signed_id_token(
@@ -166,7 +166,7 @@ module RSB
           RSB::Settings.set('auth.registration_mode', 'open')
           RSB::Settings.set('auth.credentials.google.registerable', true)
 
-          get '/auth/oauth/google/callback', params: { code: 'auth-code', state: stored_state }
+          get '/auth/oauth/google/callback', params: { code: 'auth-code', state: state_from_redirect }
 
           assert_nil session[:google_oauth_state]
           assert_nil session[:google_oauth_nonce]
@@ -175,14 +175,25 @@ module RSB
 
         test 'GET /auth/oauth/google/callback when Google auth disabled redirects with error' do
           get '/auth/oauth/google'
-          stored_state = session[:google_oauth_state]
+          state_from_redirect = extract_state_from_redirect(response.location)
           RSB::Settings.set('auth.credentials.google.enabled', false)
 
-          get '/auth/oauth/google/callback', params: { code: 'auth-code', state: stored_state }
+          get '/auth/oauth/google/callback', params: { code: 'auth-code', state: state_from_redirect }
 
           assert_response :redirect
           follow_redirect!
           assert_match(/not available/i, flash[:alert])
+        end
+
+        # --- STATE PARAM ENCODING ---
+
+        test 'redirect action encodes nonce in state param as JSON+Base64' do
+          get '/auth/oauth/google'
+
+          assert_response :redirect
+          state_from_redirect = extract_state_from_redirect(response.location)
+          decoded = JSON.parse(Base64.urlsafe_decode64(state_from_redirect))
+          assert decoded['nonce'].present?
         end
 
         # --- VIEW PARTIAL ---
@@ -215,6 +226,10 @@ module RSB
         end
 
         private
+
+        def extract_state_from_redirect(location)
+          CGI.parse(URI.parse(location).query)['state']&.first
+        end
 
         def default_url_options
           { host: 'localhost' }

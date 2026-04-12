@@ -24,8 +24,10 @@ module RSB
         # @param google_uid [String] Google user ID (sub claim)
         # @param mode [String] "login", "signup", or "link"
         # @param current_identity [RSB::Auth::Identity, nil] current identity for link mode
+        # @param invite_token [String, nil] invitation token for invite_only registration
         # @return [CallbackService::Result]
-        def call(email:, google_uid:, mode:, current_identity: nil)
+        def call(email:, google_uid:, mode:, current_identity: nil, invite_token: nil)
+          @invite_token = invite_token
           case mode.to_s
           when 'link'
             handle_link(email: email, google_uid: google_uid, current_identity: current_identity)
@@ -159,16 +161,17 @@ module RSB
             return failure('Registration is currently disabled.')
           end
 
-          identity = RSB::Auth::Identity.create!(status: :active)
-          credential = create_google_credential(
-            identity: identity,
-            email: email,
-            google_uid: google_uid
+          reg_result = RSB::Auth::RegistrationService.new.register_external(
+            credential_class: 'RSB::Auth::Google::Credential',
+            identifier: email,
+            invite_token: @invite_token,
+            provider_uid: google_uid
           )
 
-          Rails.logger.info { "#{LOG_TAG} Created Google credential for new identity id=#{identity.id}" }
+          return failure(reg_result.errors.first || 'Registration failed') unless reg_result.success?
 
-          success(identity: identity, credential: credential, action: :registered)
+          Rails.logger.info { "#{LOG_TAG} Created Google credential for new identity id=#{reg_result.identity.id}" }
+          success(identity: reg_result.identity, credential: reg_result.credential, action: :registered)
         end
 
         def create_google_credential(identity:, email:, google_uid:)
@@ -197,8 +200,9 @@ module RSB
 
         def registration_allowed?
           mode = RSB::Settings.get('auth.registration_mode').to_s
-          return false if %w[disabled invite_only].include?(mode)
+          return false if mode == 'disabled'
 
+          # invite_only is handled by RegistrationService#register_external (validates invite_token)
           registerable = RSB::Settings.get('auth.credentials.google.registerable')
           ActiveModel::Type::Boolean.new.cast(registerable)
         end
