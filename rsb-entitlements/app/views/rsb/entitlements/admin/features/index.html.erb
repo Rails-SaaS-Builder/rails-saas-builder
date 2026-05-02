@@ -1,0 +1,78 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= t('rsb.entitlements.admin.features.name') %></h1>
+  <a href="<%= rsb_admin_resource_new_path('features') %>"
+     class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+    New Feature
+  </a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-4 mb-4">
+  <form method="get" action="<%= rsb_admin_resource_path('features') %>" class="flex gap-3 items-end flex-wrap">
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.features.fields.kind') %></label>
+      <select name="q[kind]" class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm">
+        <option value="">Any</option>
+        <% %w[flag metered gauge].each do |k| %>
+          <option value="<%= k %>" <%= 'selected' if @filter_values['kind'] == k %>><%= k %></option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1">Archived</label>
+      <select name="q[archived]" class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm">
+        <option value="false" <%= 'selected' if @filter_values['archived'] != 'true' %>>Active only</option>
+        <option value="true"  <%= 'selected' if @filter_values['archived'] == 'true'  %>>Archived only</option>
+      </select>
+    </div>
+    <button type="submit" class="px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm">Filter</button>
+    <a href="<%= rsb_admin_resource_path('features') %>" class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Clear</a>
+  </form>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @features.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.features.fields.key') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.features.fields.name') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.features.fields.kind') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.features.fields.unit') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.features.fields.archived_at') %></th>
+            <th class="px-4 py-3 bg-rsb-bg border-b border-rsb-border"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @features.each do |feature| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm font-mono">
+                <a href="<%= rsb_admin_resource_show_path('features', feature.id) %>" class="text-rsb-primary hover:underline"><%= feature.key %></a>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= feature.name %></td>
+              <td class="px-4 py-3 text-sm">
+                <% badge_class = case feature.kind
+                                  when 'flag'    then 'bg-rsb-info-bg text-rsb-info-text'
+                                  when 'metered' then 'bg-rsb-warning-bg text-rsb-warning-text'
+                                  when 'gauge'   then 'bg-rsb-success-bg text-rsb-success-text'
+                                  else 'bg-rsb-bg text-rsb-muted'
+                                  end %>
+                <span class="inline-block px-2 py-0.5 rounded-rsb text-xs font-medium <%= badge_class %>"><%= feature.kind %></span>
+              </td>
+              <td class="px-4 py-3 text-sm"><%= feature.unit.presence || '—' %></td>
+              <td class="px-4 py-3 text-sm"><%= feature.archived_at&.strftime('%b %d, %Y') || '—' %></td>
+              <td class="px-4 py-3 text-sm text-right">
+                <a href="<%= rsb_admin_resource_show_path('features', feature.id) %>"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 border border-rsb-border text-rsb-text rounded-rsb text-xs font-medium hover:bg-rsb-bg transition-colors">View</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-rsb-muted text-sm">No features found.</p>
+    </div>
+  <% end %>
+</div>

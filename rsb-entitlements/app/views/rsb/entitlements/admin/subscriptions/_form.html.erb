@@ -1,0 +1,89 @@
+<%# Manual subscription form. provider is hardcoded to 'manual' server-side. %>
+<%= form_with model: @subscription,
+              url: rsb_admin_resource_path('subscriptions'),
+              method: :post,
+              local: true do |f| %>
+
+  <% if flash.now[:alert].present? %>
+    <div class="mb-4 p-4 bg-rsb-danger-bg border border-rsb-danger rounded-rsb-lg">
+      <p class="text-sm text-rsb-danger-text"><%= flash.now[:alert] %></p>
+    </div>
+  <% end %>
+
+  <div class="space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= f.label :subject_type, t('rsb.entitlements.admin.subscriptions.fields.subject_type'),
+                    class: 'block text-sm font-medium text-rsb-text mb-1' %>
+        <%= f.text_field :subject_type, required: true,
+                         placeholder: 'Organization',
+                         class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm font-mono' %>
+        <p class="text-xs text-rsb-muted mt-1"><%= t('rsb.entitlements.admin.subscriptions.hints.subject_type') %></p>
+      </div>
+      <div>
+        <%= f.label :subject_id, t('rsb.entitlements.admin.subscriptions.fields.subject_id'),
+                    class: 'block text-sm font-medium text-rsb-text mb-1' %>
+        <%= f.number_field :subject_id, required: true,
+                           class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :plan_key, t('rsb.entitlements.admin.subscriptions.fields.plan_key'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+      <%= f.select :plan_key,
+                   @available_plans.map { |p| ["#{p.name} (#{p.key})", p.key] },
+                   { include_blank: true, prompt: 'Select a plan' },
+                   required: true,
+                   class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+    </div>
+
+    <div>
+      <%= f.label :status, t('rsb.entitlements.admin.subscriptions.fields.status'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+      <%= f.select :status,
+                   %w[active trialing incomplete past_due canceled expired],
+                   { include_blank: false },
+                   class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= f.label :current_period_start, t('rsb.entitlements.admin.subscriptions.fields.current_period_start'),
+                    class: 'block text-sm font-medium text-rsb-text mb-1' %>
+        <%= f.datetime_local_field :current_period_start, required: true,
+                                   value: @subscription.current_period_start&.strftime('%Y-%m-%dT%H:%M'),
+                                   class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+      </div>
+      <div>
+        <%= f.label :current_period_end, t('rsb.entitlements.admin.subscriptions.fields.current_period_end'),
+                    class: 'block text-sm font-medium text-rsb-text mb-1' %>
+        <%= f.datetime_local_field :current_period_end, required: true,
+                                   value: @subscription.current_period_end&.strftime('%Y-%m-%dT%H:%M'),
+                                   class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :trial_end, t('rsb.entitlements.admin.subscriptions.fields.trial_end'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+      <%= f.datetime_local_field :trial_end,
+                                 value: @subscription.trial_end&.strftime('%Y-%m-%dT%H:%M'),
+                                 class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+      <p class="text-xs text-rsb-muted mt-1"><%= t('rsb.entitlements.admin.subscriptions.hints.trial_end') %></p>
+    </div>
+
+    <label class="flex items-center gap-2 cursor-pointer">
+      <%= f.check_box :cancel_at_period_end,
+                      class: 'w-4 h-4 rounded-rsb border-rsb-border' %>
+      <span class="text-sm text-rsb-text"><%= t('rsb.entitlements.admin.subscriptions.fields.cancel_at_period_end') %></span>
+    </label>
+  </div>
+
+  <div class="mt-6 flex gap-3">
+    <%= f.submit t('rsb.entitlements.admin.subscriptions.create_button'),
+                 class: 'inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors cursor-pointer' %>
+    <a href="<%= rsb_admin_resource_path('subscriptions') %>"
+       class="inline-flex items-center px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Cancel</a>
+  </div>
+<% end %>

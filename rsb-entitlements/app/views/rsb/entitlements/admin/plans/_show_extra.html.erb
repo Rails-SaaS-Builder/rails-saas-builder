@@ -1,0 +1,63 @@
+<%# Nested PlanFeature listing on Plan show. The "Add feature" button leads to
+    a separate two-step flow: pick a feature, then fill kind-specific fields. %>
+<section class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mt-4">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-base font-semibold"><%= t('rsb.entitlements.admin.plan_features.heading') %></h2>
+    <% if @available_features.any? %>
+      <a href="<%= "#{rsb_admin_resource_show_path('plans', @plan.id)}/attach_feature" %>"
+         class="inline-flex items-center gap-1 px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+        + <%= t('rsb.entitlements.admin.plan_features.add_feature') %>
+      </a>
+    <% else %>
+      <span class="text-xs text-rsb-muted"><%= t('rsb.entitlements.admin.plan_features.no_more_features') %></span>
+    <% end %>
+  </div>
+
+  <% if @plan_features.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted"><%= t('rsb.entitlements.admin.plan_features.fields.feature_key') %></th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted"><%= t('rsb.entitlements.admin.plan_features.fields.enabled') %></th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted"><%= t('rsb.entitlements.admin.plan_features.fields.limit_value') %></th>
+            <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted"><%= t('rsb.entitlements.admin.plan_features.fields.period') %></th>
+            <th class="px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @plan_features.each do |pf| %>
+            <% kind = @feature_kinds && @feature_kinds[pf.feature_key] %>
+            <tr class="border-t border-rsb-border">
+              <td class="px-4 py-2 text-sm font-mono"><%= pf.feature_key %></td>
+              <td class="px-4 py-2 text-sm">
+                <% if kind == 'flag' %>
+                  <%= pf.enabled.nil? ? '—' : pf.enabled.to_s %>
+                <% else %>
+                  <span class="text-xs text-rsb-muted italic">always</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-2 text-sm"><%= pf.limit_value || '∞' %></td>
+              <td class="px-4 py-2 text-sm"><%= pf.period || '—' %></td>
+              <td class="px-4 py-2 text-sm text-right">
+                <div class="inline-flex gap-2 items-center">
+                  <a href="<%= "#{rsb_admin_resource_show_path('plans', @plan.id)}/edit_plan_feature?plan_feature_id=#{pf.id}" %>"
+                     class="text-xs px-2 py-1 border border-rsb-border rounded-rsb hover:bg-rsb-bg transition-colors">
+                    <%= t('rsb.entitlements.admin.plan_features.actions.edit') %>
+                  </a>
+                  <%= button_to t('rsb.admin.delete', default: 'Delete'),
+                                "#{rsb_admin_resource_show_path('plans', @plan.id)}/destroy_plan_feature?plan_feature_id=#{pf.id}",
+                                method: :post,
+                                data: { confirm: t('rsb.admin.confirm_delete', default: 'Delete this record?') },
+                                class: 'text-xs px-2 py-1 border border-rsb-danger-border text-rsb-danger-text rounded-rsb hover:bg-rsb-danger-bg transition-colors cursor-pointer' %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="text-rsb-muted text-sm"><%= t('rsb.entitlements.admin.plan_features.empty') %></p>
+  <% end %>
+</section>

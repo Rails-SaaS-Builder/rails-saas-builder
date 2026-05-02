@@ -9,7 +9,6 @@ require 'rails/test_help'
 require 'rsb/settings/test_helper'
 require 'rsb/auth/test_helper'
 require 'rsb/entitlements/test_helper'
-require 'rsb/entitlements/stripe/test_helper'
 require 'rsb/admin/test_kit/helpers'
 require 'rsb/auth/google/test_helper'
 
@@ -27,7 +26,6 @@ module ActiveSupport
     include RSB::Settings::TestHelper
     include RSB::Auth::TestHelper
     include RSB::Entitlements::TestHelper
-    include RSB::Entitlements::Stripe::TestHelper
     include RSB::Auth::Google::TestHelper
 
     # Re-register all settings schemas (needed after reset! clears registries between tests)
@@ -127,83 +125,39 @@ module ActiveSupport
                  controller: 'rsb/entitlements/admin/plans',
                  default_sort: { column: :name, direction: :asc } do
           column :id, link: true
+          column :key, sortable: true
           column :name, sortable: true
-          column :slug, visible_on: [:show]
-          column :interval, formatter: :badge
-          column :price_cents, label: 'Price', sortable: true
-          column :currency, visible_on: [:show]
-          column :active, formatter: :badge
-          column :features, formatter: :json, visible_on: [:show]
-          column :limits, formatter: :json, visible_on: [:show]
-          column :metadata, formatter: :json, visible_on: [:show]
+          column :display_order, visible_on: [:show]
+          column :archived_at, formatter: :datetime, visible_on: [:show]
           column :created_at, formatter: :datetime, visible_on: [:show]
 
-          filter :active, type: :boolean
-          filter :interval, type: :select, options: %w[monthly yearly one_time]
+          filter :archived, type: :boolean
 
+          form_field :key, type: :text, required: true, hint: 'URL-friendly identifier (immutable)'
           form_field :name, type: :text, required: true
-          form_field :slug, type: :text, required: true, hint: 'URL-friendly identifier'
-          form_field :interval, type: :select, options: %w[monthly yearly one_time], required: true
-          form_field :price_cents, type: :number, required: true, label: 'Price (cents)'
-          form_field :currency, type: :text, hint: 'ISO 4217 code (e.g., USD)'
-          form_field :active, type: :checkbox
-          form_field :features, type: :json, hint: 'JSON object of feature flags'
-          form_field :limits, type: :json, hint: 'JSON object of usage limits'
-          form_field :metadata, type: :json, hint: 'Arbitrary metadata'
+          form_field :display_order, type: :number
         end
 
-        resource RSB::Entitlements::Entitlement,
-                 icon: 'shield',
-                 actions: %i[index show grant revoke activate] do
+        resource RSB::Entitlements::Feature,
+                 icon: 'toggle-left',
+                 actions: %i[index show new create edit update archive unarchive],
+                 controller: 'rsb/entitlements/admin/features',
+                 default_sort: { column: :key, direction: :asc } do
           column :id, link: true
-          column :plan_id, label: 'Plan'
-          column :entitleable_type, label: 'Type'
-          column :entitleable_id, label: 'Owner ID'
-          column :status, formatter: :badge
-          column :starts_at, formatter: :datetime, visible_on: [:show]
-          column :ends_at, formatter: :datetime, visible_on: [:show]
+          column :key, sortable: true
+          column :name, sortable: true
+          column :kind, formatter: :badge
+          column :unit, visible_on: [:show]
+          column :archived_at, formatter: :datetime, visible_on: [:show]
           column :created_at, formatter: :datetime, visible_on: [:show]
 
-          filter :status, type: :select, options: %w[active expired cancelled]
-          filter :entitleable_type, type: :text
+          filter :kind, type: :select, options: %w[flag metered gauge]
+
+          form_field :key, type: :text, required: true, hint: 'URL-friendly identifier (immutable)'
+          form_field :name, type: :text, required: true
+          form_field :kind, type: :select, options: %w[flag metered gauge], required: true
+          form_field :unit, type: :text, hint: 'e.g. count, GB, request'
         end
-
-        resource RSB::Entitlements::PaymentRequest,
-                 icon: 'receipt',
-                 actions: %i[index show approve reject refund],
-                 controller: 'rsb/entitlements/admin/payment_requests',
-                 default_sort: { column: :created_at, direction: :desc },
-                 per_page: 20 do
-          column :id, link: true
-          column :requestable_type, label: 'Type'
-          column :requestable_id, label: 'Owner ID'
-          column :plan_id, label: 'Plan'
-          column :provider_key, formatter: :badge
-          column :status, formatter: :badge
-          column :amount_cents, label: 'Amount'
-          column :currency
-          column :created_at, formatter: :datetime, visible_on: %i[index show]
-          column :provider_ref, visible_on: [:show]
-          column :resolved_by, visible_on: [:show]
-          column :resolved_at, formatter: :datetime, visible_on: [:show]
-          column :admin_note, visible_on: [:show]
-          column :expires_at, formatter: :datetime, visible_on: [:show]
-
-          filter :status, type: :select,
-                          options: RSB::Entitlements::PaymentRequest::STATUSES
-          filter :provider_key, type: :select,
-                                options: -> { RSB::Entitlements.providers.all.map { |d| d.key.to_s } }
-          filter :requestable_type, type: :text
-        end
-
-        page :usage_counters,
-             label: 'Usage Monitoring',
-             icon: 'bar-chart',
-             controller: 'rsb/entitlements/admin/usage_counters',
-             actions: [
-               { key: :index, label: 'Overview' },
-               { key: :trend, label: 'Trend' }
-             ]
       end
     end
 
@@ -218,7 +172,6 @@ module ActionDispatch
     include RSB::Settings::TestHelper
     include RSB::Auth::TestHelper
     include RSB::Entitlements::TestHelper
-    include RSB::Entitlements::Stripe::TestHelper
     include RSB::Admin::TestKit::Helpers
     include RSB::Auth::Google::TestHelper
   end

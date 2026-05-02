@@ -1,0 +1,33 @@
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold"><%= t('rsb.entitlements.admin.plan_features.attach_to', plan: @plan.name) %></h1>
+    <p class="text-sm text-rsb-muted mt-1"><%= t('rsb.entitlements.admin.plan_features.attach_step1_help') %></p>
+  </div>
+  <a href="<%= rsb_admin_resource_show_path('plans', @plan.id) %>"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 max-w-md">
+  <% if @available_features.any? %>
+    <%= form_with url: "#{rsb_admin_resource_show_path('plans', @plan.id)}/attach_feature",
+                  method: :get, local: true do %>
+      <div class="mb-4">
+        <%= label_tag :feature_key, t('rsb.entitlements.admin.plan_features.fields.feature_key'),
+                      class: 'block text-sm font-medium text-rsb-text mb-1' %>
+        <%= select_tag :feature_key,
+                       options_from_collection_for_select(@available_features, :key, ->(f) { "#{f.key} (#{f.kind})" }),
+                       prompt: t('rsb.entitlements.admin.plan_features.select_feature'),
+                       required: true,
+                       class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+      </div>
+      <div class="flex gap-2">
+        <%= submit_tag t('rsb.entitlements.admin.plan_features.next'),
+                       class: 'inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors cursor-pointer' %>
+        <a href="<%= rsb_admin_resource_show_path('plans', @plan.id) %>"
+           class="inline-flex items-center px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Cancel</a>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-rsb-muted"><%= t('rsb.entitlements.admin.plan_features.no_more_features') %></p>
+  <% end %>
+</div>

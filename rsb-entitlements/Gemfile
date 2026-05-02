@@ -4,5 +4,5 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'pg'
 gem 'rsb-settings', path: '../rsb-settings'
-gem 'sqlite3'

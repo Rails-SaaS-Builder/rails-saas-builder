@@ -114,7 +114,7 @@ module RSB
       # @example XSS prevention
       #   rsb_admin_format_value("<script>alert('xss')</script>", nil)
       #   # => "&lt;script&gt;alert('xss')&lt;/script&gt;"
-      def rsb_admin_format_value(value, formatter, record = nil)
+      def rsb_admin_format_value(value, formatter, record = nil) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
         return content_tag(:span, '-', class: 'text-rsb-muted') if value.nil?
 
         case formatter
@@ -136,6 +136,21 @@ module RSB
             else
               content_tag(:pre, JSON.pretty_generate(value),
                           class: 'mt-1 p-3 bg-rsb-bg rounded-rsb text-xs font-mono overflow-x-auto whitespace-pre')
+            end
+          else
+            value.to_s
+          end
+        when :json_collapsed
+          if value.is_a?(Hash) || value.is_a?(Array)
+            if value.empty?
+              content_tag(:span, 'Empty', class: 'text-rsb-muted')
+            else
+              content_tag(:details, class: 'mt-1') do
+                concat content_tag(:summary, 'Show JSON',
+                                   class: 'cursor-pointer text-sm text-rsb-primary hover:underline select-none')
+                concat content_tag(:pre, JSON.pretty_generate(value),
+                                   class: 'mt-2 p-3 bg-rsb-bg rounded-rsb text-xs font-mono overflow-x-auto whitespace-pre')
+              end
             end
           else
             value.to_s

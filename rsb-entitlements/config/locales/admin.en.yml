@@ -1,25 +1,115 @@
 en:
   rsb:
-    admin:
-      resources:
+    entitlements:
+      admin:
+        category: Entitlements
+        features:
+          name: Features
+          name_singular: Feature
+          created: Feature created.
+          updated: Feature updated.
+          archived: Feature archived.
+          unarchived: Feature unarchived.
+          fields:
+            key: Key
+            name: Name
+            kind: Kind
+            unit: Unit
+            archived_at: Archived
+          hints:
+            key: 'Lowercase, dot-segmented identifier (e.g. api_calls, storage.bytes). Immutable.'
+            unit: 'Free-form display label. Leave blank for flag features.'
+          actions:
+            archive: Archive
+            unarchive: Unarchive
+          confirm:
+            archive: 'Archive this feature? It will stop being granted on new subscriptions but existing usage stays intact.'
         plans:
-          label: "Plans"
-          columns:
-            price_cents: "Price"
-        entitlements:
-          label: "Entitlements"
-          columns:
-            entitleable_type: "Type"
-            entitleable_id: "Owner ID"
-        payment_requests:
-          label: "Payment Requests"
-          columns:
-            requestable_type: "Type"
-            requestable_id: "Owner ID"
-            provider_key: "Provider"
-            amount_cents: "Amount"
-            resolved_by: "Resolved By"
-            resolved_at: "Resolved At"
-            admin_note: "Admin Note"
-            expires_at: "Expires At"
-            provider_ref: "Provider Ref"
+          name: Plans
+          name_singular: Plan
+          created: Plan created.
+          updated: Plan updated.
+          archived: Plan archived.
+          unarchived: Plan unarchived.
+          fields:
+            key: Key
+            name: Name
+            display_order: Order
+            metadata: Metadata
+            archived_at: Archived
+          hints:
+            metadata: 'JSON object. App-level scratch space; the gem never reads it.'
+          actions:
+            archive: Archive
+            unarchive: Unarchive
+          confirm:
+            archive: 'Archive this plan? Existing subscriptions on this plan continue working; the plan can no longer be assigned to new subscriptions.'
+        plan_features:
+          heading: Plan features
+          empty: No features attached to this plan yet.
+          attach: Attach feature
+          add_feature: Add feature
+          attach_to: 'Add feature to %{plan}'
+          attach_step1_help: 'Choose a feature to attach. The next page lets you configure the grant.'
+          configure: 'Configure %{feature}'
+          configure_help: 'This is a %{kind} feature. Fill in the fields below to attach it.'
+          edit_help: 'This is a %{kind} feature. Update the fields below and save.'
+          edit_title: 'Edit %{feature}'
+          update_button: Save changes
+          next: Next
+          select_feature: Select a feature…
+          no_more_features: All features are already attached.
+          created: Plan feature created.
+          updated: Plan feature updated.
+          deleted: Plan feature removed.
+          actions:
+            edit: Edit
+          errors:
+            feature_not_available: 'That feature is no longer available — it may have been archived or already attached.'
+          fields:
+            feature_key: Feature
+            enabled: Enabled
+            limit_value: Limit
+            period: Period
+          hints:
+            unlimited: 'blank = unlimited'
+            limit_metered: 'Per-period cap. Leave blank for unlimited within the period.'
+            limit_gauge: 'Maximum concurrent value. Leave blank for unlimited.'
+        subscriptions:
+          name: Subscriptions
+          name_singular: Subscription
+          empty: No subscriptions yet.
+          new_button: + New manual subscription
+          new_title: New manual subscription
+          new_help: 'Create a manual subscription for a subject. Provider is set to "manual" and a unique provider_subscription_id is generated automatically.'
+          new_help_replace: 'If this subject already has an active or trialing subscription, it will be canceled automatically when this one is created.'
+          show_title: 'Subscription #%{id}'
+          create_button: Create subscription
+          created: Manual subscription created.
+          canceled: Subscription canceled.
+          fields:
+            subject_type: Subject type
+            subject_id: Subject ID
+            plan_key: Plan
+            status: Status
+            provider: Provider
+            current_period_start: Period start
+            current_period_end: Period end
+            trial_end: Trial end
+            cancel_at_period_end: Cancel at period end
+          hints:
+            subject_type: 'Class name of the subject model (e.g. Organization, User).'
+            trial_end: 'Optional. Leave blank for non-trial subscriptions.'
+          actions:
+            cancel: Cancel subscription
+          confirm:
+            cancel: 'Cancel this subscription? The subject keeps access through the current period unless you also clear current_period_end.'
+          errors:
+            subject_not_found: 'No %{type} found with id %{id}.'
+            cannot_cancel: 'Cannot cancel a subscription with status %{status}.'
+        usage_counters:
+          name: Usage counters
+          name_singular: Usage counter
+        provider_events:
+          name: Provider events
+          name_singular: Provider event

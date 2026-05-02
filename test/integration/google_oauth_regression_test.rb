@@ -7,6 +7,7 @@
 # auto-merge integration, and admin hooks.
 
 require 'test_helper'
+require 'cgi'
 require 'webmock/minitest'
 
 class GoogleOauthRegressionTest < ActionDispatch::IntegrationTest

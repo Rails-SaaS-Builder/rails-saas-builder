@@ -1,0 +1,40 @@
+<%# Shared partial: renders only fields relevant to the feature's kind.
+    Used by the attach step-2 form and the edit_plan_feature form.
+    Locals: kind (String), record (PlanFeature or nil for new). %>
+<% case kind %>
+<% when 'flag' %>
+  <div class="mb-4">
+    <%= label_tag 'plan_feature[enabled]', t('rsb.entitlements.admin.plan_features.fields.enabled'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+    <%= select_tag 'plan_feature[enabled]',
+                   options_for_select([%w[true true], %w[false false]], record&.enabled.to_s.presence || 'true'),
+                   class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+  </div>
+
+<% when 'metered' %>
+  <div class="mb-4">
+    <%= label_tag 'plan_feature[limit_value]', t('rsb.entitlements.admin.plan_features.fields.limit_value'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+    <%= number_field_tag 'plan_feature[limit_value]', record&.limit_value, min: 0,
+                         placeholder: t('rsb.entitlements.admin.plan_features.hints.unlimited'),
+                         class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+    <p class="text-xs text-rsb-muted mt-1"><%= t('rsb.entitlements.admin.plan_features.hints.limit_metered') %></p>
+  </div>
+  <div class="mb-4">
+    <%= label_tag 'plan_feature[period]', t('rsb.entitlements.admin.plan_features.fields.period'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+    <%= select_tag 'plan_feature[period]',
+                   options_for_select(%w[day week month year], record&.period || 'month'),
+                   class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+  </div>
+
+<% when 'gauge' %>
+  <div class="mb-4">
+    <%= label_tag 'plan_feature[limit_value]', t('rsb.entitlements.admin.plan_features.fields.limit_value'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+    <%= number_field_tag 'plan_feature[limit_value]', record&.limit_value, min: 0,
+                         placeholder: t('rsb.entitlements.admin.plan_features.hints.unlimited'),
+                         class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+    <p class="text-xs text-rsb-muted mt-1"><%= t('rsb.entitlements.admin.plan_features.hints.limit_gauge') %></p>
+  </div>
+<% end %>
