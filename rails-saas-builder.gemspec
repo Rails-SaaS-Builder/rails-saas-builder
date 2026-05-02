@@ -24,6 +24,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'rsb-admin', RSB::VERSION # Step 04
   spec.add_dependency 'rsb-auth', RSB::VERSION # Step 02
-  spec.add_dependency 'rsb-entitlements', RSB::VERSION # Step 03
+  spec.add_dependency 'rsb-entitlements', RSB::VERSION
   spec.add_dependency 'rsb-settings', RSB::VERSION
 end

@@ -5,58 +5,33 @@ require 'test_helper'
 module RSB
   module Entitlements
     class SettingsSchemaTest < ActiveSupport::TestCase
-      test 'builds a valid RSB::Settings::Schema' do
-        schema = RSB::Entitlements::SettingsSchema.build
-        assert_instance_of RSB::Settings::Schema, schema
-        assert schema.valid?
-      end
-
-      test "has category 'entitlements'" do
-        schema = RSB::Entitlements::SettingsSchema.build
-        assert_equal 'entitlements', schema.category
-      end
-
-      test 'contains all expected keys' do
-        schema = RSB::Entitlements::SettingsSchema.build
-        expected_keys = %i[default_currency trial_days grace_period_days auto_create_counters on_plan_change_usage
-                           payment_request_expiry_hours]
-        assert_equal expected_keys, schema.keys
-      end
-
-      test 'has correct defaults' do
-        schema = RSB::Entitlements::SettingsSchema.build
-        defaults = schema.defaults
-
-        assert_equal 'usd', defaults[:default_currency]
-        assert_equal 14, defaults[:trial_days]
-        assert_equal 3, defaults[:grace_period_days]
-        assert_equal true, defaults[:auto_create_counters]
-      end
-
-      test 'has correct types' do
-        schema = RSB::Entitlements::SettingsSchema.build
-
-        assert_equal :string, schema.find(:default_currency).type
-        assert_equal :integer, schema.find(:trial_days).type
-        assert_equal :integer, schema.find(:grace_period_days).type
-        assert_equal :boolean, schema.find(:auto_create_counters).type
-      end
-
-      test 'RSB::Entitlements.settings_schema returns the schema' do
-        schema = RSB::Entitlements.settings_schema
+      test 'build returns a Schema instance under category entitlements' do
+        schema = SettingsSchema.build
         assert_instance_of RSB::Settings::Schema, schema
         assert_equal 'entitlements', schema.category
       end
 
-      test 'entitlements settings have correct group assignments' do
-        schema = RSB::Entitlements::SettingsSchema.build
+      test 'schema registers no provider settings' do
+        schema = SettingsSchema.build
+        assert schema.definitions.none? { |s| s.key.to_s.start_with?('providers.') },
+               'provider settings must live in adapter gems, not in core'
+      end
 
-        assert_equal 'General', schema.find(:default_currency).group
-        assert_equal 'General', schema.find(:trial_days).group
-        assert_equal 'General', schema.find(:grace_period_days).group
-        assert_equal 'General', schema.find(:auto_create_counters).group
-        assert_equal 'General', schema.find(:on_plan_change_usage).group
-        assert_equal 'General', schema.find(:payment_request_expiry_hours).group
+      test 'schema does not register removed v0 keys' do
+        schema = SettingsSchema.build
+        keys = schema.definitions.map { |s| s.key.to_s }
+        removed = %w[default_currency trial_days grace_period_days
+                     auto_create_counters on_plan_change_usage
+                     payment_request_expiry_hours]
+        removed.each do |k|
+          assert_not_includes keys, k, "expected v0 key #{k} to be removed"
+        end
+      end
+
+      test 'schema is effectively empty in v1' do
+        # Truly empty is the v1 default. If a future task adds an optional
+        # setting, replace this with an explicit allowlist assertion.
+        assert_equal 0, SettingsSchema.build.definitions.size
       end
     end
   end

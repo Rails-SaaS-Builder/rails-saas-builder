@@ -1,0 +1,83 @@
+<%# Feature form partial. On new: full fields. On edit: key/kind rendered read-only. %>
+<%= form_with model: @feature,
+              url: (@feature.new_record? ? rsb_admin_resource_path('features') : rsb_admin_resource_show_path('features', @feature.id)),
+              method: (@feature.new_record? ? :post : :patch),
+              local: true do |f| %>
+  <% if @feature.errors.any? %>
+    <div class="mb-4 p-4 bg-rsb-danger-bg border border-rsb-danger rounded-rsb-lg">
+      <ul class="list-disc list-inside text-sm text-rsb-danger-text space-y-1">
+        <% @feature.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="space-y-4">
+    <% if @feature.new_record? %>
+      <div>
+        <%= f.label :key, t('rsb.entitlements.admin.features.fields.key'),
+                    class: 'block text-sm font-medium text-rsb-text mb-1' %>
+        <%= f.text_field :key, required: true,
+                         class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm',
+                         placeholder: 'api_calls, sso, storage_bytes' %>
+        <p class="text-xs text-rsb-muted mt-1"><%= t('rsb.entitlements.admin.features.hints.key') %></p>
+      </div>
+      <div>
+        <%= f.label :kind, t('rsb.entitlements.admin.features.fields.kind'),
+                    class: 'block text-sm font-medium text-rsb-text mb-1' %>
+        <%= f.select :kind, %w[flag metered gauge],
+                     { include_blank: false },
+                     class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm',
+                     id: 'feature_kind_select' %>
+      </div>
+    <% else %>
+      <div>
+        <span class="block text-sm font-medium text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.features.fields.key') %></span>
+        <span class="block text-sm font-mono px-3 py-2 bg-rsb-bg rounded-rsb border border-rsb-border text-rsb-muted"><%= @feature.key %></span>
+      </div>
+      <div>
+        <span class="block text-sm font-medium text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.features.fields.kind') %></span>
+        <span class="block text-sm px-3 py-2 bg-rsb-bg rounded-rsb border border-rsb-border text-rsb-muted"><%= @feature.kind %></span>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :name, t('rsb.entitlements.admin.features.fields.name'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+      <%= f.text_field :name, required: true,
+                       class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+    </div>
+
+    <% hide_unit = @feature.new_record? ? false : @feature.kind == 'flag' %>
+    <div id="feature_unit_field" class="<%= 'hidden' if hide_unit %>">
+      <%= f.label :unit, t('rsb.entitlements.admin.features.fields.unit'),
+                  class: 'block text-sm font-medium text-rsb-text mb-1' %>
+      <%= f.text_field :unit,
+                       class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm',
+                       placeholder: 'count, bytes, seconds' %>
+      <p class="text-xs text-rsb-muted mt-1"><%= t('rsb.entitlements.admin.features.hints.unit') %></p>
+    </div>
+  </div>
+
+  <% if @feature.new_record? %>
+    <script>
+      (function () {
+        var select = document.getElementById('feature_kind_select');
+        var field  = document.getElementById('feature_unit_field');
+        if (!select || !field) return;
+        function sync() {
+          field.classList.toggle('hidden', select.value === 'flag');
+        }
+        select.addEventListener('change', sync);
+        sync();
+      })();
+    </script>
+  <% end %>
+
+  <div class="mt-6 flex gap-3">
+    <%= f.submit class: 'inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors cursor-pointer' %>
+    <a href="<%= rsb_admin_resource_path('features') %>"
+       class="inline-flex items-center px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Cancel</a>
+  </div>
+<% end %>

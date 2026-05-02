@@ -84,10 +84,7 @@ class AdminIntegrationTest < ActionDispatch::IntegrationTest
   end
 
   test 'GET /admin/plans renders index for registered entitlements resource' do
-    RSB::Entitlements::Plan.create!(
-      name: 'Test', slug: "test-#{SecureRandom.hex(4)}",
-      interval: 'monthly', price_cents: 0, currency: 'usd'
-    )
+    RSB::Entitlements::Plan.create!(key: "pro-#{SecureRandom.hex(4)}", name: 'Test')
     get '/admin/plans'
     assert_response :success
     assert_match 'Plans', response.body
@@ -109,12 +106,6 @@ class AdminIntegrationTest < ActionDispatch::IntegrationTest
     get '/admin/sessions_management'
     assert_response :success
     assert_match 'Active Sessions', response.body
-  end
-
-  test 'GET /admin/usage_counters renders page for registered entitlements page' do
-    get '/admin/usage_counters'
-    assert_response :success
-    assert_match 'Usage Monitoring', response.body
   end
 
   test 'index page shows New button for resource with :new action' do

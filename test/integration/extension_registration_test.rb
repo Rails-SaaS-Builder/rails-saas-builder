@@ -27,23 +27,26 @@ class ExtensionRegistrationTest < ActiveSupport::TestCase
     assert RSB::Admin.settings_schema.valid?, 'Admin settings schema should be valid'
   end
 
-  test 'Entitleable works on Identity (cross-gem integration)' do
+  test 'Subject concern works on Identity (cross-gem integration)' do
     identity = RSB::Auth::Identity.create!(status: 'active')
-    assert identity.respond_to?(:current_plan)
+    assert identity.respond_to?(:active_subscription)
     assert identity.respond_to?(:entitled_to?)
-    assert identity.respond_to?(:within_limit?)
-    assert identity.respond_to?(:grant_entitlement)
+    assert identity.respond_to?(:consume!)
+    assert identity.respond_to?(:grant_for)
   end
 
-  test 'Entitleable works on arbitrary models (Organization)' do
+  test 'Subject concern works on arbitrary models (Organization)' do
     org = Organization.create!(name: 'Test Corp')
-    assert org.respond_to?(:current_plan)
+    assert org.respond_to?(:active_subscription)
     assert org.respond_to?(:entitled_to?)
-    assert org.respond_to?(:within_limit?)
-    assert org.respond_to?(:grant_entitlement)
+    assert org.respond_to?(:consume!)
+    assert org.respond_to?(:grant_for)
   end
 
-  test 'provider registry is empty by default (no provider gems installed)' do
-    assert_empty RSB::Entitlements.providers.keys
+  test 'RSB::Entitlements does not expose v0 providers API' do
+    refute RSB::Entitlements.respond_to?(:providers),
+           'v1 must not expose .providers'
+    refute RSB::Entitlements.respond_to?(:configure),
+           'v1 must not expose .configure'
   end
 end

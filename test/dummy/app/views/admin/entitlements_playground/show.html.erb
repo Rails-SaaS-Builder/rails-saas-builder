@@ -1,0 +1,157 @@
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Entitlements Playground</h1>
+    <p class="text-sm text-rsb-muted mt-1">Drive consume / release flows against a real subject and watch counters + hooks in real time.</p>
+  </div>
+</div>
+
+<%# Subject selector %>
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-4 mb-4">
+  <%= form_with url: '/admin/entitlements_playground', method: :get, local: true,
+                class: 'flex gap-2 items-end' do %>
+    <div class="flex-1">
+      <label class="block text-xs text-rsb-muted mb-1">Subject (Organization)</label>
+      <%= select_tag :subject_id,
+                     options_from_collection_for_select(@subjects, :id, ->(s) { "##{s.id} #{s.name}" }, @subject&.id),
+                     class: 'w-full border border-rsb-border rounded-rsb px-3 py-2 text-sm' %>
+    </div>
+    <%= submit_tag 'Load',
+                   class: 'px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors cursor-pointer' %>
+  <% end %>
+</div>
+
+<%# Recent events panel (from last action) — populated from session by the
+    controller; not rendered through flash so the rsb-admin flash partial
+    doesn't double-render it. %>
+<% if @rsb_events.is_a?(Array) && @rsb_events.any? %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-4 mb-4">
+    <h3 class="text-sm font-semibold mb-2">Events from last action</h3>
+    <ul class="space-y-1">
+      <% @rsb_events.each do |event| %>
+        <li class="font-mono text-xs px-3 py-1.5 bg-rsb-bg rounded-rsb border border-rsb-border"><%= event %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if @subject.nil? %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+    <p class="text-rsb-muted text-sm">No Organization rows seeded. Create one via Rails console first.</p>
+  </div>
+<% elsif @active_subscription.nil? %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+    <p class="text-rsb-muted text-sm">
+      <%= "Organization ##{@subject.id} (#{@subject.name})" %> has no active subscription.
+      Create one via the <a href="/admin/subscriptions/new" class="text-rsb-primary hover:underline">Subscriptions admin</a>.
+    </p>
+  </div>
+<% else %>
+  <%# Subscription summary %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+    <h2 class="text-base font-semibold mb-3">Active subscription</h2>
+    <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <dt class="text-rsb-muted">Plan</dt>
+      <dd class="font-mono"><%= @active_subscription.plan_key %></dd>
+      <dt class="text-rsb-muted">Status</dt>
+      <dd><%= rsb_admin_format_value(@active_subscription.status, :badge, @active_subscription) %></dd>
+      <dt class="text-rsb-muted">Provider</dt>
+      <dd><%= rsb_admin_format_value(@active_subscription.provider, :badge, @active_subscription) %></dd>
+      <dt class="text-rsb-muted">Period</dt>
+      <dd class="font-mono text-xs">
+        <%= @active_subscription.current_period_start&.strftime('%Y-%m-%d %H:%M') %>
+        →
+        <%= @active_subscription.current_period_end&.strftime('%Y-%m-%d %H:%M') %>
+      </dd>
+    </dl>
+  </div>
+
+  <%# Grants table %>
+  <div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 mb-4">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-base font-semibold">Grants</h2>
+      <%= button_to 'Reset all counters',
+                    "/admin/entitlements_playground/reset?subject_id=#{@subject.id}",
+                    method: :post,
+                    data: { confirm: 'Delete every UsageCounter row for this subject?' },
+                    class: 'text-xs px-3 py-1.5 border border-rsb-danger-border text-rsb-danger-text rounded-rsb hover:bg-rsb-danger-bg transition-colors cursor-pointer' %>
+    </div>
+
+    <% if @grants.empty? %>
+      <p class="text-rsb-muted text-sm">No PlanFeatures attached to <code><%= @active_subscription.plan_key %></code>.</p>
+    <% else %>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted">
+              <th class="px-3 py-2">Feature</th>
+              <th class="px-3 py-2">Kind</th>
+              <th class="px-3 py-2">Limit</th>
+              <th class="px-3 py-2">Period</th>
+              <th class="px-3 py-2">Consumed</th>
+              <th class="px-3 py-2">Remaining</th>
+              <th class="px-3 py-2">Period start</th>
+              <th class="px-3 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @grants.each do |row| %>
+              <tr class="border-t border-rsb-border">
+                <td class="px-3 py-2 text-sm font-mono"><%= row[:feature_key] %></td>
+                <td class="px-3 py-2 text-sm"><%= rsb_admin_format_value(row[:kind], :badge, nil) %></td>
+                <td class="px-3 py-2 text-sm"><%= row[:limit] || '∞' %></td>
+                <td class="px-3 py-2 text-sm"><%= row[:period] || '—' %></td>
+                <td class="px-3 py-2 text-sm font-mono"><%= row[:grant]&.dig(:consumed) || 0 %></td>
+                <td class="px-3 py-2 text-sm font-mono">
+                  <% case row[:kind] %>
+                  <% when 'flag' %>
+                    <%= row[:entitled] ? '✓ enabled' : '✗ disabled' %>
+                  <% else %>
+                    <%= row[:remaining] %>
+                  <% end %>
+                </td>
+                <td class="px-3 py-2 text-xs font-mono text-rsb-muted">
+                  <% ps = row[:grant]&.dig(:period_start) %>
+                  <% if ps.respond_to?(:strftime) %>
+                    <%= ps.strftime('%Y-%m-%d %H:%M') %>
+                  <% else %>
+                    —
+                  <% end %>
+                </td>
+                <td class="px-3 py-2 text-sm">
+                  <% case row[:kind] %>
+                  <% when 'metered' %>
+                    <div class="inline-flex gap-1">
+                      <% [1, 10, 100].each do |n| %>
+                        <%= button_to "+#{n}",
+                                      "/admin/entitlements_playground/consume?subject_id=#{@subject.id}&feature=#{row[:feature_key]}&amount=#{n}",
+                                      method: :post,
+                                      class: 'text-xs px-2 py-1 border border-rsb-border rounded-rsb hover:bg-rsb-bg transition-colors cursor-pointer' %>
+                      <% end %>
+                    </div>
+                  <% when 'gauge' %>
+                    <div class="inline-flex gap-1">
+                      <% [1, 10].each do |n| %>
+                        <%= button_to "+#{n}",
+                                      "/admin/entitlements_playground/consume?subject_id=#{@subject.id}&feature=#{row[:feature_key]}&amount=#{n}",
+                                      method: :post,
+                                      class: 'text-xs px-2 py-1 border border-rsb-border rounded-rsb hover:bg-rsb-bg transition-colors cursor-pointer' %>
+                      <% end %>
+                      <% [1, 10].each do |n| %>
+                        <%= button_to "−#{n}",
+                                      "/admin/entitlements_playground/release?subject_id=#{@subject.id}&feature=#{row[:feature_key]}&amount=#{n}",
+                                      method: :post,
+                                      class: 'text-xs px-2 py-1 border border-rsb-warning-border text-rsb-warning-text rounded-rsb hover:bg-rsb-warning-bg transition-colors cursor-pointer' %>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <span class="text-xs text-rsb-muted">read-only</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+<% end %>

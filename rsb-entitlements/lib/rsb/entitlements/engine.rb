@@ -5,121 +5,151 @@ module RSB
     class Engine < ::Rails::Engine
       isolate_namespace RSB::Entitlements
 
-      # FIXME: Move admin integration to separate gem!
-      # Exclude admin controllers from autoloading when rsb-admin is not present.
-      # These controllers inherit from RSB::Admin::AdminController and can only
-      # be loaded when rsb-admin is in the bundle.
+      # Exclude admin controllers from autoloading when rsb-admin is not in
+      # the bundle. Task 16 owns the actual admin controllers; the path is
+      # reserved here so neither presence nor absence of rsb-admin breaks
+      # boot.
       initializer 'rsb_entitlements.exclude_admin_controllers', before: :set_autoload_paths do
         unless defined?(RSB::Admin::Engine)
           Rails.autoloaders.main.ignore(root.join('app', 'controllers', 'rsb', 'entitlements', 'admin'))
         end
       end
 
-      # Register settings schema with rsb-settings
+      # Register settings schema with rsb-settings (empty schema in v1).
       initializer 'rsb_entitlements.register_settings', after: 'rsb_settings.ready' do
         RSB::Settings.registry.register(RSB::Entitlements.settings_schema)
       end
 
-      # Signal readiness — provider extensions hook in after this
-      initializer 'rsb_entitlements.ready' do
-        # Register built-in providers
-        RSB::Entitlements.providers.register(RSB::Entitlements::PaymentProvider::Wire)
-      end
-
-      # Load i18n translations for admin labels
+      # Load i18n translations for admin labels.
       initializer 'rsb_entitlements.i18n' do
-        config.i18n.load_path += Dir[RSB::Entitlements::Engine.root.join('config', 'locales', '**', '*.yml')]
+        config.i18n.load_path += Dir[
+          RSB::Entitlements::Engine.root.join('config', 'locales', '**', '*.yml')
+        ]
       end
 
-      # Admin integration via lazy on_load hook
-      # Registers Plan and Entitlement resources with explicit columns, filters, and form fields,
-      # plus a UsageCounters page with custom actions for monitoring and resetting counters.
-      initializer 'rsb_entitlements.admin_hooks' do
+      # Admin integration via lazy on_load hook — v1 schema.
+      # Registers the "Entitlements" category with Feature/Plan/Subscription/
+      # UsageCounter/ProviderEvent resources.
+      # Feature and Plan use custom controllers (archive/unarchive).
+      # Subscription, UsageCounter, and ProviderEvent are read-only via the
+      # standard ResourcesController.
+      # PlanFeature is NOT registered as a sidebar entry (inline on Plan show only).
+      initializer 'rsb_entitlements.admin_hooks' do # rubocop:disable Metrics/BlockLength
         ActiveSupport.on_load(:rsb_admin) do |admin_registry|
-          admin_registry.register_category 'Billing' do
+          admin_registry.register_category 'Entitlements' do
+            resource RSB::Entitlements::Feature,
+                     icon: 'key',
+                     controller: 'rsb/entitlements/admin/features',
+                     actions: %i[index show new create edit update archive unarchive],
+                     default_sort: { column: :key, direction: :asc } do
+              column :id,          link: true, visible_on: [:show]
+              column :key,         sortable: true
+              column :name
+              column :kind,        formatter: :badge
+              column :unit,        visible_on: %i[index show]
+              column :archived_at, formatter: :datetime, label: 'Archived'
+              column :created_at,  formatter: :datetime, visible_on: [:show]
+
+              filter :kind,     type: :select, options: %w[flag metered gauge]
+              filter :archived, type: :select, options: %w[false true]
+
+              form_field :key,  type: :text,   required: true,
+                                hint: 'Lowercase, dot-segmented (e.g. api_calls)'
+              form_field :name, type: :text,   required: true
+              form_field :kind, type: :select, options: %w[flag metered gauge], required: true
+              form_field :unit, type: :text,   hint: 'Free-form display label; null for flag'
+            end
+
             resource RSB::Entitlements::Plan,
-                     icon: 'credit-card',
-                     actions: %i[index show new create edit update destroy],
+                     icon: 'layers',
                      controller: 'rsb/entitlements/admin/plans',
-                     default_sort: { column: :name, direction: :asc } do
-              column :id, link: true
-              column :name, sortable: true
-              column :slug, visible_on: [:show]
-              column :interval, formatter: :badge
-              column :price_cents, label: 'Price', sortable: true
-              column :currency, visible_on: [:show]
-              column :active, formatter: :badge
-              column :features, formatter: :json, visible_on: [:show]
-              column :limits, formatter: :json, visible_on: [:show]
-              column :metadata, formatter: :json, visible_on: [:show]
-              column :created_at, formatter: :datetime, visible_on: [:show]
+                     actions: %i[index show new create edit update archive unarchive
+                                 attach_feature edit_plan_feature destroy_plan_feature],
+                     default_sort: { column: :display_order, direction: :asc } do
+              column :id,            link: true, visible_on: [:show]
+              column :key,           sortable: true
+              column :name
+              column :display_order, label: 'Order', sortable: true
+              column :archived_at,   formatter: :datetime, label: 'Archived'
+              column :metadata,      formatter: :json, visible_on: [:show]
+              column :created_at,    formatter: :datetime, visible_on: [:show]
 
-              filter :active, type: :boolean
-              filter :interval, type: :select, options: %w[monthly yearly one_time]
+              filter :archived, type: :select, options: %w[false true]
 
-              form_field :name, type: :text, required: true
-              form_field :slug, type: :text, required: true, hint: 'URL-friendly identifier'
-              form_field :interval, type: :select, options: %w[monthly yearly one_time], required: true
-              form_field :price_cents, type: :number, required: true, label: 'Price (cents)'
-              form_field :currency, type: :text, hint: 'ISO 4217 code (e.g., USD)'
-              form_field :active, type: :checkbox
-              form_field :features, type: :json, hint: 'JSON object of feature flags'
-              form_field :limits, type: :json, hint: 'JSON object of usage limits'
-              form_field :metadata, type: :json, hint: 'Arbitrary metadata'
+              form_field :key,           type: :text,   required: true
+              form_field :name,          type: :text,   required: true
+              form_field :display_order, type: :number
+              form_field :metadata,      type: :json
             end
 
-            resource RSB::Entitlements::Entitlement,
-                     icon: 'shield',
-                     actions: %i[index show grant revoke activate] do
-              column :id, link: true
-              column :plan_id, label: 'Plan'
-              column :entitleable_type, label: 'Type'
-              column :entitleable_id, label: 'Owner ID'
-              column :status, formatter: :badge
-              column :starts_at, formatter: :datetime, visible_on: [:show]
-              column :ends_at, formatter: :datetime, visible_on: [:show]
-              column :created_at, formatter: :datetime, visible_on: [:show]
-
-              filter :status, type: :select, options: %w[active expired cancelled]
-              filter :entitleable_type, type: :text
-            end
-
-            resource RSB::Entitlements::PaymentRequest,
-                     icon: 'receipt',
-                     actions: %i[index show approve reject refund],
-                     controller: 'rsb/entitlements/admin/payment_requests',
+            resource RSB::Entitlements::Subscription,
+                     icon: 'credit-card',
+                     controller: 'rsb/entitlements/admin/subscriptions',
+                     actions: %i[index show new create cancel],
                      default_sort: { column: :created_at, direction: :desc },
-                     per_page: 20 do
-              column :id, link: true
-              column :requestable_type, label: 'Type'
-              column :requestable_id, label: 'Owner ID'
-              column :plan_id, label: 'Plan'
-              column :provider_key, formatter: :badge
-              column :status, formatter: :badge
-              column :amount_cents, label: 'Amount'
-              column :currency
-              column :created_at, formatter: :datetime, visible_on: %i[index show]
-              column :provider_ref, visible_on: [:show]
-              column :resolved_by, visible_on: [:show]
-              column :resolved_at, formatter: :datetime, visible_on: [:show]
-              column :admin_note, visible_on: [:show]
-              column :expires_at, formatter: :datetime, visible_on: [:show]
+                     per_page: 25 do
+              column :id,                      link: true
+              column :subject_type,             label: 'Subject'
+              column :subject_id,               label: 'Subject ID', visible_on: %i[index show]
+              column :plan_key,                 sortable: true
+              column :status,                   formatter: :badge
+              column :provider,                 formatter: :badge
+              column :provider_subscription_id, label: 'Provider Sub ID', visible_on: [:show]
+              column :provider_customer_id,     label: 'Provider Customer ID', visible_on: [:show]
+              column :current_period_start,     formatter: :datetime, visible_on: [:show]
+              column :current_period_end,       formatter: :datetime
+              column :trial_end,                formatter: :datetime, visible_on: [:show]
+              column :cancel_at_period_end,     formatter: :badge, visible_on: [:show]
+              column :canceled_at,              formatter: :datetime, visible_on: [:show]
+              column :raw_state,                formatter: :json_collapsed, visible_on: [:show]
+              column :created_at,               formatter: :datetime, visible_on: [:show]
+              column :updated_at,               formatter: :datetime, visible_on: [:show]
 
-              filter :status, type: :select,
-                              options: RSB::Entitlements::PaymentRequest::STATUSES
-              filter :provider_key, type: :select,
-                                    options: -> { RSB::Entitlements.providers.all.map { |d| d.key.to_s } }
-              filter :requestable_type, type: :text
+              filter :status,       type: :select,
+                                    options: %w[incomplete trialing active past_due canceled expired]
+              filter :provider,     type: :text
+              filter :plan_key,     type: :text
+              filter :subject_type, type: :text
             end
 
-            page :usage_counters,
-                 label: 'Usage Monitoring',
-                 icon: 'bar-chart',
-                 controller: 'rsb/entitlements/admin/usage_counters',
-                 actions: [
-                   { key: :index, label: 'Overview' },
-                   { key: :trend, label: 'Trend' }
-                 ]
+            resource RSB::Entitlements::UsageCounter,
+                     icon: 'bar-chart',
+                     actions: %i[index show],
+                     default_sort: { column: :updated_at, direction: :desc },
+                     per_page: 50 do
+              column :id,           link: true, visible_on: [:show]
+              column :subject_type, label: 'Subject'
+              column :subject_id,   label: 'Subject ID'
+              column :feature_key,  sortable: true
+              column :consumed
+              column :period_start,
+                     formatter: ->(value) { value.respond_to?(:strftime) ? value.strftime('%B %d, %Y at %I:%M %p') : '—' }
+              column :updated_at,   formatter: :datetime
+
+              filter :feature_key,  type: :text
+              filter :subject_type, type: :text
+            end
+
+            resource RSB::Entitlements::ProviderEvent,
+                     icon: 'inbox',
+                     actions: %i[index show],
+                     default_sort: { column: :processed_at, direction: :desc },
+                     per_page: 50 do
+              column :id,           link: true, visible_on: [:show]
+              column :provider,     formatter: :badge
+              column :event_id,     label: 'Event ID'
+              column :type
+              column :processed_at, formatter: :datetime
+              column :payload,      formatter: :json_collapsed, visible_on: [:show]
+
+              filter :provider, type: :text
+              filter :type,     type: :text
+            end
+
+            # PlanFeature is NOT registered as an admin resource. Its CUD
+            # lifecycle is owned by PlansController via plan-scoped custom
+            # actions (attach_feature, edit_plan_feature, destroy_plan_feature)
+            # so all redirects land back on the parent Plan show page.
           end
         end
       end

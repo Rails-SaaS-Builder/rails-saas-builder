@@ -1,0 +1,49 @@
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold"><%= t('rsb.entitlements.admin.plan_features.edit_title', feature: @plan_feature.feature_key) %></h1>
+    <p class="text-sm text-rsb-muted mt-1">
+      <%= t('rsb.entitlements.admin.plan_features.edit_help', kind: @feature&.kind || 'unknown') %>
+    </p>
+  </div>
+  <a href="<%= rsb_admin_resource_show_path('plans', @plan.id) %>"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 max-w-md">
+  <% if @plan_feature.errors.any? %>
+    <div class="mb-4 p-4 bg-rsb-danger-bg border border-rsb-danger rounded-rsb-lg">
+      <ul class="list-disc list-inside text-sm text-rsb-danger-text space-y-1">
+        <% @plan_feature.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with url: "#{rsb_admin_resource_show_path('plans', @plan.id)}/edit_plan_feature?plan_feature_id=#{@plan_feature.id}",
+                method: :patch, local: true do %>
+
+    <%# Read-only composite identity %>
+    <div class="mb-4">
+      <span class="block text-sm font-medium text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.plan_features.fields.feature_key') %></span>
+      <span class="block text-sm font-mono px-3 py-2 bg-rsb-bg rounded-rsb border border-rsb-border text-rsb-muted">
+        <%= @plan_feature.feature_key %><% if @feature %> <span class="text-xs">(<%= @feature.kind %>)</span><% end %>
+      </span>
+    </div>
+    <div class="mb-4">
+      <span class="block text-sm font-medium text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.plans.fields.key') %></span>
+      <span class="block text-sm font-mono px-3 py-2 bg-rsb-bg rounded-rsb border border-rsb-border text-rsb-muted">
+        <%= @plan.key %>
+      </span>
+    </div>
+
+    <%= render 'kind_fields', kind: @feature&.kind, record: @plan_feature %>
+
+    <div class="flex gap-2 mt-6">
+      <%= submit_tag t('rsb.entitlements.admin.plan_features.update_button'),
+                     class: 'inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors cursor-pointer' %>
+      <a href="<%= rsb_admin_resource_show_path('plans', @plan.id) %>"
+         class="inline-flex items-center px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Cancel</a>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,40 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= t('rsb.entitlements.admin.subscriptions.show_title', id: @subscription.id) %></h1>
+  <a href="<%= rsb_admin_resource_path('subscriptions') %>"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+</div>
+
+<% if @subscription.status.in?(%w[active trialing]) %>
+  <div class="flex gap-2 mb-4">
+    <%= button_to t('rsb.entitlements.admin.subscriptions.actions.cancel'),
+                  "#{rsb_admin_resource_show_path('subscriptions', @subscription.id)}/cancel",
+                  method: :post,
+                  data: { confirm: t('rsb.entitlements.admin.subscriptions.confirm.cancel') },
+                  class: 'inline-flex items-center px-4 py-2 border border-rsb-warning text-rsb-warning rounded-rsb text-sm font-medium hover:bg-rsb-warning-bg transition-colors' %>
+  </div>
+<% end %>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <% [
+    [:subject_type,             nil],
+    [:subject_id,                nil],
+    [:plan_key,                  nil],
+    [:status,                    :badge],
+    [:provider,                  :badge],
+    [:provider_subscription_id,  nil],
+    [:provider_customer_id,      nil],
+    [:current_period_start,      :datetime],
+    [:current_period_end,        :datetime],
+    [:trial_end,                 :datetime],
+    [:cancel_at_period_end,      :badge],
+    [:canceled_at,               :datetime],
+    [:raw_state,                 :json_collapsed],
+    [:created_at,                :datetime],
+    [:updated_at,                :datetime]
+  ].each do |key, formatter| %>
+    <div class="grid grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border last:border-b-0">
+      <strong class="text-sm text-rsb-muted"><%= key.to_s.humanize %></strong>
+      <div><%= rsb_admin_format_value(@subscription.send(key), formatter, @subscription) %></div>
+    </div>
+  <% end %>
+</div>

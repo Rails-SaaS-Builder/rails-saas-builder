@@ -5,7 +5,10 @@ require 'rake/testtask'
 
 load File.expand_path('lib/tasks/release.rake', __dir__)
 
-SUB_GEMS = %w[rsb-settings rsb-auth rsb-entitlements rsb-entitlements-stripe rsb-admin rsb-auth-google].freeze
+# rsb-entitlements-stripe is intentionally excluded: its v0 surface no longer
+# loads against rsb-entitlements v1. The gem source is shelved pending a v1
+# rewrite. See rsb-entitlements/MIGRATION-v1.md.
+SUB_GEMS = %w[rsb-settings rsb-auth rsb-entitlements rsb-admin rsb-auth-google].freeze
 
 desc 'Run tests for all sub-gems'
 task :test_subgems do

@@ -1,0 +1,19 @@
+<%# Action buttons on Feature show. Archive and Unarchive POST to custom member actions. %>
+<div class="flex gap-2">
+  <% if @feature.archived_at.nil? %>
+    <%= button_to t('rsb.entitlements.admin.features.actions.archive'),
+                  "#{rsb_admin_resource_show_path('features', @feature.id)}/archive",
+                  method: :post,
+                  data: { confirm: t('rsb.entitlements.admin.features.confirm.archive') },
+                  class: 'inline-flex items-center px-4 py-2 border border-rsb-warning text-rsb-warning rounded-rsb text-sm font-medium hover:bg-rsb-warning-bg transition-colors' %>
+  <% else %>
+    <%= button_to t('rsb.entitlements.admin.features.actions.unarchive'),
+                  "#{rsb_admin_resource_show_path('features', @feature.id)}/unarchive",
+                  method: :post,
+                  class: 'inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors' %>
+  <% end %>
+  <a href="<%= rsb_admin_resource_edit_path('features', @feature.id) %>"
+     class="inline-flex items-center px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">
+    Edit
+  </a>
+</div>

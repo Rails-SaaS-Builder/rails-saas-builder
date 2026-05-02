@@ -50,11 +50,12 @@ class SettingsPageRedesignTest < ActionDispatch::IntegrationTest
     assert_match 'Branding', response.body
   end
 
-  test 'entitlements tab shows correct subgroups' do
+  test 'entitlements tab renders successfully (empty in v1)' do
     get rsb_admin.settings_path(tab: 'entitlements')
+    # The entitlements tab exists but is intentionally empty in v1.
+    # Provider settings (e.g. Stripe API keys) live in their respective gems.
     assert_response :success
-
-    assert_match 'General', response.body
+    assert_match 'Entitlements', response.body
   end
 
   # --- Grouped definitions via registry ---

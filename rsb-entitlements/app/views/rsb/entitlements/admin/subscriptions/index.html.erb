@@ -1,0 +1,77 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= t('rsb.entitlements.admin.subscriptions.name') %></h1>
+  <a href="<%= rsb_admin_resource_new_path('subscriptions') %>"
+     class="inline-flex items-center gap-1 px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors">
+    <%= t('rsb.entitlements.admin.subscriptions.new_button') %>
+  </a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg p-4 mb-4">
+  <form method="get" action="<%= rsb_admin_resource_path('subscriptions') %>" class="flex gap-3 items-end flex-wrap">
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.subscriptions.fields.status') %></label>
+      <select name="q[status]" class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm">
+        <option value="">Any</option>
+        <% %w[active trialing incomplete past_due canceled expired].each do |s| %>
+          <option value="<%= s %>" <%= 'selected' if @filter_values['status'] == s %>><%= s %></option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.subscriptions.fields.provider') %></label>
+      <input type="text" name="q[provider]" value="<%= @filter_values['provider'] %>"
+             class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm" />
+    </div>
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.subscriptions.fields.plan_key') %></label>
+      <input type="text" name="q[plan_key]" value="<%= @filter_values['plan_key'] %>"
+             class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm" />
+    </div>
+    <div>
+      <label class="block text-xs text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.subscriptions.fields.subject_type') %></label>
+      <input type="text" name="q[subject_type]" value="<%= @filter_values['subject_type'] %>"
+             class="border border-rsb-border rounded-rsb px-2 py-1.5 text-sm" />
+    </div>
+    <button type="submit" class="px-3 py-1.5 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm">Filter</button>
+    <a href="<%= rsb_admin_resource_path('subscriptions') %>" class="px-3 py-1.5 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Clear</a>
+  </form>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm overflow-hidden">
+  <% if @subscriptions.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border">ID</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.subscriptions.fields.subject_type') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.subscriptions.fields.subject_id') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.subscriptions.fields.plan_key') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.subscriptions.fields.status') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.subscriptions.fields.provider') %></th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-rsb-muted bg-rsb-bg border-b border-rsb-border"><%= t('rsb.entitlements.admin.subscriptions.fields.current_period_end') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @subscriptions.each do |sub| %>
+            <tr class="hover:bg-rsb-bg border-b border-rsb-border last:border-b-0">
+              <td class="px-4 py-3 text-sm">
+                <a href="<%= rsb_admin_resource_show_path('subscriptions', sub.id) %>" class="text-rsb-primary hover:underline">#<%= sub.id %></a>
+              </td>
+              <td class="px-4 py-3 text-sm font-mono"><%= sub.subject_type %></td>
+              <td class="px-4 py-3 text-sm"><%= sub.subject_id %></td>
+              <td class="px-4 py-3 text-sm"><%= sub.plan_key %></td>
+              <td class="px-4 py-3 text-sm"><%= rsb_admin_format_value(sub.status, :badge, sub) %></td>
+              <td class="px-4 py-3 text-sm"><%= rsb_admin_format_value(sub.provider, :badge, sub) %></td>
+              <td class="px-4 py-3 text-sm"><%= rsb_admin_format_value(sub.current_period_end, :datetime, sub) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="p-8 text-center text-rsb-muted text-sm">
+      <%= t('rsb.entitlements.admin.subscriptions.empty') %>
+    </div>
+  <% end %>
+</div>

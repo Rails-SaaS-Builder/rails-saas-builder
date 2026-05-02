@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'cgi'
 require 'webmock/minitest'
 
 module RSB

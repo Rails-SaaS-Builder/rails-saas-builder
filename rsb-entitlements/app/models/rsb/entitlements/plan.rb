@@ -1,82 +1,89 @@
 # frozen_string_literal: true
 
+require 'rsb/entitlements/errors'
+
 module RSB
   module Entitlements
+    # Flat plan catalog entry. v1 has no kind/is_default/independent/priority.
+    #
+    # Lifecycle rules (per SRS-019 US-002 / TDD-019 §3):
+    #   - +key+ is immutable after creation (silent-drop semantics; no exception on write).
+    #   - Hard delete is forbidden (before_destroy raises HardDeleteForbidden).
+    #   - Archived plans are immutable except for unarchiving (validation).
+    #   - Archive transition (null -> timestamp) fires the :plan_archived hook.
+    #
+    # TODO: this model shares ~80% of its archive/hard-delete/hook code with Feature.
+    # If a third archivable model appears in this gem, extract these concerns into
+    # `RSB::Entitlements::Concerns::SoftArchive` (validate + before_destroy + after_commit).
+    # Until then, keep the duplication explicit — premature abstraction is worse than DRY-violation.
     class Plan < ApplicationRecord
-      INTERVALS = %w[monthly yearly lifetime one_time].freeze
+      self.table_name = 'rsb_entitlements_plans'
 
-      has_many :entitlements, dependent: :restrict_with_error
-      has_many :usage_counters, dependent: :restrict_with_error
+      # +key+ is immutable after creation. We override +_write_attribute+ for silent-drop
+      # semantics rather than using +attr_readonly+, which raises
+      # +ActiveRecord::ReadonlyAttributeError+ in Rails 7.1+.
+      IMMUTABLE_ATTRIBUTES = %w[key].freeze
+      private_constant :IMMUTABLE_ATTRIBUTES
 
+      validates :key,  presence: true, uniqueness: true
       validates :name, presence: true
-      validates :slug, presence: true,
-                       uniqueness: true,
-                       format: { with: /\A[a-z0-9_-]+\z/ }
-      validates :interval, presence: true, inclusion: { in: INTERVALS }
-      validates :price_cents, presence: true, numericality: { greater_than_or_equal_to: 0 }
-      validates :currency, presence: true
 
-      scope :active, -> { where(active: true) }
+      validate :archived_record_immutable_except_unarchive, on: :update
 
-      def free?
-        price_cents.zero?
+      before_destroy :forbid_hard_delete
+      after_commit   :fire_plan_archived_hook, on: %i[create update]
+
+      # @return [Boolean] true if archived_at is present
+      def archived?
+        archived_at.present?
       end
 
-      def feature?(key)
-        features[key.to_s] == true
+      private
+
+      # Silently drop writes to +:key+ once the record is persisted.
+      # We override +_write_attribute+ (the internal AR write path) so that
+      # callers see a silent no-op rather than +ActiveRecord::ReadonlyAttributeError+.
+      #
+      # @return [void]
+      def _write_attribute(attr_name, value)
+        return if persisted? && IMMUTABLE_ATTRIBUTES.include?(attr_name.to_s)
+
+        super
       end
 
-      # Returns the integer limit value for a metric from the nested limits config.
+      # Enforces that an archived row may only be updated by setting `archived_at`
+      # back to nil (unarchive). Any other column change while archived is rejected.
       #
-      # @param key [String, Symbol] The metric key (e.g., "api_calls")
-      # @return [Integer, nil] The limit value, or nil if undefined or unlimited
-      #
-      # @example
-      #   plan.limit_for("api_calls")  # => 1000
-      #   plan.limit_for(:projects)    # => 10
-      #   plan.limit_for("undefined")  # => nil
-      def limit_for(key)
-        config = limits[key.to_s]
-        return nil unless config.is_a?(Hash)
+      # Run as a standard AR validation so update! raises RecordInvalid (no custom error class).
+      def archived_record_immutable_except_unarchive
+        return unless archived_at_was.present?
+        return if archived_at.nil? # unarchiving is the one allowed transition
 
-        config['limit']
+        # Any change other than archived_at while archived is rejected.
+        forbidden_changes = changes.keys - %w[archived_at updated_at]
+        return if forbidden_changes.empty?
+
+        errors.add(:base, 'cannot modify archived plan (unarchive first by setting archived_at: nil)')
       end
 
-      # Returns the period type for a metric from the nested limits config.
-      #
-      # @param key [String, Symbol] The metric key (e.g., "api_calls")
-      # @return [String, nil] The period type ("daily", "weekly", "monthly"), or nil for cumulative
-      #
-      # @example
-      #   plan.period_for("api_calls")  # => "daily"
-      #   plan.period_for(:projects)    # => nil (cumulative)
-      #   plan.period_for("undefined")  # => nil
-      def period_for(key)
-        config = limits[key.to_s]
-        return nil unless config.is_a?(Hash)
-
-        config['period']
+      # Raises HardDeleteForbidden — plans are append-only; once a key is taken
+      # it is taken forever. Soft-archive via `archived_at` is the only way out.
+      def forbid_hard_delete
+        raise RSB::Entitlements::HardDeleteForbidden,
+              "Plan #{key.inspect} cannot be hard-deleted; set archived_at instead"
       end
 
-      # Returns the full limit configuration hash for a metric.
-      #
-      # @param key [String, Symbol] The metric key (e.g., "api_calls")
-      # @return [Hash, nil] The full config hash with "limit" and "period" keys, or nil if undefined
-      #
-      # @example
-      #   plan.limit_config_for("api_calls")
-      #   # => { "limit" => 1000, "period" => "daily" }
-      #
-      #   plan.limit_config_for("projects")
-      #   # => { "limit" => 10, "period" => nil }
-      #
-      #   plan.limit_config_for("undefined")
-      #   # => nil
-      def limit_config_for(key)
-        config = limits[key.to_s]
-        return nil unless config.is_a?(Hash)
+      # Fires :plan_archived only on a null -> present transition of archived_at
+      # within a single transaction. Skipped on create (no "transition") and on
+      # unarchive (present -> nil) and on present -> present updates.
+      def fire_plan_archived_hook
+        return unless saved_change_to_archived_at?
 
-        config
+        prior, current = saved_change_to_archived_at
+        return unless prior.nil? && current.present?
+        return if previously_new_record? # initial create with archived_at set is not a transition
+
+        RSB::Entitlements.hooks.fire(:plan_archived, key)
       end
     end
   end

@@ -1,3 +1,4 @@
 test:
-  adapter: sqlite3
-  database: db/test.sqlite3
+  adapter: postgresql
+  database: rsb_entitlements_test
+  host: localhost

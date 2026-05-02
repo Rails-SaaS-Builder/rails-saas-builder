@@ -1,0 +1,33 @@
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold"><%= t('rsb.entitlements.admin.plan_features.configure', feature: @feature.key) %></h1>
+    <p class="text-sm text-rsb-muted mt-1">
+      <%= t('rsb.entitlements.admin.plan_features.configure_help', kind: @feature.kind) %>
+    </p>
+  </div>
+  <a href="<%= "#{rsb_admin_resource_show_path('plans', @plan.id)}/attach_feature" %>"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6 max-w-md">
+  <%= form_with url: "#{rsb_admin_resource_show_path('plans', @plan.id)}/attach_feature",
+                method: :post, local: true do %>
+    <%= hidden_field_tag 'plan_feature[feature_key]', @feature.key %>
+
+    <div class="mb-4">
+      <span class="block text-sm font-medium text-rsb-muted mb-1"><%= t('rsb.entitlements.admin.plan_features.fields.feature_key') %></span>
+      <span class="block text-sm font-mono px-3 py-2 bg-rsb-bg rounded-rsb border border-rsb-border text-rsb-muted">
+        <%= @feature.key %> <span class="text-xs">(<%= @feature.kind %>)</span>
+      </span>
+    </div>
+
+    <%= render 'kind_fields', kind: @feature.kind, record: nil %>
+
+    <div class="flex gap-2 mt-6">
+      <%= submit_tag t('rsb.entitlements.admin.plan_features.attach'),
+                     class: 'inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors cursor-pointer' %>
+      <a href="<%= rsb_admin_resource_show_path('plans', @plan.id) %>"
+         class="inline-flex items-center px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Cancel</a>
+    </div>
+  <% end %>
+</div>

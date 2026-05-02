@@ -1,0 +1,73 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold"><%= @feature.key %></h1>
+  <a href="<%= rsb_admin_resource_path('features') %>"
+     class="inline-flex items-center gap-1 px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">Back</a>
+</div>
+
+<%# Actions bar %>
+<div class="flex gap-2 mb-4">
+  <% if @feature.archived_at.nil? %>
+    <%= button_to t('rsb.entitlements.admin.features.actions.archive'),
+                  "#{rsb_admin_resource_show_path('features', @feature.id)}/archive",
+                  method: :post,
+                  data: { confirm: t('rsb.entitlements.admin.features.confirm.archive') },
+                  class: 'inline-flex items-center px-4 py-2 border border-rsb-warning text-rsb-warning rounded-rsb text-sm font-medium hover:bg-rsb-warning-bg transition-colors' %>
+  <% else %>
+    <%= button_to t('rsb.entitlements.admin.features.actions.unarchive'),
+                  "#{rsb_admin_resource_show_path('features', @feature.id)}/unarchive",
+                  method: :post,
+                  class: 'inline-flex items-center px-4 py-2 bg-rsb-primary text-rsb-primary-text rounded-rsb text-sm font-medium hover:bg-rsb-primary-hover transition-colors' %>
+  <% end %>
+  <a href="<%= rsb_admin_resource_edit_path('features', @feature.id) %>"
+     class="inline-flex items-center px-4 py-2 border border-rsb-border rounded-rsb text-sm hover:bg-rsb-bg transition-colors">
+    Edit
+  </a>
+</div>
+
+<div class="bg-rsb-card border border-rsb-border rounded-rsb-lg shadow-rsb-sm p-6">
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= t('rsb.entitlements.admin.features.fields.key') %></strong>
+    <div class="text-sm font-mono"><%= @feature.key %></div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= t('rsb.entitlements.admin.features.fields.name') %></strong>
+    <div class="text-sm"><%= @feature.name %></div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= t('rsb.entitlements.admin.features.fields.kind') %></strong>
+    <div>
+      <% badge_class = case @feature.kind
+                        when 'flag'    then 'bg-rsb-info-bg text-rsb-info-text'
+                        when 'metered' then 'bg-rsb-warning-bg text-rsb-warning-text'
+                        when 'gauge'   then 'bg-rsb-success-bg text-rsb-success-text'
+                        else 'bg-rsb-bg text-rsb-muted'
+                        end %>
+      <span class="inline-block px-2 py-0.5 rounded-rsb text-xs font-medium <%= badge_class %>"><%= @feature.kind %></span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= t('rsb.entitlements.admin.features.fields.unit') %></strong>
+    <div class="text-sm"><%= @feature.unit.presence || '—' %></div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3 border-b border-rsb-border">
+    <strong class="text-sm text-rsb-muted"><%= t('rsb.entitlements.admin.features.fields.archived_at') %></strong>
+    <div class="text-sm">
+      <% if @feature.archived_at %>
+        <span class="inline-block px-2 py-0.5 rounded-rsb text-xs font-medium bg-rsb-danger-bg text-rsb-danger-text">
+          <%= @feature.archived_at.strftime('%B %d, %Y at %I:%M %p') %>
+        </span>
+      <% else %>
+        <span class="text-rsb-muted">—</span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 py-3">
+    <strong class="text-sm text-rsb-muted">Created</strong>
+    <div class="text-sm"><%= @feature.created_at.strftime('%B %d, %Y at %I:%M %p') %></div>
+  </div>
+</div>

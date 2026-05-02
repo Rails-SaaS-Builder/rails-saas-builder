@@ -1,7 +1,9 @@
 development:
-  adapter: sqlite3
-  database: db/development.sqlite3
+  adapter: postgresql
+  database: rsb_integration_development
+  host: localhost
 
 test:
-  adapter: sqlite3
-  database: db/test.sqlite3
+  adapter: postgresql
+  database: rsb_integration_test
+  host: localhost

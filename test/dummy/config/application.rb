@@ -17,7 +17,6 @@ Bundler.require(*Rails.groups)
 require 'rsb/settings'
 require 'rsb/auth'
 require 'rsb/entitlements'
-require 'rsb-entitlements-stripe'
 require 'rsb/admin'
 require 'rsb-auth-google'
 
