@@ -6,7 +6,11 @@ class AdminResourcesRegistrationTest < ActiveSupport::TestCase
   include RSB::Entitlements::TestHelper
 
   setup do
-    return unless defined?(RSB::Admin)
+    # `next` (not `return`) — `return` from a setup-do block raises
+    # LocalJumpError because the block runs via instance_exec, not as a
+    # method body. Skipping when rsb-admin isn't loaded keeps these tests
+    # opt-in; each individual test also calls `skip` for clarity.
+    next unless defined?(RSB::Admin)
 
     # Reset the registry, then re-fire the on_load(:rsb_admin) callbacks so
     # the entitlements engine's admin_hooks initializer populates the registry.
